@@ -9,3 +9,4 @@ let ast_intf_magic_number = Config.ast_intf_magic_number
 type ast =
   | Intf of Parsetree.signature
   | Impl of Parsetree.structure
+

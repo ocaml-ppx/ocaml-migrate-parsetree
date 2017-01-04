@@ -1,22 +1,53 @@
-open Migrate_parsetree_def
-
+(** Union of all supported versions *)
 type ast =
   | OCaml_402 of Frontend_402.ast
   | OCaml_403 of Frontend_403.ast
   | OCaml_404 of Frontend_404.ast
 
+(** A simple alias used for the filename of the source that produced an AST *)
 type filename = string
 
+(** This exception is raised by the `from_*` functions when the file cannot be
+    decoded. *)
 exception Unknown_magic_number of string
+
+(** Load a marshalled AST from a channel
+
+    It can raise the [Unknown_magic_number str] exception, in which case only
+    the [str] string was read from the channel.
+    After that, any exception raised during unmarshalling (see [Marshal]) can
+    escape.  *)
 val from_channel : in_channel -> filename * ast
+
+(** Load a marshalled AST from a byte string.
+
+    See [from_channel] description for exception that can be raised. *)
 val from_bytes : bytes -> int -> filename * ast
 
+(** Marshal an AST to a channel *)
 val to_channel : out_channel -> filename -> ast -> unit
+
+(** Marshal an AST to a byte string *)
 val to_bytes : filename -> ast -> bytes
 
+open Migrate_parsetree_def
+
+(** Get the OCaml version of an AST *)
 val ast_version : ast -> [> ocaml_version]
-val migrate_to_402 : ast -> Frontend_402.ast
-val migrate_to_403 : ast -> Frontend_403.ast
-val migrate_to_404 : ast -> Frontend_404.ast
+
+(** Migrate an AST to another version.
+
+    Migration functions can raise [Migrate_parsetree_def.Migration_error]
+    if a feature is not implemented in the targetted version.  *)
 val migrate_to_version : ast -> [< ocaml_version] -> ast
 
+(** Migrate any version of an AST to 4.02 *)
+val migrate_to_402 : ast -> Frontend_402.ast
+
+(** Migrate any version of an AST to 4.03 *)
+val migrate_to_403 : ast -> Frontend_403.ast
+
+(** Migrate any version of an AST to 4.04 *)
+val migrate_to_404 : ast -> Frontend_404.ast
+
+(** An alias to the frontend version of the current compiler *)
