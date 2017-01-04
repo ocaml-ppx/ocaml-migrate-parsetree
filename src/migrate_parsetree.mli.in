@@ -1,0 +1,22 @@
+open Migrate_parsetree_def
+
+type ast =
+  | OCaml_402 of Frontend_402.ast
+  | OCaml_403 of Frontend_403.ast
+  | OCaml_404 of Frontend_404.ast
+
+type filename = string
+
+exception Unknown_magic_number of string
+val from_channel : in_channel -> filename * ast
+val from_bytes : bytes -> int -> filename * ast
+
+val to_channel : out_channel -> filename -> ast -> unit
+val to_bytes : filename -> ast -> bytes
+
+val ast_version : ast -> [> ocaml_version]
+val migrate_to_402 : ast -> Frontend_402.ast
+val migrate_to_403 : ast -> Frontend_403.ast
+val migrate_to_404 : ast -> Frontend_404.ast
+val migrate_to_version : ast -> [< ocaml_version] -> ast
+

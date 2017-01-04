@@ -1,0 +1,136 @@
+type ast =
+  | OCaml_402 of Frontend_402.ast
+  | OCaml_403 of Frontend_403.ast
+  | OCaml_404 of Frontend_404.ast
+
+type filename = string
+
+let magics = [
+  Frontend_402.ast_intf_magic_number,
+  (fun x -> OCaml_402 (Frontend_402.Intf (Obj.obj x)));
+  Frontend_402.ast_impl_magic_number,
+  (fun x -> OCaml_402 (Frontend_402.Impl (Obj.obj x)));
+  Frontend_403.ast_intf_magic_number,
+  (fun x -> OCaml_403 (Frontend_403.Intf (Obj.obj x)));
+  Frontend_403.ast_impl_magic_number,
+  (fun x -> OCaml_403 (Frontend_403.Impl (Obj.obj x)));
+  Frontend_404.ast_intf_magic_number,
+  (fun x -> OCaml_404 (Frontend_404.Intf (Obj.obj x)));
+  Frontend_404.ast_impl_magic_number,
+  (fun x -> OCaml_404 (Frontend_404.Impl (Obj.obj x)));
+]
+
+let magic_number = function
+  | OCaml_402 (Frontend_402.Intf _) -> Frontend_402.ast_intf_magic_number
+  | OCaml_402 (Frontend_402.Impl _) -> Frontend_402.ast_impl_magic_number
+  | OCaml_403 (Frontend_403.Intf _) -> Frontend_403.ast_intf_magic_number
+  | OCaml_403 (Frontend_403.Impl _) -> Frontend_403.ast_impl_magic_number
+  | OCaml_404 (Frontend_404.Intf _) -> Frontend_404.ast_intf_magic_number
+  | OCaml_404 (Frontend_404.Impl _) -> Frontend_404.ast_impl_magic_number
+
+let payload = function
+  | OCaml_402 (Frontend_402.Intf x) -> Obj.repr x
+  | OCaml_402 (Frontend_402.Impl x) -> Obj.repr x
+  | OCaml_403 (Frontend_403.Intf x) -> Obj.repr x
+  | OCaml_403 (Frontend_403.Impl x) -> Obj.repr x
+  | OCaml_404 (Frontend_404.Intf x) -> Obj.repr x
+  | OCaml_404 (Frontend_404.Impl x) -> Obj.repr x
+
+let magic_length = String.length Frontend_402.ast_impl_magic_number
+
+let read_magic ic = really_input_string ic magic_length
+
+exception Unknown_magic_number of string
+
+let from_channel ic =
+  let magic = read_magic ic in
+  match List.assoc magic magics with
+  | inj ->
+      let filename : filename = input_value ic in
+      let payload = inj (input_value ic) in
+      (filename, payload)
+  | exception Not_found -> raise (Unknown_magic_number magic)
+
+let from_bytes bytes pos =
+  let len = min magic_length (Bytes.length bytes - pos) in
+  let magic = Bytes.to_string (Bytes.sub bytes pos len) in
+  match List.assoc magic magics with
+  | inj ->
+      let filename_pos = pos + magic_length in
+      let filename : filename = Marshal.from_bytes bytes filename_pos in
+      let payload_pos = filename_pos + Marshal.total_size bytes filename_pos in
+      let payload = inj (Marshal.from_bytes bytes payload_pos) in
+      (filename, payload)
+  | exception Not_found -> raise (Unknown_magic_number magic)
+
+let to_channel oc (filename : filename) x =
+  output_string oc (magic_number x);
+  output_value oc filename;
+  output_value oc x
+
+let to_bytes (filename : filename) x =
+  Bytes.cat (
+    Bytes.cat
+      (Bytes.of_string (magic_number x))
+      (Marshal.to_bytes filename [])
+  ) (Marshal.to_bytes (payload x) [])
+
+let ast_version = function
+  | OCaml_402 _ -> `OCaml_402
+  | OCaml_403 _ -> `OCaml_403
+  | OCaml_404 _ -> `OCaml_404
+
+let migrate_to_402 = function
+  | OCaml_402 x -> x
+  | OCaml_403 (Frontend_403.Impl x) ->
+      Frontend_402.Impl
+        (Migrate_parsetree_403_402.copy_structure x)
+  | OCaml_403 (Frontend_403.Intf x) ->
+      Frontend_402.Intf
+        (Migrate_parsetree_403_402.copy_signature x)
+  | OCaml_404 (Frontend_404.Impl x) ->
+      Frontend_402.Impl
+        (Migrate_parsetree_403_402.copy_structure
+           (Migrate_parsetree_404_403.copy_structure x))
+  | OCaml_404 (Frontend_404.Intf x) ->
+      Frontend_402.Intf
+        (Migrate_parsetree_403_402.copy_signature
+           (Migrate_parsetree_404_403.copy_signature x))
+
+let migrate_to_403 = function
+  | OCaml_403 x -> x
+  | OCaml_402 (Frontend_402.Impl x) ->
+      Frontend_403.Impl
+        (Migrate_parsetree_402_403.copy_structure x)
+  | OCaml_402 (Frontend_402.Intf x) ->
+      Frontend_403.Intf
+        (Migrate_parsetree_402_403.copy_signature x)
+  | OCaml_404 (Frontend_404.Impl x) ->
+      Frontend_403.Impl
+        (Migrate_parsetree_404_403.copy_structure x)
+  | OCaml_404 (Frontend_404.Intf x) ->
+      Frontend_403.Intf
+        (Migrate_parsetree_404_403.copy_signature x)
+
+let migrate_to_404 = function
+  | OCaml_404 x -> x
+  | OCaml_402 (Frontend_402.Impl x) ->
+      Frontend_404.Impl
+        (Migrate_parsetree_403_404.copy_structure
+           (Migrate_parsetree_402_403.copy_structure x))
+  | OCaml_402 (Frontend_402.Intf x) ->
+      Frontend_404.Intf
+        (Migrate_parsetree_403_404.copy_signature
+           (Migrate_parsetree_402_403.copy_signature x))
+  | OCaml_403 (Frontend_403.Impl x) ->
+      Frontend_404.Impl
+        (Migrate_parsetree_403_404.copy_structure x)
+  | OCaml_403 (Frontend_403.Intf x) ->
+      Frontend_404.Intf
+        (Migrate_parsetree_403_404.copy_signature x)
+
+let migrate_to_version ast = function
+  | `OCaml_402 -> OCaml_402 (migrate_to_402 ast)
+  | `OCaml_403 -> OCaml_403 (migrate_to_403 ast)
+  | `OCaml_404 -> OCaml_404 (migrate_to_404 ast)
+

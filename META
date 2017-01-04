@@ -1,0 +1,5 @@
+version = "0.1"
+description = "Migrate between different versions of OCaml AST"
+archive(byte) = "migrate_parsetree.cma"
+archive(native) = "migrate_parsetree.cmxa"
+requires = "compiler-libs.common"
