@@ -24,3 +24,7 @@ let migration_error_message = function
   | `Pconst_float      -> "4.03 -> 4.02: Pconst_float"
 
 type ocaml_version = [`OCaml_402 | `OCaml_403 | `OCaml_404 ]
+
+type ('intf, 'impl) intf_or_impl =
+  | Intf of 'intf
+  | Impl of 'impl

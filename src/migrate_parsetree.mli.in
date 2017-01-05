@@ -1,4 +1,10 @@
 (** Union of all supported versions *)
+
+type ('intf, 'impl) intf_or_impl =
+  ('intf, 'impl) Migrate_parsetree_def.intf_or_impl =
+  | Intf of 'intf
+  | Impl of 'impl
+
 type ast =
   | OCaml_402 of Frontend_402.ast
   | OCaml_403 of Frontend_403.ast

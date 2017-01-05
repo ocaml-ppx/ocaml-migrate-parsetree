@@ -2,7 +2,11 @@
 Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
-It exposes two series of modules.
+It started from the work of Alain Frisch in [ppx\_tools](https://github.com/alainfrisch/ppx_tools).
+
+Supported versions are 4.02, 4.03 and 4.04.
+For each version, there is a snapshot of the parsetree and conversion functions
+to the next and/or previous version.
 
 ## Frontends
 
@@ -16,16 +20,18 @@ module Frontend_402, Frontend_403, Frontend_404 : sig
   module Parsetree
 
   (* Magic numbers used for marshalling *)
-  val ast_impl_magic_number : string
-  val ast_intf_magic_number : string
+  module Config : sig
+    val ast_impl_magic_number : string
+    val ast_intf_magic_number : string
+  end
 
   (* Union of interface and implementation *)
   type ast =
-    | Intf of Parsetree.signature
-    | Impl of Parsetree.structure
+    (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
 
   (* The current version of of the frontend *)
-  val ocaml_version : [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
+  val version : [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
+
 end
 ```
 
@@ -45,10 +51,9 @@ let ast_impl_magic_number = Config.ast_impl_magic_number
 let ast_intf_magic_number = Config.ast_intf_magic_number
 
 type ast =
-  | Intf of Parsetree.signature
-  | Impl of Parsetree.structure
+  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
 
-let ocaml_version : Migrate_parsetree_def.ocaml_version = `OCaml_404
+let version : Migrate_parsetree_def.ocaml_version = `OCaml_404
 ```
 
 ## Migration modules
@@ -63,3 +68,42 @@ failure case.
 
 Finally, the `Migrate_parsetree` module exposes an easy interface for
 transparent (un)marshalling and conversion between any supported version.
+
+# Development
+
+The library includes code from different versions of OCaml. The resulting
+license is not yet clear. Other code is licensed under MIT.
+
+## Adding a new OCaml frontend
+
+Snapshot the frontend:
+- Add a new constructor to
+  [Migrate\_parsetree\_def.ocaml\_version](src/migrate_parsetree_def.ml)
+- Create a file "frontends/frontend\_NEW.ml":
+  * define the modules `Location`, `Longident`, `Asttypes`, `Parsetree` by
+    keeping type definitions from the upstream files in `parsing/` directory
+  * create a `Config` module containing `ast_impl_magic_number`
+    `ast_impl_magic_number` from upstream `Config`
+  * append 
+```
+type ast =
+  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+
+let version : Migrate_parsetree_def.ocaml_version = `OCaml_NEW
+```
+
+Add migration path:
+- Manually compile the frontend (`ocamlc -c frontend_NEW.ml`)
+- Using `gencopy` from [ppx\_tools](https://github.com/alainfrisch/ppx_tools), generate copy code to and from previous version (assuming it is 404):
+```ocaml
+gencopy -I . -map Frontend_404:Frontend_NEW Frontend_404.Parsetree.expression > migrate_parsetree_404_NEW.ml
+gencopy -I . -map Frontend_NEW:Frontend_404 Frontend_NEW.Parsetree.expression > migrate_parsetree_NEW_404.ml
+```
+- Fix the generated code by implementing new cases
+- By default generated code use very long identifiers, you can simplify unambiguous ones (e.g. `copy_Frontend_NEW_Parsetree_structure` -> `copy_structure`)
+- Update `Migrate_parsetree` module: add `migrate_to_NEW` function, implement missing cases
+
+Update build system:
+- in [Makefile](Makefile), add "src/frontend\_NEW.ml" to `OCAML_FRONTENDS` and migration modules to `OBJECTS`
+- Update dependencies with `make depend`
+- `make` should succeed

@@ -937,11 +937,12 @@ module Parsetree = struct
     | Pdir_bool of bool
 end
 
-let ast_impl_magic_number = "Caml1999M016"
-let ast_intf_magic_number = "Caml1999N015"
+module Config = struct
+  let ast_impl_magic_number = "Caml1999M016"
+  let ast_intf_magic_number = "Caml1999N015"
+end
 
 type ast =
-  | Intf of Parsetree.signature
-  | Impl of Parsetree.structure
+  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
 
 let version : Migrate_parsetree_def.ocaml_version = `OCaml_402
