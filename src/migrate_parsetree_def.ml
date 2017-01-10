@@ -1,3 +1,9 @@
+type ocaml_version = [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
+
+type ('intf, 'impl) intf_or_impl =
+  | Intf of 'intf
+  | Impl of 'impl
+
 (** Errors that can happen when converting constructions that doesn't exist in
     older version of the AST. *)
 type migration_error = [
@@ -28,17 +34,45 @@ exception Migration_error of migration_error * location
 let migration_error location error =
   raise (Migration_error (error,location))
 
-let migration_error_message = function
-  | `Pexp_letexception -> "4.04 -> 4.03: Pexp_letexception"
-  | `Ppat_open         -> "4.04 -> 4.03: Ppat_open"
-  | `Pexp_unreachable  -> "4.03 -> 4.02: Pexp_unreachable"
-  | `PSig              -> "4.03 -> 4.02: PSig"
-  | `Pcstr_record      -> "4.03 -> 4.02: Pcstr_record"
-  | `Pconst_integer    -> "4.03 -> 4.02: Pconst_integer"
-  | `Pconst_float      -> "4.03 -> 4.02: Pconst_float"
+let migration_error_feature = function
+  | `Pexp_letexception -> "local exceptions"
+  | `Ppat_open         -> "module open in patterns"
+  | `Pexp_unreachable  -> "unreachable patterns"
+  | `PSig              -> "signatures in attribute"
+  | `Pcstr_record      -> "inline records"
+  | `Pconst_integer    -> "custom integer literals"
+  | `Pconst_float      -> "custom float literals"
 
-type ocaml_version = [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
+let migration_error_supported_version = function
+  | `Pexp_letexception -> `OCaml_404
+  | `Ppat_open         -> `OCaml_404
+  | `Pexp_unreachable  -> `OCaml_403
+  | `PSig              -> `OCaml_403
+  | `Pcstr_record      -> `OCaml_403
+  | `Pconst_integer    -> `OCaml_403
+  | `Pconst_float      -> `OCaml_403
 
-type ('intf, 'impl) intf_or_impl =
-  | Intf of 'intf
-  | Impl of 'impl
+let migration_error_message x =
+  let feature = migration_error_feature x in
+  let version = match migration_error_supported_version x with
+    | `OCaml_404 -> "4.04"
+    | `OCaml_403 -> "4.03"
+  in
+  feature ^ " are not supported before OCaml " ^ version
+
+let location_prefix l =
+  if l = location_none then ""
+  else
+    let {Location.loc_start; loc_end; _} = l in
+    let bol = loc_start.Lexing.pos_bol in
+    Printf.sprintf "File %S, line %d, characters %d-%d: "
+      loc_start.Lexing.pos_fname
+      loc_start.Lexing.pos_lnum
+      (loc_start.Lexing.pos_cnum - bol)
+      (loc_end.Lexing.pos_cnum - bol)
+
+let () = Printexc.register_printer (function
+    | Migration_error (err, loc) ->
+        Some (location_prefix loc ^ migration_error_message err)
+    | _ -> None
+  )
