@@ -1,7 +1,7 @@
 module From = Frontend_403
 module To = Frontend_402
 
-let from_loc x = x.From.Location.loc
+let from_loc {From.Location. txt = _; loc} = loc
 
 let migration_error {From.Location. loc_start; loc_end; loc_ghost} error =
   let location = Migrate_parsetree_def.location ~loc_start ~loc_end ~loc_ghost in

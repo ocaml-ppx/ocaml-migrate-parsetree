@@ -14,7 +14,7 @@ VERSION = 0.1
 # Config
 OCAMLC = ocamlc -bin-annot
 OCAMLOPT = ocamlopt
-COMPFLAGS = -w +A-4-17-44-45-105 -I src -I +compiler-libs -safe-string
+COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
 
 # Files
 OCAML_FRONTENDS= \
