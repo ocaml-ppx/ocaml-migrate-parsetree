@@ -1,7 +1,11 @@
 module From = Frontend_404
 module To = Frontend_403
 
-let migration_error = Migrate_parsetree_def.migration_error
+let from_loc x = x.From.Location.loc
+
+let migration_error {From.Location. loc_start; loc_end; loc_ghost} error =
+  let location = Migrate_parsetree_def.location ~loc_start ~loc_end ~loc_ghost in
+  Migrate_parsetree_def.migration_error location error
 
 let rec copy_expression :
   From.Parsetree.expression ->
@@ -14,14 +18,14 @@ let rec copy_expression :
      ->
     {
       To.Parsetree.pexp_desc =
-        (copy_expression_desc pexp_desc);
+        (copy_expression_desc pexp_loc pexp_desc);
       To.Parsetree.pexp_loc =
         (copy_location pexp_loc);
       To.Parsetree.pexp_attributes =
         (copy_attributes pexp_attributes)
     }
 
-and copy_expression_desc :
+and copy_expression_desc loc :
   From.Parsetree.expression_desc ->
     To.Parsetree.expression_desc
   =
@@ -151,7 +155,7 @@ and copy_expression_desc :
           (copy_module_expr x1),
           (copy_expression x2))
   | From.Parsetree.Pexp_letexception _ ->
-      migration_error `Pexp_letexception
+      migration_error loc `Pexp_letexception
   | From.Parsetree.Pexp_assert x0 ->
       To.Parsetree.Pexp_assert
         (copy_expression x0)
@@ -237,14 +241,14 @@ and copy_pattern :
      ->
     {
       To.Parsetree.ppat_desc =
-        (copy_pattern_desc ppat_desc);
+        (copy_pattern_desc ppat_loc ppat_desc);
       To.Parsetree.ppat_loc =
         (copy_location ppat_loc);
       To.Parsetree.ppat_attributes =
         (copy_attributes ppat_attributes)
     }
 
-and copy_pattern_desc :
+and copy_pattern_desc loc :
   From.Parsetree.pattern_desc ->
     To.Parsetree.pattern_desc
   =
@@ -314,7 +318,7 @@ and copy_pattern_desc :
       To.Parsetree.Ppat_extension
         (copy_extension x0)
   | From.Parsetree.Ppat_open _ ->
-      migration_error `Ppat_open
+      migration_error loc `Ppat_open
 and copy_core_type :
   From.Parsetree.core_type ->
     To.Parsetree.core_type

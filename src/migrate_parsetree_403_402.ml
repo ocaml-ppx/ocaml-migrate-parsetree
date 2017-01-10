@@ -1,7 +1,11 @@
 module From = Frontend_403
 module To = Frontend_402
 
-let migration_error = Migrate_parsetree_def.migration_error
+let from_loc x = x.From.Location.loc
+
+let migration_error {From.Location. loc_start; loc_end; loc_ghost} error =
+  let location = Migrate_parsetree_def.location ~loc_start ~loc_end ~loc_ghost in
+  Migrate_parsetree_def.migration_error location error
 
 let rec copy_expression :
   From.Parsetree.expression ->
@@ -14,14 +18,14 @@ let rec copy_expression :
      ->
     {
       To.Parsetree.pexp_desc =
-        (copy_expression_desc pexp_desc);
+        (copy_expression_desc pexp_loc pexp_desc);
       To.Parsetree.pexp_loc =
         (copy_location pexp_loc);
       To.Parsetree.pexp_attributes =
         (copy_attributes pexp_attributes)
     }
 
-and copy_expression_desc :
+and copy_expression_desc loc :
   From.Parsetree.expression_desc ->
     To.Parsetree.expression_desc
   =
@@ -32,7 +36,7 @@ and copy_expression_desc :
            x0)
   | From.Parsetree.Pexp_constant x0 ->
       To.Parsetree.Pexp_constant
-        (copy_constant x0)
+        (copy_constant loc x0)
   | From.Parsetree.Pexp_let (x0,x1,x2) ->
       To.Parsetree.Pexp_let
         ((copy_rec_flag x0),
@@ -179,7 +183,7 @@ and copy_expression_desc :
       To.Parsetree.Pexp_extension
         (copy_extension x0)
   | From.Parsetree.Pexp_unreachable  ->
-      migration_error `Pexp_unreachable
+      migration_error loc `Pexp_unreachable
 
 and copy_direction_flag :
   From.Asttypes.direction_flag ->
@@ -235,14 +239,14 @@ and copy_pattern :
      ->
     {
       To.Parsetree.ppat_desc =
-        (copy_pattern_desc ppat_desc);
+        (copy_pattern_desc ppat_loc ppat_desc);
       To.Parsetree.ppat_loc =
         (copy_location ppat_loc);
       To.Parsetree.ppat_attributes =
         (copy_attributes ppat_attributes)
     }
 
-and copy_pattern_desc :
+and copy_pattern_desc loc :
   From.Parsetree.pattern_desc ->
     To.Parsetree.pattern_desc
   =
@@ -258,11 +262,11 @@ and copy_pattern_desc :
           (copy_loc (fun x  -> x) x1))
   | From.Parsetree.Ppat_constant x0 ->
       To.Parsetree.Ppat_constant
-        (copy_constant x0)
+        (copy_constant loc x0)
   | From.Parsetree.Ppat_interval (x0,x1) ->
       To.Parsetree.Ppat_interval
-        ((copy_constant x0),
-          (copy_constant x1))
+        ((copy_constant loc x0),
+          (copy_constant loc x1))
   | From.Parsetree.Ppat_tuple x0 ->
       To.Parsetree.Ppat_tuple
         (List.map copy_pattern x0)
@@ -425,16 +429,16 @@ and copy_attribute :
   fun x  ->
     let (x0,x1) = x  in
     ((copy_loc (fun x  -> x) x0),
-      (copy_payload x1))
+      (copy_payload (from_loc x0) x1))
 
-and copy_payload :
+and copy_payload loc :
   From.Parsetree.payload -> To.Parsetree.payload =
   function
   | From.Parsetree.PStr x0 ->
       To.Parsetree.PStr
         (copy_structure x0)
   | From.Parsetree.PSig _x0 ->
-      migration_error `PSig
+      migration_error loc `PSig
   | From.Parsetree.PTyp x0 ->
       To.Parsetree.PTyp
         (copy_core_type x0)
@@ -1013,7 +1017,7 @@ and copy_extension :
   fun x  ->
     let (x0,x1) = x  in
     ((copy_loc (fun x  -> x) x0),
-      (copy_payload x1))
+      (copy_payload (from_loc x0) x1))
 
 and copy_class_infos :
   'f0 'g0 .
@@ -1200,21 +1204,21 @@ and copy_extension_constructor :
       To.Parsetree.pext_name =
         (copy_loc (fun x  -> x) pext_name);
       To.Parsetree.pext_kind =
-        (copy_extension_constructor_kind pext_kind);
+        (copy_extension_constructor_kind (from_loc pext_name) pext_kind);
       To.Parsetree.pext_loc =
         (copy_location pext_loc);
       To.Parsetree.pext_attributes =
         (copy_attributes pext_attributes)
     }
 
-and copy_extension_constructor_kind :
+and copy_extension_constructor_kind loc :
   From.Parsetree.extension_constructor_kind ->
     To.Parsetree.extension_constructor_kind
   =
   function
   | From.Parsetree.Pext_decl (x0,x1) ->
       To.Parsetree.Pext_decl
-        ((copy_constructor_arguments x0),
+        ((copy_constructor_arguments loc x0),
           (copy_option copy_core_type x1))
   | From.Parsetree.Pext_rebind x0 ->
       To.Parsetree.Pext_rebind
@@ -1302,7 +1306,7 @@ and copy_constructor_declaration :
       To.Parsetree.pcd_name =
         (copy_loc (fun x  -> x) pcd_name);
       To.Parsetree.pcd_args =
-        (copy_constructor_arguments pcd_args);
+        (copy_constructor_arguments (from_loc pcd_name) pcd_args);
       To.Parsetree.pcd_res =
         (copy_option copy_core_type pcd_res);
       To.Parsetree.pcd_loc =
@@ -1311,7 +1315,7 @@ and copy_constructor_declaration :
         (copy_attributes pcd_attributes)
     }
 
-and copy_constructor_arguments :
+and copy_constructor_arguments loc :
   From.Parsetree.constructor_arguments ->
     To.Parsetree.core_type list
   =
@@ -1319,7 +1323,7 @@ and copy_constructor_arguments :
   | From.Parsetree.Pcstr_tuple x0 ->
       List.map copy_core_type x0
   | From.Parsetree.Pcstr_record _x0 ->
-      migration_error `Pcstr_record
+      migration_error loc `Pcstr_record
 
 and copy_label_declaration :
   From.Parsetree.label_declaration ->
@@ -1416,7 +1420,7 @@ and copy_rec_flag :
   | From.Asttypes.Recursive  ->
       To.Asttypes.Recursive
 
-and copy_constant :
+and copy_constant loc :
   From.Parsetree.constant -> To.Asttypes.constant
   =
   function
@@ -1429,7 +1433,7 @@ and copy_constant :
          To.Asttypes.Const_int64 (Int64.of_string x0)
      | Some 'n' ->
          To.Asttypes.Const_nativeint (Nativeint.of_string x0)
-     | Some _ -> migration_error `Pconst_integer
+     | Some _ -> migration_error loc `Pconst_integer
      end
   | From.Parsetree.Pconst_char x0 ->
       To.Asttypes.Const_char x0
@@ -1438,7 +1442,7 @@ and copy_constant :
   | From.Parsetree.Pconst_float (x0,x1) ->
       begin match x1 with
       | None -> To.Asttypes.Const_float x0
-      | Some _ -> migration_error `Pconst_float
+      | Some _ -> migration_error loc `Pconst_float
       end
 
 and copy_option : 'f0 'g0 . ('f0 -> 'g0) -> 'f0 option -> 'g0 option =
