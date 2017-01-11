@@ -56,4 +56,14 @@ val migrate_to_403 : ast -> Frontend_403.ast
 (** Migrate any version of an AST to 4.04 *)
 val migrate_to_404 : ast -> Frontend_404.ast
 
+(** Aliases for all modules in the library *)
+module Def = Migrate_parsetree_def
+module Frontend_402 = Frontend_402
+module Frontend_403 = Frontend_403
+module Frontend_404 = Frontend_404
+module Migrate_402_403 = Migrate_parsetree_402_403
+module Migrate_403_402 = Migrate_parsetree_403_402
+module Migrate_403_404 = Migrate_parsetree_403_404
+module Migrate_404_403 = Migrate_parsetree_404_403
+
 (** An alias to the frontend version of the current compiler *)
