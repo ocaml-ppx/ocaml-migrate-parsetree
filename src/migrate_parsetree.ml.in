@@ -127,3 +127,12 @@ let migrate_to_version ast = function
   | `OCaml_403 -> OCaml_403 (migrate_to_403 ast)
   | `OCaml_404 -> OCaml_404 (migrate_to_404 ast)
 
+module Def = Migrate_parsetree_def
+module Frontend_402 = Frontend_402
+module Frontend_403 = Frontend_403
+module Frontend_404 = Frontend_404
+module Migrate_402_403 = Migrate_parsetree_402_403
+module Migrate_403_402 = Migrate_parsetree_403_402
+module Migrate_403_404 = Migrate_parsetree_403_404
+module Migrate_404_403 = Migrate_parsetree_404_403
+
