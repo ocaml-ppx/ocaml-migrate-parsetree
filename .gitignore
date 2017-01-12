@@ -1,7 +1,11 @@
+src/ast_*.ml
+src/migrate_parsetree.ml
+
 *.annot
 *.cmo
 *.cma
 *.cmi
+*.cmt
 *.a
 *.o
 *.cmx
