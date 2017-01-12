@@ -6,9 +6,9 @@ type ('intf, 'impl) intf_or_impl =
   | Impl of 'impl
 
 type ast =
-  | OCaml_402 of Frontend_402.ast
-  | OCaml_403 of Frontend_403.ast
-  | OCaml_404 of Frontend_404.ast
+  | OCaml_402 of Ast_402.ast
+  | OCaml_403 of Ast_403.ast
+  | OCaml_404 of Ast_404.ast
 
 (** A simple alias used for the filename of the source that produced an AST *)
 type filename = string
@@ -48,22 +48,22 @@ val ast_version : ast -> [> ocaml_version]
 val migrate_to_version : ast -> [< ocaml_version] -> ast
 
 (** Migrate any version of an AST to 4.02 *)
-val migrate_to_402 : ast -> Frontend_402.ast
+val migrate_to_402 : ast -> Ast_402.ast
 
 (** Migrate any version of an AST to 4.03 *)
-val migrate_to_403 : ast -> Frontend_403.ast
+val migrate_to_403 : ast -> Ast_403.ast
 
 (** Migrate any version of an AST to 4.04 *)
-val migrate_to_404 : ast -> Frontend_404.ast
+val migrate_to_404 : ast -> Ast_404.ast
 
 (** Aliases for all modules in the library *)
 module Def = Migrate_parsetree_def
-module Frontend_402 = Frontend_402
-module Frontend_403 = Frontend_403
-module Frontend_404 = Frontend_404
+module Ast_402 = Ast_402
+module Ast_403 = Ast_403
+module Ast_404 = Ast_404
 module Migrate_402_403 = Migrate_parsetree_402_403
 module Migrate_403_402 = Migrate_parsetree_403_402
 module Migrate_403_404 = Migrate_parsetree_403_404
 module Migrate_404_403 = Migrate_parsetree_404_403
 
-(** An alias to the frontend version of the current compiler *)
+(** An alias to the ast version of the current compiler *)

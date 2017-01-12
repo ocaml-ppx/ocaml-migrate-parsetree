@@ -17,21 +17,21 @@ OCAMLOPT = ocamlopt
 COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
 
 # Files
-OCAML_FRONTENDS= \
-  src/frontend_404.ml \
-	src/frontend_403.ml \
-	src/frontend_402.ml
+OCAML_ASTS= \
+  src/ast_404.ml \
+	src/ast_403.ml \
+	src/ast_402.ml
 
 OBJECTS= \
 	src/migrate_parsetree_def.cmo \
-  $(OCAML_FRONTENDS:.ml=.cmo) \
+  $(OCAML_ASTS:.ml=.cmo) \
 	src/migrate_parsetree_403_404.cmo \
 	src/migrate_parsetree_404_403.cmo \
 	src/migrate_parsetree_402_403.cmo \
 	src/migrate_parsetree_403_402.cmo \
 	src/migrate_parsetree.cmo
 
-OCAML_VERSION=$(shell ./frontend_version.sh $(OCAMLC))
+OCAML_VERSION=$(shell ./ast_version.sh $(OCAMLC))
 
 .PHONY: all
 all: migrate_parsetree.cma migrate_parsetree.cmxa
@@ -40,7 +40,7 @@ all: migrate_parsetree.cma migrate_parsetree.cmxa
 clean:
 	rm -f src/*.cm* src/*.o src/*.obj src/*.a src/*.lib
 	rm -f migrate_parsetree.* src/migrate_parsetree.ml src/migrate_parsetree.mli
-	rm -f $(OCAML_FRONTENDS) src/frontend_current.ml
+	rm -f $(OCAML_ASTS) src/ast_current.ml
 
 # Default rules
 
@@ -75,13 +75,13 @@ reinstall:
 	$(MAKE) uninstall
 	$(MAKE) install
 
-# Frontend selection
+# Ast selection
 
-src/frontend_$(OCAML_VERSION).ml: frontends/frontend_current.ml
+src/ast_$(OCAML_VERSION).ml: asts/ast_current.ml
 	cp $< $@
 	echo 'let version : Migrate_parsetree_def.ocaml_version = `OCaml_$(OCAML_VERSION)' >> $@
 
-src/frontend_%.ml: frontends/frontend_%.ml
+src/ast_%.ml: asts/ast_%.ml
 	cp $< $@
 
 src/migrate_parsetree.mli: src/migrate_parsetree.mli.in
@@ -89,9 +89,9 @@ src/migrate_parsetree.ml: src/migrate_parsetree.ml.in
 
 src/migrate_parsetree.ml src/migrate_parsetree.mli:
 	cp $< $@
-	echo 'module Frontend_current = Frontend_$(OCAML_VERSION)' >> $@
+	echo 'module Ast_current = Ast_$(OCAML_VERSION)' >> $@
 
-$(OCAML_FRONTENDS:.ml=.cmo): $(OCAML_FRONTENDS)
+$(OCAML_ASTS:.ml=.cmo): $(OCAML_ASTS)
 
 migrate_parsetree.cma: $(OBJECTS)
 	$(OCAMLC) -a -o migrate_parsetree.cma $^
@@ -100,14 +100,14 @@ migrate_parsetree.cmxa: $(OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -a -o migrate_parsetree.cmxa $^
 
 .PHONY: depend
-depend: $(OCAML_FRONTENDS)
+depend: $(OCAML_ASTS)
 	ocamldep -I src/ src/*.ml src/*.mli > .depend
 	dos2unix .depend
 -include .depend
 
 ## gencopy from ppx_tools package
-## ./gencopy -I . -map Frontend_403:Frontend_404 Frontend_403.Parsetree.expression > migrate_parsetree_403_404.ml
-## ./gencopy -I . -map Frontend_404:Frontend_403 Frontend_404.Parsetree.expression > migrate_parsetree_404_403.ml
-## ./gencopy -I . -map Frontend_402:Frontend_403 Frontend_402.Parsetree.expression > migrate_parsetree_402_403.ml
-## ./gencopy -I . -map Frontend_403:Frontend_402 Frontend_403.Parsetree.expression > migrate_parsetree_403_402.ml
+## ./gencopy -I . -map Ast_403:Ast_404 Ast_403.Parsetree.expression > migrate_parsetree_403_404.ml
+## ./gencopy -I . -map Ast_404:Ast_403 Ast_404.Parsetree.expression > migrate_parsetree_404_403.ml
+## ./gencopy -I . -map Ast_402:Ast_403 Ast_402.Parsetree.expression > migrate_parsetree_402_403.ml
+## ./gencopy -I . -map Ast_403:Ast_402 Ast_403.Parsetree.expression > migrate_parsetree_403_402.ml
 

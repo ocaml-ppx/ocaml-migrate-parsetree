@@ -1,5 +1,5 @@
-module From = Frontend_402
-module To = Frontend_403
+module From = Ast_402
+module To = Ast_403
 
 let rec copy_expression :
   From.Parsetree.expression ->

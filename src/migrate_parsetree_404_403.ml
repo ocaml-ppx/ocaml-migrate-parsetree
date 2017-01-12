@@ -1,5 +1,5 @@
-module From = Frontend_404
-module To = Frontend_403
+module From = Ast_404
+module To = Ast_403
 
 let from_loc {From.Location. txt = _; loc} = loc
 

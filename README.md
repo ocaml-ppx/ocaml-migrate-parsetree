@@ -8,10 +8,10 @@ Supported versions are 4.02, 4.03 and 4.04.
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
 
-## Frontends
+## Asts
 
 ```ocaml
-module Frontend_402, Frontend_403, Frontend_404 : sig
+module Ast_402, Ast_403, Ast_404 : sig
 
   (* Copy of original type definitions *)
   module Location
@@ -29,7 +29,7 @@ module Frontend_402, Frontend_403, Frontend_404 : sig
   type ast =
     (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
 
-  (* The current version of of the frontend *)
+  (* The current version of of the ast *)
   val version : [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
 
 end
@@ -37,18 +37,16 @@ end
 
 These embed copies of AST definitions of each supported OCaml major version.
 
-For the frontend matching the version of the OCaml toolchain aliases to
-compiler-libs are used instead of copy.  For instance, when installed with
-OCaml 4.04.x, `Frontend_404` looks like:
+The ast matching the version of the OCaml toolchain will use definitions from
+compiler-libs.  For instance, when installed with OCaml 4.04.x, `Ast_404` looks
+like:
 
 ```ocaml
 module Location = Location
 module Longident = Longident
 module Asttypes = Asttypes
 module Parsetree = Parsetree
-
-let ast_impl_magic_number = Config.ast_impl_magic_number
-let ast_intf_magic_number = Config.ast_intf_magic_number
+module Config = Config
 
 type ast =
   (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
@@ -74,12 +72,12 @@ transparent (un)marshalling and conversion between any supported version.
 The library includes code from different versions of OCaml. The resulting
 license is not yet clear. Other code is licensed under MIT.
 
-## Adding a new OCaml frontend
+## Adding a new OCaml version
 
-Snapshot the frontend:
+Snapshot the ast:
 - Add a new constructor to
   [Migrate\_parsetree\_def.ocaml\_version](src/migrate_parsetree_def.ml)
-- Create a file "frontends/frontend\_NEW.ml":
+- Create a file "asts/ast\_NEW.ml":
   * define the modules `Location`, `Longident`, `Asttypes`, `Parsetree` by
     keeping type definitions from the upstream files in `parsing/` directory
   * create a `Config` module containing `ast_impl_magic_number`
@@ -93,17 +91,17 @@ let version : Migrate_parsetree_def.ocaml_version = `OCaml_NEW
 ```
 
 Add migration path:
-- Manually compile the frontend (`ocamlc -c frontend_NEW.ml`)
+- Manually compile the ast (`ocamlc -c ast_NEW.ml`)
 - Using `gencopy` from [ppx\_tools](https://github.com/alainfrisch/ppx_tools), generate copy code to and from previous version (assuming it is 404):
 ```ocaml
-gencopy -I . -map Frontend_404:Frontend_NEW Frontend_404.Parsetree.expression > migrate_parsetree_404_NEW.ml
-gencopy -I . -map Frontend_NEW:Frontend_404 Frontend_NEW.Parsetree.expression > migrate_parsetree_NEW_404.ml
+gencopy -I . -map Ast_404:Ast_NEW Ast_404.Parsetree.expression > migrate_parsetree_404_NEW.ml
+gencopy -I . -map Ast_NEW:Ast_404 Ast_NEW.Parsetree.expression > migrate_parsetree_NEW_404.ml
 ```
 - Fix the generated code by implementing new cases
-- By default generated code use very long identifiers, you can simplify unambiguous ones (e.g. `copy_Frontend_NEW_Parsetree_structure` -> `copy_structure`)
+- By default generated code use very long identifiers, you can simplify unambiguous ones (e.g. `copy_Ast_NEW_Parsetree_structure` -> `copy_structure`)
 - Update `Migrate_parsetree` module: add `migrate_to_NEW` function, implement missing cases
 
 Update build system:
-- in [Makefile](Makefile), add "src/frontend\_NEW.ml" to `OCAML_FRONTENDS` and migration modules to `OBJECTS`
+- in [Makefile](Makefile), add "src/ast\_NEW.ml" to `OCAML_ASTS` and migration modules to `OBJECTS`
 - Update dependencies with `make depend`
 - `make` should succeed

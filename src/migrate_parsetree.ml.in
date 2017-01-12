@@ -4,34 +4,34 @@ type ('intf, 'impl) intf_or_impl =
   | Impl of 'impl
 
 type ast =
-  | OCaml_402 of Frontend_402.ast
-  | OCaml_403 of Frontend_403.ast
-  | OCaml_404 of Frontend_404.ast
+  | OCaml_402 of Ast_402.ast
+  | OCaml_403 of Ast_403.ast
+  | OCaml_404 of Ast_404.ast
 
 type filename = string
 
 let magics = [
-  Frontend_402.Config.ast_intf_magic_number,
+  Ast_402.Config.ast_intf_magic_number,
   (fun x -> OCaml_402 (Intf (Obj.obj x)));
-  Frontend_402.Config.ast_impl_magic_number,
+  Ast_402.Config.ast_impl_magic_number,
   (fun x -> OCaml_402 (Impl (Obj.obj x)));
-  Frontend_403.Config.ast_intf_magic_number,
+  Ast_403.Config.ast_intf_magic_number,
   (fun x -> OCaml_403 (Intf (Obj.obj x)));
-  Frontend_403.Config.ast_impl_magic_number,
+  Ast_403.Config.ast_impl_magic_number,
   (fun x -> OCaml_403 (Impl (Obj.obj x)));
-  Frontend_404.Config.ast_intf_magic_number,
+  Ast_404.Config.ast_intf_magic_number,
   (fun x -> OCaml_404 (Intf (Obj.obj x)));
-  Frontend_404.Config.ast_impl_magic_number,
+  Ast_404.Config.ast_impl_magic_number,
   (fun x -> OCaml_404 (Impl (Obj.obj x)));
 ]
 
 let magic_number = function
-  | OCaml_402 (Intf _) -> Frontend_402.Config.ast_intf_magic_number
-  | OCaml_402 (Impl _) -> Frontend_402.Config.ast_impl_magic_number
-  | OCaml_403 (Intf _) -> Frontend_403.Config.ast_intf_magic_number
-  | OCaml_403 (Impl _) -> Frontend_403.Config.ast_impl_magic_number
-  | OCaml_404 (Intf _) -> Frontend_404.Config.ast_intf_magic_number
-  | OCaml_404 (Impl _) -> Frontend_404.Config.ast_impl_magic_number
+  | OCaml_402 (Intf _) -> Ast_402.Config.ast_intf_magic_number
+  | OCaml_402 (Impl _) -> Ast_402.Config.ast_impl_magic_number
+  | OCaml_403 (Intf _) -> Ast_403.Config.ast_intf_magic_number
+  | OCaml_403 (Impl _) -> Ast_403.Config.ast_impl_magic_number
+  | OCaml_404 (Intf _) -> Ast_404.Config.ast_intf_magic_number
+  | OCaml_404 (Impl _) -> Ast_404.Config.ast_impl_magic_number
 
 let payload = function
   | OCaml_402 (Intf x) -> Obj.repr x
@@ -41,7 +41,7 @@ let payload = function
   | OCaml_404 (Intf x) -> Obj.repr x
   | OCaml_404 (Impl x) -> Obj.repr x
 
-let magic_length = String.length Frontend_402.Config.ast_impl_magic_number
+let magic_length = String.length Ast_402.Config.ast_impl_magic_number
 
 let read_magic ic = really_input_string ic magic_length
 
@@ -128,9 +128,9 @@ let migrate_to_version ast = function
   | `OCaml_404 -> OCaml_404 (migrate_to_404 ast)
 
 module Def = Migrate_parsetree_def
-module Frontend_402 = Frontend_402
-module Frontend_403 = Frontend_403
-module Frontend_404 = Frontend_404
+module Ast_402 = Ast_402
+module Ast_403 = Ast_403
+module Ast_404 = Ast_404
 module Migrate_402_403 = Migrate_parsetree_402_403
 module Migrate_403_402 = Migrate_parsetree_403_402
 module Migrate_403_404 = Migrate_parsetree_403_404
