@@ -993,7 +993,8 @@ module Config = struct
   let ast_intf_magic_number = "Caml1999N018"
 end
 
-type ast =
-  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+open Migrate_parsetree_def
 
-let version : Migrate_parsetree_def.ocaml_version = `OCaml_404
+type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
+
+let version = OCaml_404

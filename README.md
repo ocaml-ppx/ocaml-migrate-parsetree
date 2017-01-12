@@ -4,14 +4,19 @@ Convert OCaml parsetrees between different major versions
 This library converts between parsetrees of different OCaml versions.
 It started from the work of Alain Frisch in [ppx\_tools](https://github.com/alainfrisch/ppx_tools).
 
-Supported versions are 4.02, 4.03 and 4.04.
+Supported versions are 4.02, 4.03, 4.04 and 4.05 (trunk).
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
 
 ## Asts
 
 ```ocaml
-module Ast_402, Ast_403, Ast_404 : sig
+module Migrate_parsetree_def : sig
+  type ('a, 'b) intf_or_impl = Intf of 'a | Impl of 'b
+  type ocaml_version = OCaml_402 | OCaml_403 | OCaml_404 | OCaml_405
+end 
+
+module Ast_402, Ast_403, Ast_404, Ast_405 : sig
 
   (* Copy of original type definitions *)
   module Location
@@ -25,17 +30,18 @@ module Ast_402, Ast_403, Ast_404 : sig
     val ast_intf_magic_number : string
   end
 
+  open Migrate_parsetree_def
+
   (* Union of interface and implementation *)
-  type ast =
-    (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+  type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
 
   (* The current version of of the ast *)
-  val version : [ `OCaml_402 | `OCaml_403 | `OCaml_404 ]
+  val version : ocaml_version
 
 end
 ```
 
-These embed copies of AST definitions of each supported OCaml major version.
+These embed copies of AST definitions for each supported OCaml major version.
 
 The ast matching the version of the OCaml toolchain will use definitions from
 compiler-libs.  For instance, when installed with OCaml 4.04.x, `Ast_404` looks
@@ -48,10 +54,11 @@ module Asttypes = Asttypes
 module Parsetree = Parsetree
 module Config = Config
 
-type ast =
-  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+open Migrate_parsetree_def
 
-let version : Migrate_parsetree_def.ocaml_version = `OCaml_404
+type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
+
+let version = OCaml_404
 ```
 
 ## Migration modules
@@ -84,10 +91,11 @@ Snapshot the ast:
     `ast_impl_magic_number` from upstream `Config`
   * append 
 ```
-type ast =
-  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+open Migrate_parsetree_def
 
-let version : Migrate_parsetree_def.ocaml_version = `OCaml_NEW
+type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
+
+let version = OCaml_NEW
 ```
 
 Add migration path:

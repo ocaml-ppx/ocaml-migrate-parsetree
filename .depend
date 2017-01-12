@@ -4,14 +4,25 @@ src/ast_403.cmo : src/migrate_parsetree_def.cmo
 src/ast_403.cmx : src/migrate_parsetree_def.cmx
 src/ast_404.cmo : src/migrate_parsetree_def.cmo
 src/ast_404.cmx : src/migrate_parsetree_def.cmx
+src/ast_405.cmo : src/migrate_parsetree_def.cmo
+src/ast_405.cmx : src/migrate_parsetree_def.cmx
 src/migrate_parsetree.cmo : src/migrate_parsetree_def.cmo \
+    src/migrate_parsetree_405_404.cmo src/migrate_parsetree_404_405.cmo \
     src/migrate_parsetree_404_403.cmo src/migrate_parsetree_403_404.cmo \
     src/migrate_parsetree_403_402.cmo src/migrate_parsetree_402_403.cmo \
-    src/ast_404.cmo src/ast_403.cmo src/ast_402.cmo
+    src/ast_405.cmo src/ast_404.cmo src/ast_403.cmo src/ast_402.cmo \
+    src/migrate_parsetree.cmi
 src/migrate_parsetree.cmx : src/migrate_parsetree_def.cmx \
+    src/migrate_parsetree_405_404.cmx src/migrate_parsetree_404_405.cmx \
     src/migrate_parsetree_404_403.cmx src/migrate_parsetree_403_404.cmx \
     src/migrate_parsetree_403_402.cmx src/migrate_parsetree_402_403.cmx \
-    src/ast_404.cmx src/ast_403.cmx src/ast_402.cmx
+    src/ast_405.cmx src/ast_404.cmx src/ast_403.cmx src/ast_402.cmx \
+    src/migrate_parsetree.cmi
+src/migrate_parsetree.cmi : src/migrate_parsetree_def.cmo \
+    src/migrate_parsetree_405_404.cmo src/migrate_parsetree_404_405.cmo \
+    src/migrate_parsetree_404_403.cmo src/migrate_parsetree_403_404.cmo \
+    src/migrate_parsetree_403_402.cmo src/migrate_parsetree_402_403.cmo \
+    src/ast_405.cmo src/ast_404.cmo src/ast_403.cmo src/ast_402.cmo
 src/migrate_parsetree_402_403.cmo : src/ast_403.cmo src/ast_402.cmo
 src/migrate_parsetree_402_403.cmx : src/ast_403.cmx src/ast_402.cmx
 src/migrate_parsetree_403_402.cmo : src/migrate_parsetree_def.cmo \
@@ -24,5 +35,9 @@ src/migrate_parsetree_404_403.cmo : src/migrate_parsetree_def.cmo \
     src/ast_404.cmo src/ast_403.cmo
 src/migrate_parsetree_404_403.cmx : src/migrate_parsetree_def.cmx \
     src/ast_404.cmx src/ast_403.cmx
+src/migrate_parsetree_404_405.cmo : src/ast_405.cmo src/ast_404.cmo
+src/migrate_parsetree_404_405.cmx : src/ast_405.cmx src/ast_404.cmx
+src/migrate_parsetree_405_404.cmo : src/ast_405.cmo src/ast_404.cmo
+src/migrate_parsetree_405_404.cmx : src/ast_405.cmx src/ast_404.cmx
 src/migrate_parsetree_def.cmo :
 src/migrate_parsetree_def.cmx :

@@ -18,17 +18,20 @@ COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
 
 # Files
 OCAML_ASTS= \
-  src/ast_404.ml \
+  src/ast_402.ml \
 	src/ast_403.ml \
-	src/ast_402.ml
+	src/ast_404.ml \
+	src/ast_405.ml
 
 OBJECTS= \
 	src/migrate_parsetree_def.cmo \
   $(OCAML_ASTS:.ml=.cmo) \
-	src/migrate_parsetree_403_404.cmo \
-	src/migrate_parsetree_404_403.cmo \
 	src/migrate_parsetree_402_403.cmo \
 	src/migrate_parsetree_403_402.cmo \
+	src/migrate_parsetree_403_404.cmo \
+	src/migrate_parsetree_404_403.cmo \
+	src/migrate_parsetree_404_405.cmo \
+	src/migrate_parsetree_405_404.cmo \
 	src/migrate_parsetree.cmo
 
 OCAML_VERSION=$(shell ./ast_version.sh $(OCAMLC))
@@ -79,13 +82,13 @@ reinstall:
 
 src/ast_$(OCAML_VERSION).ml: asts/ast_current.ml
 	cp $< $@
-	echo 'let version : Migrate_parsetree_def.ocaml_version = `OCaml_$(OCAML_VERSION)' >> $@
+	echo 'let version = OCaml_$(OCAML_VERSION)' >> $@
 
 src/ast_%.ml: asts/ast_%.ml
 	cp $< $@
 
 src/migrate_parsetree.mli: src/migrate_parsetree.mli.in
-src/migrate_parsetree.ml: src/migrate_parsetree.ml.in
+src/migrate_parsetree.ml: src/migrate_parsetree.ml.in src/migrate_parsetree.cmi
 
 src/migrate_parsetree.ml src/migrate_parsetree.mli:
 	cp $< $@

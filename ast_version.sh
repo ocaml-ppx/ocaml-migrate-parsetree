@@ -3,7 +3,7 @@ usage()
 {
   cat 2>&1 <<EOF
 Usage: $0 <ocaml compiler command>"
-Returns the version (as 402, 403 or 404) of the parsetree used by this version of OCaml.
+Returns the version (as 402, 403, 404, 405) of the parsetree used by this version of OCaml.
 EOF
   exit 1
 }
@@ -13,18 +13,22 @@ if [ -z "$1" ]; then
 fi 
 trap usage ERR
 
-VAR=$(exec "$@" -config | grep cmi_magic_number | cut -f 2 -d ' ')
+VAR=$(exec "$@" -config | grep '^version:' | cut -f 2 -d ' ')
 case "$VAR" in
-  Caml1999I017)
+  4.02.*)
     VERSION=402
   ;;
-  Caml1999I020)
+  4.03.*)
     VERSION=403
   ;;
-  Caml1999I021)
+  4.04.*)
     VERSION=404
   ;;
+  4.05.*)
+    VERSION=405
+  ;;
   *)
+    printf "Unkown OCaml version %s\n" "$VAR" 1>&2
     exit 1
   ;;
 esac  

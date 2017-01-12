@@ -1,17 +1,20 @@
 module Location = struct
-  (***********************************************************************)
-  (*                                                                     *)
-  (*                                OCaml                                *)
-  (*                                                                     *)
-  (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
-  (*                                                                     *)
-  (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
-  (*  en Automatique.  All rights reserved.  This file is distributed    *)
-  (*  under the terms of the Q Public License version 1.0.               *)
-  (*                                                                     *)
-  (***********************************************************************)
+  (**************************************************************************)
+  (*                                                                        *)
+  (*                                 OCaml                                  *)
+  (*                                                                        *)
+  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
+  (*                                                                        *)
+  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
+  (*     en Automatique.                                                    *)
+  (*                                                                        *)
+  (*   All rights reserved.  This file is distributed under the terms of    *)
+  (*   the GNU Lesser General Public License version 2.1, with the          *)
+  (*   special exception on linking described in the file LICENSE.          *)
+  (*                                                                        *)
+  (**************************************************************************)
 
-  (* Source code locations (ranges of positions), used in parsetree. *)
+  (** Source code locations (ranges of positions), used in parsetree. *)
 
   type t = {
     loc_start: Lexing.position;
@@ -19,7 +22,7 @@ module Location = struct
     loc_ghost: bool;
   }
 
-  (* Note on the use of Lexing.position in this module.
+  (** Note on the use of Lexing.position in this module.
      If [pos_fname = ""], then use [!input_name] instead.
      If [pos_lnum = -1], then [pos_bol = 0]. Use [pos_cnum] and
        re-parse the file to get the line and character numbers.
@@ -33,19 +36,22 @@ module Location = struct
 end
 
 module Longident = struct
-  (***********************************************************************)
-  (*                                                                     *)
-  (*                                OCaml                                *)
-  (*                                                                     *)
-  (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
-  (*                                                                     *)
-  (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
-  (*  en Automatique.  All rights reserved.  This file is distributed    *)
-  (*  under the terms of the Q Public License version 1.0.               *)
-  (*                                                                     *)
-  (***********************************************************************)
+  (**************************************************************************)
+  (*                                                                        *)
+  (*                                 OCaml                                  *)
+  (*                                                                        *)
+  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
+  (*                                                                        *)
+  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
+  (*     en Automatique.                                                    *)
+  (*                                                                        *)
+  (*   All rights reserved.  This file is distributed under the terms of    *)
+  (*   the GNU Lesser General Public License version 2.1, with the          *)
+  (*   special exception on linking described in the file LICENSE.          *)
+  (*                                                                        *)
+  (**************************************************************************)
 
-  (* Long identifiers, used in parsetree. *)
+  (** Long identifiers, used in parsetree. *)
 
   type t =
       Lident of string
@@ -54,19 +60,22 @@ module Longident = struct
 end
 
 module Asttypes = struct
-  (***********************************************************************)
-  (*                                                                     *)
-  (*                                OCaml                                *)
-  (*                                                                     *)
-  (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
-  (*                                                                     *)
-  (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
-  (*  en Automatique.  All rights reserved.  This file is distributed    *)
-  (*  under the terms of the Q Public License version 1.0.               *)
-  (*                                                                     *)
-  (***********************************************************************)
+  (**************************************************************************)
+  (*                                                                        *)
+  (*                                 OCaml                                  *)
+  (*                                                                        *)
+  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
+  (*                                                                        *)
+  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
+  (*     en Automatique.                                                    *)
+  (*                                                                        *)
+  (*   All rights reserved.  This file is distributed under the terms of    *)
+  (*   the GNU Lesser General Public License version 2.1, with the          *)
+  (*   special exception on linking described in the file LICENSE.          *)
+  (*                                                                        *)
+  (**************************************************************************)
 
-  (* Auxiliary a.s.t. types used by parsetree and typedtree. *)
+  (** Auxiliary AST types used by parsetree and typedtree. *)
 
   type constant =
       Const_int of int
@@ -81,6 +90,7 @@ module Asttypes = struct
 
   type direction_flag = Upto | Downto
 
+  (* Order matters, used in polymorphic comparison *)
   type private_flag = Private | Public
 
   type mutable_flag = Immutable | Mutable
@@ -92,6 +102,11 @@ module Asttypes = struct
   type closed_flag = Closed | Open
 
   type label = string
+
+  type arg_label =
+      Nolabel
+    | Labelled of string (*  label:T -> ... *)
+    | Optional of string (* ?label:T -> ... *)
 
   type 'a loc = 'a Location.loc = {
     txt : 'a;
@@ -106,21 +121,44 @@ module Asttypes = struct
 end
 
 module Parsetree = struct
-  (***********************************************************************)
-  (*                                                                     *)
-  (*                                OCaml                                *)
-  (*                                                                     *)
-  (*            Xavier Leroy, projet Cristal, INRIA Rocquencourt         *)
-  (*                                                                     *)
-  (*  Copyright 1996 Institut National de Recherche en Informatique et   *)
-  (*  en Automatique.  All rights reserved.  This file is distributed    *)
-  (*  under the terms of the Q Public License version 1.0.               *)
-  (*                                                                     *)
-  (***********************************************************************)
+  (**************************************************************************)
+  (*                                                                        *)
+  (*                                 OCaml                                  *)
+  (*                                                                        *)
+  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
+  (*                                                                        *)
+  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
+  (*     en Automatique.                                                    *)
+  (*                                                                        *)
+  (*   All rights reserved.  This file is distributed under the terms of    *)
+  (*   the GNU Lesser General Public License version 2.1, with the          *)
+  (*   special exception on linking described in the file LICENSE.          *)
+  (*                                                                        *)
+  (**************************************************************************)
 
   (** Abstract syntax tree produced by parsing *)
 
   open Asttypes
+
+  type constant =
+      Pconst_integer of string * char option
+    (* 3 3l 3L 3n
+
+       Suffixes [g-z][G-Z] are accepted by the parser.
+       Suffixes except 'l', 'L' and 'n' are rejected by the typechecker
+    *)
+    | Pconst_char of char
+    (* 'c' *)
+    | Pconst_string of string * string option
+    (* "constant"
+       {delim|other constant|delim}
+    *)
+    | Pconst_float of string * char option
+    (* 3.4 2e5 1.4e-4
+
+       Suffixes [g-z][G-Z] are accepted by the parser.
+       Suffixes are rejected by the typechecker.
+    *)
 
   (** {2 Extension points} *)
 
@@ -143,6 +181,7 @@ module Parsetree = struct
 
   and payload =
     | PStr of structure
+    | PSig of signature (* : SIG *)
     | PTyp of core_type  (* : T *)
     | PPat of pattern * expression option  (* ? P  or  ? P when E *)
 
@@ -162,10 +201,10 @@ module Parsetree = struct
           (*  _ *)
     | Ptyp_var of string
           (* 'a *)
-    | Ptyp_arrow of label * core_type * core_type
-          (* T1 -> T2       (label = "")
-             ~l:T1 -> T2    (label = "l")
-             ?l:T1 -> T2    (label = "?l")
+    | Ptyp_arrow of arg_label * core_type * core_type
+          (* T1 -> T2       Simple
+             ~l:T1 -> T2    Labelled
+             ?l:T1 -> T2    Otional
            *)
     | Ptyp_tuple of core_type list
           (* T1 * ... * Tn
@@ -304,6 +343,7 @@ module Parsetree = struct
           (* exception P *)
     | Ppat_extension of extension
           (* [%id] *)
+    | Ppat_open of Longident.t loc * pattern
 
   (* Value expressions *)
 
@@ -327,18 +367,18 @@ module Parsetree = struct
            *)
     | Pexp_function of case list
           (* function P1 -> E1 | ... | Pn -> En *)
-    | Pexp_fun of label * expression option * pattern * expression
-          (* fun P -> E1                          (lab = "", None)
-             fun ~l:P -> E1                       (lab = "l", None)
-             fun ?l:P -> E1                       (lab = "?l", None)
-             fun ?l:(P = E0) -> E1                (lab = "?l", Some E0)
+    | Pexp_fun of arg_label * expression option * pattern * expression
+          (* fun P -> E1                          (Simple, None)
+             fun ~l:P -> E1                       (Labelled l, None)
+             fun ?l:P -> E1                       (Optional l, None)
+             fun ?l:(P = E0) -> E1                (Optional l, Some E0)
 
              Notes:
-             - If E0 is provided, lab must start with '?'.
+             - If E0 is provided, only Optional is allowed.
              - "fun P1 P2 .. Pn -> E1" is represented as nested Pexp_fun.
              - "let f P = E" is represented using Pexp_fun.
            *)
-    | Pexp_apply of expression * (label * expression) list
+    | Pexp_apply of expression * (arg_label * expression) list
           (* E0 ~l1:E1 ... ~ln:En
              li can be empty (non labeled argument) or start with '?'
              (optional argument).
@@ -402,6 +442,8 @@ module Parsetree = struct
           (* {< x1 = E1; ...; Xn = En >} *)
     | Pexp_letmodule of string loc * module_expr * expression
           (* let module M = ME in E *)
+    | Pexp_letexception of extension_constructor * expression
+          (* let exception C in E *)
     | Pexp_assert of expression
           (* assert E
              Note: "assert false" is treated in a special way by the
@@ -428,6 +470,8 @@ module Parsetree = struct
           *)
     | Pexp_extension of extension
           (* [%id] *)
+    | Pexp_unreachable
+          (* . *)
 
   and case =   (* (P -> E) or (P when E0 -> E) *)
       {
@@ -450,8 +494,6 @@ module Parsetree = struct
   (*
     val x: T                            (prim = [])
     external x: T = "s1" ... "sn"       (prim = ["s1";..."sn"])
-
-    Note: when used under Pstr_primitive, prim cannot be empty
   *)
 
   (* Type declarations *)
@@ -506,15 +548,23 @@ module Parsetree = struct
   and constructor_declaration =
       {
        pcd_name: string loc;
-       pcd_args: core_type list;
+       pcd_args: constructor_arguments;
        pcd_res: core_type option;
        pcd_loc: Location.t;
        pcd_attributes: attributes; (* C [@id1] [@id2] of ... *)
       }
+
+  and constructor_arguments =
+    | Pcstr_tuple of core_type list
+    | Pcstr_record of label_declaration list
+
   (*
-    | C of T1 * ... * Tn     (res = None)
-    | C: T0                  (args = [], res = Some T0)
-    | C: T1 * ... * Tn -> T0 (res = Some T0)
+    | C of T1 * ... * Tn     (res = None,    args = Pcstr_tuple [])
+    | C: T0                  (res = Some T0, args = [])
+    | C: T1 * ... * Tn -> T0 (res = Some T0, args = Pcstr_tuple)
+    | C of {...}             (res = None,    args = Pcstr_record)
+    | C: {...} -> T0         (res = Some T0, args = Pcstr_record)
+    | C of {...} as t        (res = None,    args = Pcstr_record)
   *)
 
   and type_extension =
@@ -538,7 +588,7 @@ module Parsetree = struct
       }
 
   and extension_constructor_kind =
-      Pext_decl of core_type list * core_type option
+      Pext_decl of constructor_arguments * core_type option
         (*
            | C of T1 * ... * Tn     ([T1; ...; Tn], None)
            | C: T0                  ([], Some T0)
@@ -566,10 +616,10 @@ module Parsetree = struct
              ['a1, ..., 'an] c *)
     | Pcty_signature of class_signature
           (* object ... end *)
-    | Pcty_arrow of label * core_type * class_type
-          (* T -> CT       (label = "")
-             ~l:T -> CT    (label = "l")
-             ?l:T -> CT    (label = "?l")
+    | Pcty_arrow of arg_label * core_type * class_type
+          (* T -> CT       Simple
+             ~l:T -> CT    Labelled l
+             ?l:T -> CT    Optional l
            *)
     | Pcty_extension of extension
           (* [%id] *)
@@ -642,13 +692,13 @@ module Parsetree = struct
              ['a1, ..., 'an] c *)
     | Pcl_structure of class_structure
           (* object ... end *)
-    | Pcl_fun of label * expression option * pattern * class_expr
-          (* fun P -> CE                          (lab = "", None)
-             fun ~l:P -> CE                       (lab = "l", None)
-             fun ?l:P -> CE                       (lab = "?l", None)
-             fun ?l:(P = E0) -> CE                (lab = "?l", Some E0)
+    | Pcl_fun of arg_label * expression option * pattern * class_expr
+          (* fun P -> CE                          (Simple, None)
+             fun ~l:P -> CE                       (Labelled l, None)
+             fun ?l:P -> CE                       (Optional l, None)
+             fun ?l:(P = E0) -> CE                (Optional l, Some E0)
            *)
-    | Pcl_apply of class_expr * (label * expression) list
+    | Pcl_apply of class_expr * (arg_label * expression) list
           (* CE ~l1:E1 ... ~ln:En
              li can be empty (non labeled argument) or start with '?'
              (optional argument).
@@ -751,7 +801,7 @@ module Parsetree = struct
             val x: T
             external x: T = "s1" ... "sn"
            *)
-    | Psig_type of type_declaration list
+    | Psig_type of rec_flag * type_declaration list
           (* type t1 = ... and ... and tn = ... *)
     | Psig_typext of type_extension
           (* type t1 += ... *)
@@ -876,8 +926,9 @@ module Parsetree = struct
              let rec P1 = E1 and ... and Pn = EN   (flag = Recursive)
            *)
     | Pstr_primitive of value_description
-          (* external x: T = "s1" ... "sn" *)
-    | Pstr_type of type_declaration list
+          (*  val x: T
+              external x: T = "s1" ... "sn" *)
+    | Pstr_type of rec_flag * type_declaration list
           (* type t1 = ... and ... and tn = ... *)
     | Pstr_typext of type_extension
           (* type t1 += ... *)
@@ -932,18 +983,18 @@ module Parsetree = struct
   and directive_argument =
     | Pdir_none
     | Pdir_string of string
-    | Pdir_int of int
+    | Pdir_int of string * char option
     | Pdir_ident of Longident.t
     | Pdir_bool of bool
 end
 
 module Config = struct
-  let ast_impl_magic_number = "Caml1999M016"
-  let ast_intf_magic_number = "Caml1999N015"
+  let ast_impl_magic_number = "Caml1999M020"
+  let ast_intf_magic_number = "Caml1999N018"
 end
 
 open Migrate_parsetree_def
 
 type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
 
-let version = OCaml_402
+let version = OCaml_405

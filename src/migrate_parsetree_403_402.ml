@@ -1,11 +1,12 @@
+module Def = Migrate_parsetree_def
 module From = Ast_403
 module To = Ast_402
 
 let from_loc {From.Location. txt = _; loc} = loc
 
-let migration_error {From.Location. loc_start; loc_end; loc_ghost} error =
-  let location = Migrate_parsetree_def.location ~loc_start ~loc_end ~loc_ghost in
-  Migrate_parsetree_def.migration_error location error
+let migration_error {From.Location. loc_start; loc_end; loc_ghost} feature =
+  let location = Def.location ~loc_start ~loc_end ~loc_ghost in
+  raise (Def.Migration_error (feature, location))
 
 let rec copy_expression :
   From.Parsetree.expression ->
@@ -183,7 +184,7 @@ and copy_expression_desc loc :
       To.Parsetree.Pexp_extension
         (copy_extension x0)
   | From.Parsetree.Pexp_unreachable  ->
-      migration_error loc `Pexp_unreachable
+      migration_error loc Def.Pexp_unreachable
 
 and copy_direction_flag :
   From.Asttypes.direction_flag ->
@@ -438,7 +439,7 @@ and copy_payload loc :
       To.Parsetree.PStr
         (copy_structure x0)
   | From.Parsetree.PSig _x0 ->
-      migration_error loc `PSig
+      migration_error loc Def.PSig
   | From.Parsetree.PTyp x0 ->
       To.Parsetree.PTyp
         (copy_core_type x0)
@@ -1323,7 +1324,7 @@ and copy_constructor_arguments loc :
   | From.Parsetree.Pcstr_tuple x0 ->
       List.map copy_core_type x0
   | From.Parsetree.Pcstr_record _x0 ->
-      migration_error loc `Pcstr_record
+      migration_error loc Def.Pcstr_record
 
 and copy_label_declaration :
   From.Parsetree.label_declaration ->
@@ -1433,7 +1434,7 @@ and copy_constant loc :
          To.Asttypes.Const_int64 (Int64.of_string x0)
      | Some 'n' ->
          To.Asttypes.Const_nativeint (Nativeint.of_string x0)
-     | Some _ -> migration_error loc `Pconst_integer
+     | Some _ -> migration_error loc Def.Pconst_integer
      end
   | From.Parsetree.Pconst_char x0 ->
       To.Asttypes.Const_char x0
@@ -1442,7 +1443,7 @@ and copy_constant loc :
   | From.Parsetree.Pconst_float (x0,x1) ->
       begin match x1 with
       | None -> To.Asttypes.Const_float x0
-      | Some _ -> migration_error loc `Pconst_float
+      | Some _ -> migration_error loc Def.Pconst_float
       end
 
 and copy_option : 'f0 'g0 . ('f0 -> 'g0) -> 'f0 option -> 'g0 option =

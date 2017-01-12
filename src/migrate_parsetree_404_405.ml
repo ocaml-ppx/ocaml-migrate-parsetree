@@ -1,17 +1,8 @@
-module Def = Migrate_parsetree_def
 module From = Ast_404
-module To = Ast_403
-
-let from_loc {From.Location. txt = _; loc} = loc
-
-let migration_error {From.Location. loc_start; loc_end; loc_ghost} feature =
-  let location = Def.location ~loc_start ~loc_end ~loc_ghost in
-  raise (Def.Migration_error (feature, location))
+module To = Ast_405
 
 let rec copy_expression :
-  From.Parsetree.expression ->
-    To.Parsetree.expression
-  =
+  From.Parsetree.expression -> To.Parsetree.expression =
   fun
     { From.Parsetree.pexp_desc = pexp_desc;
       From.Parsetree.pexp_loc = pexp_loc;
@@ -19,25 +10,20 @@ let rec copy_expression :
      ->
     {
       To.Parsetree.pexp_desc =
-        (copy_expression_desc pexp_loc pexp_desc);
-      To.Parsetree.pexp_loc =
-        (copy_location pexp_loc);
+        (copy_expression_desc pexp_desc);
+      To.Parsetree.pexp_loc = (copy_location pexp_loc);
       To.Parsetree.pexp_attributes =
         (copy_attributes pexp_attributes)
     }
 
-and copy_expression_desc loc :
-  From.Parsetree.expression_desc ->
-    To.Parsetree.expression_desc
-  =
+and copy_expression_desc :
+  From.Parsetree.expression_desc -> To.Parsetree.expression_desc =
   function
   | From.Parsetree.Pexp_ident x0 ->
       To.Parsetree.Pexp_ident
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
   | From.Parsetree.Pexp_constant x0 ->
-      To.Parsetree.Pexp_constant
-        (copy_constant x0)
+      To.Parsetree.Pexp_constant (copy_constant x0)
   | From.Parsetree.Pexp_let (x0,x1,x2) ->
       To.Parsetree.Pexp_let
         ((copy_rec_flag x0),
@@ -73,8 +59,7 @@ and copy_expression_desc loc :
         (List.map copy_expression x0)
   | From.Parsetree.Pexp_construct (x0,x1) ->
       To.Parsetree.Pexp_construct
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (copy_option copy_expression x1))
   | From.Parsetree.Pexp_variant (x0,x1) ->
       To.Parsetree.Pexp_variant
@@ -85,20 +70,17 @@ and copy_expression_desc loc :
         ((List.map
             (fun x  ->
                let (x0,x1) = x  in
-               ((copy_loc
-                   copy_longident x0),
+               ((copy_loc copy_longident x0),
                  (copy_expression x1))) x0),
           (copy_option copy_expression x1))
   | From.Parsetree.Pexp_field (x0,x1) ->
       To.Parsetree.Pexp_field
         ((copy_expression x0),
-          (copy_loc
-             copy_longident x1))
+          (copy_loc copy_longident x1))
   | From.Parsetree.Pexp_setfield (x0,x1,x2) ->
       To.Parsetree.Pexp_setfield
         ((copy_expression x0),
-          (copy_loc
-             copy_longident x1),
+          (copy_loc copy_longident x1),
           (copy_expression x2))
   | From.Parsetree.Pexp_array x0 ->
       To.Parsetree.Pexp_array
@@ -137,8 +119,7 @@ and copy_expression_desc loc :
         ((copy_expression x0), x1)
   | From.Parsetree.Pexp_new x0 ->
       To.Parsetree.Pexp_new
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
   | From.Parsetree.Pexp_setinstvar (x0,x1) ->
       To.Parsetree.Pexp_setinstvar
         ((copy_loc (fun x  -> x) x0),
@@ -155,14 +136,14 @@ and copy_expression_desc loc :
         ((copy_loc (fun x  -> x) x0),
           (copy_module_expr x1),
           (copy_expression x2))
-  | From.Parsetree.Pexp_letexception _ ->
-      migration_error loc Def.Pexp_letexception
+  | From.Parsetree.Pexp_letexception (x0,x1) ->
+      To.Parsetree.Pexp_letexception
+        ((copy_extension_constructor x0),
+          (copy_expression x1))
   | From.Parsetree.Pexp_assert x0 ->
-      To.Parsetree.Pexp_assert
-        (copy_expression x0)
+      To.Parsetree.Pexp_assert (copy_expression x0)
   | From.Parsetree.Pexp_lazy x0 ->
-      To.Parsetree.Pexp_lazy
-        (copy_expression x0)
+      To.Parsetree.Pexp_lazy (copy_expression x0)
   | From.Parsetree.Pexp_poly (x0,x1) ->
       To.Parsetree.Pexp_poly
         ((copy_expression x0),
@@ -174,24 +155,18 @@ and copy_expression_desc loc :
       To.Parsetree.Pexp_newtype
         (x0, (copy_expression x1))
   | From.Parsetree.Pexp_pack x0 ->
-      To.Parsetree.Pexp_pack
-        (copy_module_expr x0)
+      To.Parsetree.Pexp_pack (copy_module_expr x0)
   | From.Parsetree.Pexp_open (x0,x1,x2) ->
       To.Parsetree.Pexp_open
         ((copy_override_flag x0),
-          (copy_loc
-             copy_longident x1),
+          (copy_loc copy_longident x1),
           (copy_expression x2))
   | From.Parsetree.Pexp_extension x0 ->
-      To.Parsetree.Pexp_extension
-        (copy_extension x0)
-  | From.Parsetree.Pexp_unreachable  ->
-      To.Parsetree.Pexp_unreachable
+      To.Parsetree.Pexp_extension (copy_extension x0)
+  | From.Parsetree.Pexp_unreachable  -> To.Parsetree.Pexp_unreachable
 
 and copy_direction_flag :
-  From.Asttypes.direction_flag ->
-    To.Asttypes.direction_flag
-  =
+  From.Asttypes.direction_flag -> To.Asttypes.direction_flag =
   function
   | From.Asttypes.Upto  -> To.Asttypes.Upto
   | From.Asttypes.Downto  -> To.Asttypes.Downto
@@ -204,18 +179,14 @@ and copy_case :
       From.Parsetree.pc_rhs = pc_rhs }
      ->
     {
-      To.Parsetree.pc_lhs =
-        (copy_pattern pc_lhs);
+      To.Parsetree.pc_lhs = (copy_pattern pc_lhs);
       To.Parsetree.pc_guard =
         (copy_option copy_expression pc_guard);
-      To.Parsetree.pc_rhs =
-        (copy_expression pc_rhs)
+      To.Parsetree.pc_rhs = (copy_expression pc_rhs)
     }
 
 and copy_value_binding :
-  From.Parsetree.value_binding ->
-    To.Parsetree.value_binding
-  =
+  From.Parsetree.value_binding -> To.Parsetree.value_binding =
   fun
     { From.Parsetree.pvb_pat = pvb_pat;
       From.Parsetree.pvb_expr = pvb_expr;
@@ -223,14 +194,12 @@ and copy_value_binding :
       From.Parsetree.pvb_loc = pvb_loc }
      ->
     {
-      To.Parsetree.pvb_pat =
-        (copy_pattern pvb_pat);
+      To.Parsetree.pvb_pat = (copy_pattern pvb_pat);
       To.Parsetree.pvb_expr =
         (copy_expression pvb_expr);
       To.Parsetree.pvb_attributes =
         (copy_attributes pvb_attributes);
-      To.Parsetree.pvb_loc =
-        (copy_location pvb_loc)
+      To.Parsetree.pvb_loc = (copy_location pvb_loc)
     }
 
 and copy_pattern :
@@ -242,30 +211,24 @@ and copy_pattern :
      ->
     {
       To.Parsetree.ppat_desc =
-        (copy_pattern_desc ppat_loc ppat_desc);
-      To.Parsetree.ppat_loc =
-        (copy_location ppat_loc);
+        (copy_pattern_desc ppat_desc);
+      To.Parsetree.ppat_loc = (copy_location ppat_loc);
       To.Parsetree.ppat_attributes =
         (copy_attributes ppat_attributes)
     }
 
-and copy_pattern_desc loc :
-  From.Parsetree.pattern_desc ->
-    To.Parsetree.pattern_desc
-  =
+and copy_pattern_desc :
+  From.Parsetree.pattern_desc -> To.Parsetree.pattern_desc =
   function
-  | From.Parsetree.Ppat_any  ->
-      To.Parsetree.Ppat_any
+  | From.Parsetree.Ppat_any  -> To.Parsetree.Ppat_any
   | From.Parsetree.Ppat_var x0 ->
-      To.Parsetree.Ppat_var
-        (copy_loc (fun x  -> x) x0)
+      To.Parsetree.Ppat_var (copy_loc (fun x  -> x) x0)
   | From.Parsetree.Ppat_alias (x0,x1) ->
       To.Parsetree.Ppat_alias
         ((copy_pattern x0),
           (copy_loc (fun x  -> x) x1))
   | From.Parsetree.Ppat_constant x0 ->
-      To.Parsetree.Ppat_constant
-        (copy_constant x0)
+      To.Parsetree.Ppat_constant (copy_constant x0)
   | From.Parsetree.Ppat_interval (x0,x1) ->
       To.Parsetree.Ppat_interval
         ((copy_constant x0),
@@ -275,8 +238,7 @@ and copy_pattern_desc loc :
         (List.map copy_pattern x0)
   | From.Parsetree.Ppat_construct (x0,x1) ->
       To.Parsetree.Ppat_construct
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (copy_option copy_pattern x1))
   | From.Parsetree.Ppat_variant (x0,x1) ->
       To.Parsetree.Ppat_variant
@@ -287,8 +249,7 @@ and copy_pattern_desc loc :
         ((List.map
             (fun x  ->
                let (x0,x1) = x  in
-               ((copy_loc
-                   copy_longident x0),
+               ((copy_loc copy_longident x0),
                  (copy_pattern x1))) x0),
           (copy_closed_flag x1))
   | From.Parsetree.Ppat_array x0 ->
@@ -304,26 +265,23 @@ and copy_pattern_desc loc :
           (copy_core_type x1))
   | From.Parsetree.Ppat_type x0 ->
       To.Parsetree.Ppat_type
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
   | From.Parsetree.Ppat_lazy x0 ->
-      To.Parsetree.Ppat_lazy
-        (copy_pattern x0)
+      To.Parsetree.Ppat_lazy (copy_pattern x0)
   | From.Parsetree.Ppat_unpack x0 ->
       To.Parsetree.Ppat_unpack
         (copy_loc (fun x  -> x) x0)
   | From.Parsetree.Ppat_exception x0 ->
-      To.Parsetree.Ppat_exception
-        (copy_pattern x0)
+      To.Parsetree.Ppat_exception (copy_pattern x0)
   | From.Parsetree.Ppat_extension x0 ->
-      To.Parsetree.Ppat_extension
-        (copy_extension x0)
-  | From.Parsetree.Ppat_open _ ->
-      migration_error loc Def.Ppat_open
+      To.Parsetree.Ppat_extension (copy_extension x0)
+  | From.Parsetree.Ppat_open (x0,x1) ->
+      To.Parsetree.Ppat_open
+        ((copy_loc copy_longident x0),
+          (copy_pattern x1))
+
 and copy_core_type :
-  From.Parsetree.core_type ->
-    To.Parsetree.core_type
-  =
+  From.Parsetree.core_type -> To.Parsetree.core_type =
   fun
     { From.Parsetree.ptyp_desc = ptyp_desc;
       From.Parsetree.ptyp_loc = ptyp_loc;
@@ -332,21 +290,16 @@ and copy_core_type :
     {
       To.Parsetree.ptyp_desc =
         (copy_core_type_desc ptyp_desc);
-      To.Parsetree.ptyp_loc =
-        (copy_location ptyp_loc);
+      To.Parsetree.ptyp_loc = (copy_location ptyp_loc);
       To.Parsetree.ptyp_attributes =
         (copy_attributes ptyp_attributes)
     }
 
 and copy_core_type_desc :
-  From.Parsetree.core_type_desc ->
-    To.Parsetree.core_type_desc
-  =
+  From.Parsetree.core_type_desc -> To.Parsetree.core_type_desc =
   function
-  | From.Parsetree.Ptyp_any  ->
-      To.Parsetree.Ptyp_any
-  | From.Parsetree.Ptyp_var x0 ->
-      To.Parsetree.Ptyp_var x0
+  | From.Parsetree.Ptyp_any  -> To.Parsetree.Ptyp_any
+  | From.Parsetree.Ptyp_var x0 -> To.Parsetree.Ptyp_var x0
   | From.Parsetree.Ptyp_arrow (x0,x1,x2) ->
       To.Parsetree.Ptyp_arrow
         ((copy_arg_label x0),
@@ -357,8 +310,7 @@ and copy_core_type_desc :
         (List.map copy_core_type x0)
   | From.Parsetree.Ptyp_constr (x0,x1) ->
       To.Parsetree.Ptyp_constr
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (List.map copy_core_type x1))
   | From.Parsetree.Ptyp_object (x0,x1) ->
       To.Parsetree.Ptyp_object
@@ -370,8 +322,7 @@ and copy_core_type_desc :
           (copy_closed_flag x1))
   | From.Parsetree.Ptyp_class (x0,x1) ->
       To.Parsetree.Ptyp_class
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (List.map copy_core_type x1))
   | From.Parsetree.Ptyp_alias (x0,x1) ->
       To.Parsetree.Ptyp_alias
@@ -380,37 +331,28 @@ and copy_core_type_desc :
       To.Parsetree.Ptyp_variant
         ((List.map copy_row_field x0),
           (copy_closed_flag x1),
-          (copy_option
-             (fun x  -> List.map copy_label x) x2))
+          (copy_option (fun x  -> List.map copy_label x) x2))
   | From.Parsetree.Ptyp_poly (x0,x1) ->
       To.Parsetree.Ptyp_poly
-        ((List.map (fun x  -> x) x0),
-          (copy_core_type x1))
+        ((List.map (fun x  -> x) x0), (copy_core_type x1))
   | From.Parsetree.Ptyp_package x0 ->
-      To.Parsetree.Ptyp_package
-        (copy_package_type x0)
+      To.Parsetree.Ptyp_package (copy_package_type x0)
   | From.Parsetree.Ptyp_extension x0 ->
-      To.Parsetree.Ptyp_extension
-        (copy_extension x0)
+      To.Parsetree.Ptyp_extension (copy_extension x0)
 
 and copy_package_type :
-  From.Parsetree.package_type ->
-    To.Parsetree.package_type
-  =
+  From.Parsetree.package_type -> To.Parsetree.package_type =
   fun x  ->
     let (x0,x1) = x  in
     ((copy_loc copy_longident x0),
       (List.map
          (fun x  ->
             let (x0,x1) = x  in
-            ((copy_loc
-                copy_longident x0),
+            ((copy_loc copy_longident x0),
               (copy_core_type x1))) x1))
 
 and copy_row_field :
-  From.Parsetree.row_field ->
-    To.Parsetree.row_field
-  =
+  From.Parsetree.row_field -> To.Parsetree.row_field =
   function
   | From.Parsetree.Rtag (x0,x1,x2,x3) ->
       To.Parsetree.Rtag
@@ -418,18 +360,14 @@ and copy_row_field :
           (copy_attributes x1), (copy_bool x2),
           (List.map copy_core_type x3))
   | From.Parsetree.Rinherit x0 ->
-      To.Parsetree.Rinherit
-        (copy_core_type x0)
+      To.Parsetree.Rinherit (copy_core_type x0)
 
 and copy_attributes :
-  From.Parsetree.attributes ->
-    To.Parsetree.attributes
-  = fun x  -> List.map copy_attribute x
+  From.Parsetree.attributes -> To.Parsetree.attributes =
+  fun x  -> List.map copy_attribute x
 
 and copy_attribute :
-  From.Parsetree.attribute ->
-    To.Parsetree.attribute
-  =
+  From.Parsetree.attribute -> To.Parsetree.attribute =
   fun x  ->
     let (x0,x1) = x  in
     ((copy_loc (fun x  -> x) x0),
@@ -439,28 +377,22 @@ and copy_payload :
   From.Parsetree.payload -> To.Parsetree.payload =
   function
   | From.Parsetree.PStr x0 ->
-      To.Parsetree.PStr
-        (copy_structure x0)
+      To.Parsetree.PStr (copy_structure x0)
   | From.Parsetree.PSig x0 ->
-      To.Parsetree.PSig
-        (copy_signature x0)
+      To.Parsetree.PSig (copy_signature x0)
   | From.Parsetree.PTyp x0 ->
-      To.Parsetree.PTyp
-        (copy_core_type x0)
+      To.Parsetree.PTyp (copy_core_type x0)
   | From.Parsetree.PPat (x0,x1) ->
       To.Parsetree.PPat
         ((copy_pattern x0),
           (copy_option copy_expression x1))
 
 and copy_structure :
-  From.Parsetree.structure ->
-    To.Parsetree.structure
-  = fun x  -> List.map copy_structure_item x
+  From.Parsetree.structure -> To.Parsetree.structure =
+  fun x  -> List.map copy_structure_item x
 
 and copy_structure_item :
-  From.Parsetree.structure_item ->
-    To.Parsetree.structure_item
-  =
+  From.Parsetree.structure_item -> To.Parsetree.structure_item =
   fun
     { From.Parsetree.pstr_desc = pstr_desc;
       From.Parsetree.pstr_loc = pstr_loc }
@@ -468,8 +400,7 @@ and copy_structure_item :
     {
       To.Parsetree.pstr_desc =
         (copy_structure_item_desc pstr_desc);
-      To.Parsetree.pstr_loc =
-        (copy_location pstr_loc)
+      To.Parsetree.pstr_loc = (copy_location pstr_loc)
     }
 
 and copy_structure_item_desc :
@@ -520,8 +451,7 @@ and copy_structure_item_desc :
       To.Parsetree.Pstr_include
         (copy_include_declaration x0)
   | From.Parsetree.Pstr_attribute x0 ->
-      To.Parsetree.Pstr_attribute
-        (copy_attribute x0)
+      To.Parsetree.Pstr_attribute (copy_attribute x0)
   | From.Parsetree.Pstr_extension (x0,x1) ->
       To.Parsetree.Pstr_extension
         ((copy_extension x0),
@@ -532,21 +462,16 @@ and copy_include_declaration :
     To.Parsetree.include_declaration
   =
   fun x  ->
-    copy_include_infos
-      copy_module_expr x
+    copy_include_infos copy_module_expr x
 
 and copy_class_declaration :
-  From.Parsetree.class_declaration ->
-    To.Parsetree.class_declaration
+  From.Parsetree.class_declaration -> To.Parsetree.class_declaration
   =
   fun x  ->
-    copy_class_infos
-      copy_class_expr x
+    copy_class_infos copy_class_expr x
 
 and copy_class_expr :
-  From.Parsetree.class_expr ->
-    To.Parsetree.class_expr
-  =
+  From.Parsetree.class_expr -> To.Parsetree.class_expr =
   fun
     { From.Parsetree.pcl_desc = pcl_desc;
       From.Parsetree.pcl_loc = pcl_loc;
@@ -555,21 +480,17 @@ and copy_class_expr :
     {
       To.Parsetree.pcl_desc =
         (copy_class_expr_desc pcl_desc);
-      To.Parsetree.pcl_loc =
-        (copy_location pcl_loc);
+      To.Parsetree.pcl_loc = (copy_location pcl_loc);
       To.Parsetree.pcl_attributes =
         (copy_attributes pcl_attributes)
     }
 
 and copy_class_expr_desc :
-  From.Parsetree.class_expr_desc ->
-    To.Parsetree.class_expr_desc
-  =
+  From.Parsetree.class_expr_desc -> To.Parsetree.class_expr_desc =
   function
   | From.Parsetree.Pcl_constr (x0,x1) ->
       To.Parsetree.Pcl_constr
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (List.map copy_core_type x1))
   | From.Parsetree.Pcl_structure x0 ->
       To.Parsetree.Pcl_structure
@@ -598,13 +519,10 @@ and copy_class_expr_desc :
         ((copy_class_expr x0),
           (copy_class_type x1))
   | From.Parsetree.Pcl_extension x0 ->
-      To.Parsetree.Pcl_extension
-        (copy_extension x0)
+      To.Parsetree.Pcl_extension (copy_extension x0)
 
 and copy_class_structure :
-  From.Parsetree.class_structure ->
-    To.Parsetree.class_structure
-  =
+  From.Parsetree.class_structure -> To.Parsetree.class_structure =
   fun
     { From.Parsetree.pcstr_self = pcstr_self;
       From.Parsetree.pcstr_fields = pcstr_fields }
@@ -617,9 +535,7 @@ and copy_class_structure :
     }
 
 and copy_class_field :
-  From.Parsetree.class_field ->
-    To.Parsetree.class_field
-  =
+  From.Parsetree.class_field -> To.Parsetree.class_field =
   fun
     { From.Parsetree.pcf_desc = pcf_desc;
       From.Parsetree.pcf_loc = pcf_loc;
@@ -628,16 +544,13 @@ and copy_class_field :
     {
       To.Parsetree.pcf_desc =
         (copy_class_field_desc pcf_desc);
-      To.Parsetree.pcf_loc =
-        (copy_location pcf_loc);
+      To.Parsetree.pcf_loc = (copy_location pcf_loc);
       To.Parsetree.pcf_attributes =
         (copy_attributes pcf_attributes)
     }
 
 and copy_class_field_desc :
-  From.Parsetree.class_field_desc ->
-    To.Parsetree.class_field_desc
-  =
+  From.Parsetree.class_field_desc -> To.Parsetree.class_field_desc =
   function
   | From.Parsetree.Pcf_inherit (x0,x1,x2) ->
       To.Parsetree.Pcf_inherit
@@ -665,29 +578,22 @@ and copy_class_field_desc :
       To.Parsetree.Pcf_initializer
         (copy_expression x0)
   | From.Parsetree.Pcf_attribute x0 ->
-      To.Parsetree.Pcf_attribute
-        (copy_attribute x0)
+      To.Parsetree.Pcf_attribute (copy_attribute x0)
   | From.Parsetree.Pcf_extension x0 ->
-      To.Parsetree.Pcf_extension
-        (copy_extension x0)
+      To.Parsetree.Pcf_extension (copy_extension x0)
 
 and copy_class_field_kind :
-  From.Parsetree.class_field_kind ->
-    To.Parsetree.class_field_kind
-  =
+  From.Parsetree.class_field_kind -> To.Parsetree.class_field_kind =
   function
   | From.Parsetree.Cfk_virtual x0 ->
-      To.Parsetree.Cfk_virtual
-        (copy_core_type x0)
+      To.Parsetree.Cfk_virtual (copy_core_type x0)
   | From.Parsetree.Cfk_concrete (x0,x1) ->
       To.Parsetree.Cfk_concrete
         ((copy_override_flag x0),
           (copy_expression x1))
 
 and copy_module_binding :
-  From.Parsetree.module_binding ->
-    To.Parsetree.module_binding
-  =
+  From.Parsetree.module_binding -> To.Parsetree.module_binding =
   fun
     { From.Parsetree.pmb_name = pmb_name;
       From.Parsetree.pmb_expr = pmb_expr;
@@ -701,14 +607,11 @@ and copy_module_binding :
         (copy_module_expr pmb_expr);
       To.Parsetree.pmb_attributes =
         (copy_attributes pmb_attributes);
-      To.Parsetree.pmb_loc =
-        (copy_location pmb_loc)
+      To.Parsetree.pmb_loc = (copy_location pmb_loc)
     }
 
 and copy_module_expr :
-  From.Parsetree.module_expr ->
-    To.Parsetree.module_expr
-  =
+  From.Parsetree.module_expr -> To.Parsetree.module_expr =
   fun
     { From.Parsetree.pmod_desc = pmod_desc;
       From.Parsetree.pmod_loc = pmod_loc;
@@ -717,24 +620,19 @@ and copy_module_expr :
     {
       To.Parsetree.pmod_desc =
         (copy_module_expr_desc pmod_desc);
-      To.Parsetree.pmod_loc =
-        (copy_location pmod_loc);
+      To.Parsetree.pmod_loc = (copy_location pmod_loc);
       To.Parsetree.pmod_attributes =
         (copy_attributes pmod_attributes)
     }
 
 and copy_module_expr_desc :
-  From.Parsetree.module_expr_desc ->
-    To.Parsetree.module_expr_desc
-  =
+  From.Parsetree.module_expr_desc -> To.Parsetree.module_expr_desc =
   function
   | From.Parsetree.Pmod_ident x0 ->
       To.Parsetree.Pmod_ident
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
   | From.Parsetree.Pmod_structure x0 ->
-      To.Parsetree.Pmod_structure
-        (copy_structure x0)
+      To.Parsetree.Pmod_structure (copy_structure x0)
   | From.Parsetree.Pmod_functor (x0,x1,x2) ->
       To.Parsetree.Pmod_functor
         ((copy_loc (fun x  -> x) x0),
@@ -749,16 +647,12 @@ and copy_module_expr_desc :
         ((copy_module_expr x0),
           (copy_module_type x1))
   | From.Parsetree.Pmod_unpack x0 ->
-      To.Parsetree.Pmod_unpack
-        (copy_expression x0)
+      To.Parsetree.Pmod_unpack (copy_expression x0)
   | From.Parsetree.Pmod_extension x0 ->
-      To.Parsetree.Pmod_extension
-        (copy_extension x0)
+      To.Parsetree.Pmod_extension (copy_extension x0)
 
 and copy_module_type :
-  From.Parsetree.module_type ->
-    To.Parsetree.module_type
-  =
+  From.Parsetree.module_type -> To.Parsetree.module_type =
   fun
     { From.Parsetree.pmty_desc = pmty_desc;
       From.Parsetree.pmty_loc = pmty_loc;
@@ -767,24 +661,19 @@ and copy_module_type :
     {
       To.Parsetree.pmty_desc =
         (copy_module_type_desc pmty_desc);
-      To.Parsetree.pmty_loc =
-        (copy_location pmty_loc);
+      To.Parsetree.pmty_loc = (copy_location pmty_loc);
       To.Parsetree.pmty_attributes =
         (copy_attributes pmty_attributes)
     }
 
 and copy_module_type_desc :
-  From.Parsetree.module_type_desc ->
-    To.Parsetree.module_type_desc
-  =
+  From.Parsetree.module_type_desc -> To.Parsetree.module_type_desc =
   function
   | From.Parsetree.Pmty_ident x0 ->
       To.Parsetree.Pmty_ident
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
   | From.Parsetree.Pmty_signature x0 ->
-      To.Parsetree.Pmty_signature
-        (copy_signature x0)
+      To.Parsetree.Pmty_signature (copy_signature x0)
   | From.Parsetree.Pmty_functor (x0,x1,x2) ->
       To.Parsetree.Pmty_functor
         ((copy_loc (fun x  -> x) x0),
@@ -795,50 +684,38 @@ and copy_module_type_desc :
         ((copy_module_type x0),
           (List.map copy_with_constraint x1))
   | From.Parsetree.Pmty_typeof x0 ->
-      To.Parsetree.Pmty_typeof
-        (copy_module_expr x0)
+      To.Parsetree.Pmty_typeof (copy_module_expr x0)
   | From.Parsetree.Pmty_extension x0 ->
-      To.Parsetree.Pmty_extension
-        (copy_extension x0)
+      To.Parsetree.Pmty_extension (copy_extension x0)
   | From.Parsetree.Pmty_alias x0 ->
       To.Parsetree.Pmty_alias
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
 
 and copy_with_constraint :
-  From.Parsetree.with_constraint ->
-    To.Parsetree.with_constraint
-  =
+  From.Parsetree.with_constraint -> To.Parsetree.with_constraint =
   function
   | From.Parsetree.Pwith_type (x0,x1) ->
       To.Parsetree.Pwith_type
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (copy_type_declaration x1))
   | From.Parsetree.Pwith_module (x0,x1) ->
       To.Parsetree.Pwith_module
-        ((copy_loc
-            copy_longident x0),
-          (copy_loc
-             copy_longident x1))
+        ((copy_loc copy_longident x0),
+          (copy_loc copy_longident x1))
   | From.Parsetree.Pwith_typesubst x0 ->
       To.Parsetree.Pwith_typesubst
         (copy_type_declaration x0)
   | From.Parsetree.Pwith_modsubst (x0,x1) ->
       To.Parsetree.Pwith_modsubst
         ((copy_loc (fun x  -> x) x0),
-          (copy_loc
-             copy_longident x1))
+          (copy_loc copy_longident x1))
 
 and copy_signature :
-  From.Parsetree.signature ->
-    To.Parsetree.signature
-  = fun x  -> List.map copy_signature_item x
+  From.Parsetree.signature -> To.Parsetree.signature =
+  fun x  -> List.map copy_signature_item x
 
 and copy_signature_item :
-  From.Parsetree.signature_item ->
-    To.Parsetree.signature_item
-  =
+  From.Parsetree.signature_item -> To.Parsetree.signature_item =
   fun
     { From.Parsetree.psig_desc = psig_desc;
       From.Parsetree.psig_loc = psig_loc }
@@ -846,8 +723,7 @@ and copy_signature_item :
     {
       To.Parsetree.psig_desc =
         (copy_signature_item_desc psig_desc);
-      To.Parsetree.psig_loc =
-        (copy_location psig_loc)
+      To.Parsetree.psig_loc = (copy_location psig_loc)
     }
 
 and copy_signature_item_desc :
@@ -890,8 +766,7 @@ and copy_signature_item_desc :
       To.Parsetree.Psig_class_type
         (List.map copy_class_type_declaration x0)
   | From.Parsetree.Psig_attribute x0 ->
-      To.Parsetree.Psig_attribute
-        (copy_attribute x0)
+      To.Parsetree.Psig_attribute (copy_attribute x0)
   | From.Parsetree.Psig_extension (x0,x1) ->
       To.Parsetree.Psig_extension
         ((copy_extension x0),
@@ -902,21 +777,16 @@ and copy_class_type_declaration :
     To.Parsetree.class_type_declaration
   =
   fun x  ->
-    copy_class_infos
-      copy_class_type x
+    copy_class_infos copy_class_type x
 
 and copy_class_description :
-  From.Parsetree.class_description ->
-    To.Parsetree.class_description
+  From.Parsetree.class_description -> To.Parsetree.class_description
   =
   fun x  ->
-    copy_class_infos
-      copy_class_type x
+    copy_class_infos copy_class_type x
 
 and copy_class_type :
-  From.Parsetree.class_type ->
-    To.Parsetree.class_type
-  =
+  From.Parsetree.class_type -> To.Parsetree.class_type =
   fun
     { From.Parsetree.pcty_desc = pcty_desc;
       From.Parsetree.pcty_loc = pcty_loc;
@@ -925,21 +795,17 @@ and copy_class_type :
     {
       To.Parsetree.pcty_desc =
         (copy_class_type_desc pcty_desc);
-      To.Parsetree.pcty_loc =
-        (copy_location pcty_loc);
+      To.Parsetree.pcty_loc = (copy_location pcty_loc);
       To.Parsetree.pcty_attributes =
         (copy_attributes pcty_attributes)
     }
 
 and copy_class_type_desc :
-  From.Parsetree.class_type_desc ->
-    To.Parsetree.class_type_desc
-  =
+  From.Parsetree.class_type_desc -> To.Parsetree.class_type_desc =
   function
   | From.Parsetree.Pcty_constr (x0,x1) ->
       To.Parsetree.Pcty_constr
-        ((copy_loc
-            copy_longident x0),
+        ((copy_loc copy_longident x0),
           (List.map copy_core_type x1))
   | From.Parsetree.Pcty_signature x0 ->
       To.Parsetree.Pcty_signature
@@ -950,13 +816,10 @@ and copy_class_type_desc :
           (copy_core_type x1),
           (copy_class_type x2))
   | From.Parsetree.Pcty_extension x0 ->
-      To.Parsetree.Pcty_extension
-        (copy_extension x0)
+      To.Parsetree.Pcty_extension (copy_extension x0)
 
 and copy_class_signature :
-  From.Parsetree.class_signature ->
-    To.Parsetree.class_signature
-  =
+  From.Parsetree.class_signature -> To.Parsetree.class_signature =
   fun
     { From.Parsetree.pcsig_self = pcsig_self;
       From.Parsetree.pcsig_fields = pcsig_fields }
@@ -965,14 +828,11 @@ and copy_class_signature :
       To.Parsetree.pcsig_self =
         (copy_core_type pcsig_self);
       To.Parsetree.pcsig_fields =
-        (List.map copy_class_type_field
-           pcsig_fields)
+        (List.map copy_class_type_field pcsig_fields)
     }
 
 and copy_class_type_field :
-  From.Parsetree.class_type_field ->
-    To.Parsetree.class_type_field
-  =
+  From.Parsetree.class_type_field -> To.Parsetree.class_type_field =
   fun
     { From.Parsetree.pctf_desc = pctf_desc;
       From.Parsetree.pctf_loc = pctf_loc;
@@ -981,8 +841,7 @@ and copy_class_type_field :
     {
       To.Parsetree.pctf_desc =
         (copy_class_type_field_desc pctf_desc);
-      To.Parsetree.pctf_loc =
-        (copy_location pctf_loc);
+      To.Parsetree.pctf_loc = (copy_location pctf_loc);
       To.Parsetree.pctf_attributes =
         (copy_attributes pctf_attributes)
     }
@@ -993,8 +852,7 @@ and copy_class_type_field_desc :
   =
   function
   | From.Parsetree.Pctf_inherit x0 ->
-      To.Parsetree.Pctf_inherit
-        (copy_class_type x0)
+      To.Parsetree.Pctf_inherit (copy_class_type x0)
   | From.Parsetree.Pctf_val x0 ->
       To.Parsetree.Pctf_val
         (let (x0,x1,x2,x3) = x0  in
@@ -1013,16 +871,12 @@ and copy_class_type_field_desc :
          ((copy_core_type x0),
            (copy_core_type x1)))
   | From.Parsetree.Pctf_attribute x0 ->
-      To.Parsetree.Pctf_attribute
-        (copy_attribute x0)
+      To.Parsetree.Pctf_attribute (copy_attribute x0)
   | From.Parsetree.Pctf_extension x0 ->
-      To.Parsetree.Pctf_extension
-        (copy_extension x0)
+      To.Parsetree.Pctf_extension (copy_extension x0)
 
 and copy_extension :
-  From.Parsetree.extension ->
-    To.Parsetree.extension
-  =
+  From.Parsetree.extension -> To.Parsetree.extension =
   fun x  ->
     let (x0,x1) = x  in
     ((copy_loc (fun x  -> x) x0),
@@ -1031,8 +885,7 @@ and copy_extension :
 and copy_class_infos :
   'f0 'g0 .
     ('f0 -> 'g0) ->
-      'f0 From.Parsetree.class_infos ->
-        'g0 To.Parsetree.class_infos
+      'f0 From.Parsetree.class_infos -> 'g0 To.Parsetree.class_infos
   =
   fun f0  ->
     fun
@@ -1055,16 +908,13 @@ and copy_class_infos :
         To.Parsetree.pci_name =
           (copy_loc (fun x  -> x) pci_name);
         To.Parsetree.pci_expr = (f0 pci_expr);
-        To.Parsetree.pci_loc =
-          (copy_location pci_loc);
+        To.Parsetree.pci_loc = (copy_location pci_loc);
         To.Parsetree.pci_attributes =
           (copy_attributes pci_attributes)
       }
 
 and copy_virtual_flag :
-  From.Asttypes.virtual_flag ->
-    To.Asttypes.virtual_flag
-  =
+  From.Asttypes.virtual_flag -> To.Asttypes.virtual_flag =
   function
   | From.Asttypes.Virtual  -> To.Asttypes.Virtual
   | From.Asttypes.Concrete  -> To.Asttypes.Concrete
@@ -1074,8 +924,7 @@ and copy_include_description :
     To.Parsetree.include_description
   =
   fun x  ->
-    copy_include_infos
-      copy_module_type x
+    copy_include_infos copy_module_type x
 
 and copy_include_infos :
   'f0 'g0 .
@@ -1091,16 +940,13 @@ and copy_include_infos :
        ->
       {
         To.Parsetree.pincl_mod = (f0 pincl_mod);
-        To.Parsetree.pincl_loc =
-          (copy_location pincl_loc);
+        To.Parsetree.pincl_loc = (copy_location pincl_loc);
         To.Parsetree.pincl_attributes =
           (copy_attributes pincl_attributes)
       }
 
 and copy_open_description :
-  From.Parsetree.open_description ->
-    To.Parsetree.open_description
-  =
+  From.Parsetree.open_description -> To.Parsetree.open_description =
   fun
     { From.Parsetree.popen_lid = popen_lid;
       From.Parsetree.popen_override = popen_override;
@@ -1109,20 +955,16 @@ and copy_open_description :
      ->
     {
       To.Parsetree.popen_lid =
-        (copy_loc copy_longident
-           popen_lid);
+        (copy_loc copy_longident popen_lid);
       To.Parsetree.popen_override =
         (copy_override_flag popen_override);
-      To.Parsetree.popen_loc =
-        (copy_location popen_loc);
+      To.Parsetree.popen_loc = (copy_location popen_loc);
       To.Parsetree.popen_attributes =
         (copy_attributes popen_attributes)
     }
 
 and copy_override_flag :
-  From.Asttypes.override_flag ->
-    To.Asttypes.override_flag
-  =
+  From.Asttypes.override_flag -> To.Asttypes.override_flag =
   function
   | From.Asttypes.Override  -> To.Asttypes.Override
   | From.Asttypes.Fresh  -> To.Asttypes.Fresh
@@ -1144,8 +986,7 @@ and copy_module_type_declaration :
         (copy_option copy_module_type pmtd_type);
       To.Parsetree.pmtd_attributes =
         (copy_attributes pmtd_attributes);
-      To.Parsetree.pmtd_loc =
-        (copy_location pmtd_loc)
+      To.Parsetree.pmtd_loc = (copy_location pmtd_loc)
     }
 
 and copy_module_declaration :
@@ -1165,14 +1006,11 @@ and copy_module_declaration :
         (copy_module_type pmd_type);
       To.Parsetree.pmd_attributes =
         (copy_attributes pmd_attributes);
-      To.Parsetree.pmd_loc =
-        (copy_location pmd_loc)
+      To.Parsetree.pmd_loc = (copy_location pmd_loc)
     }
 
 and copy_type_extension :
-  From.Parsetree.type_extension ->
-    To.Parsetree.type_extension
-  =
+  From.Parsetree.type_extension -> To.Parsetree.type_extension =
   fun
     { From.Parsetree.ptyext_path = ptyext_path;
       From.Parsetree.ptyext_params = ptyext_params;
@@ -1182,8 +1020,7 @@ and copy_type_extension :
      ->
     {
       To.Parsetree.ptyext_path =
-        (copy_loc copy_longident
-           ptyext_path);
+        (copy_loc copy_longident ptyext_path);
       To.Parsetree.ptyext_params =
         (List.map
            (fun x  ->
@@ -1214,8 +1051,7 @@ and copy_extension_constructor :
         (copy_loc (fun x  -> x) pext_name);
       To.Parsetree.pext_kind =
         (copy_extension_constructor_kind pext_kind);
-      To.Parsetree.pext_loc =
-        (copy_location pext_loc);
+      To.Parsetree.pext_loc = (copy_location pext_loc);
       To.Parsetree.pext_attributes =
         (copy_attributes pext_attributes)
     }
@@ -1231,13 +1067,10 @@ and copy_extension_constructor_kind :
           (copy_option copy_core_type x1))
   | From.Parsetree.Pext_rebind x0 ->
       To.Parsetree.Pext_rebind
-        (copy_loc copy_longident
-           x0)
+        (copy_loc copy_longident x0)
 
 and copy_type_declaration :
-  From.Parsetree.type_declaration ->
-    To.Parsetree.type_declaration
-  =
+  From.Parsetree.type_declaration -> To.Parsetree.type_declaration =
   fun
     { From.Parsetree.ptype_name = ptype_name;
       From.Parsetree.ptype_params = ptype_params;
@@ -1272,33 +1105,26 @@ and copy_type_declaration :
         (copy_option copy_core_type ptype_manifest);
       To.Parsetree.ptype_attributes =
         (copy_attributes ptype_attributes);
-      To.Parsetree.ptype_loc =
-        (copy_location ptype_loc)
+      To.Parsetree.ptype_loc = (copy_location ptype_loc)
     }
 
 and copy_private_flag :
-  From.Asttypes.private_flag ->
-    To.Asttypes.private_flag
-  =
+  From.Asttypes.private_flag -> To.Asttypes.private_flag =
   function
   | From.Asttypes.Private  -> To.Asttypes.Private
   | From.Asttypes.Public  -> To.Asttypes.Public
 
 and copy_type_kind :
-  From.Parsetree.type_kind ->
-    To.Parsetree.type_kind
-  =
+  From.Parsetree.type_kind -> To.Parsetree.type_kind =
   function
-  | From.Parsetree.Ptype_abstract  ->
-      To.Parsetree.Ptype_abstract
+  | From.Parsetree.Ptype_abstract  -> To.Parsetree.Ptype_abstract
   | From.Parsetree.Ptype_variant x0 ->
       To.Parsetree.Ptype_variant
         (List.map copy_constructor_declaration x0)
   | From.Parsetree.Ptype_record x0 ->
       To.Parsetree.Ptype_record
         (List.map copy_label_declaration x0)
-  | From.Parsetree.Ptype_open  ->
-      To.Parsetree.Ptype_open
+  | From.Parsetree.Ptype_open  -> To.Parsetree.Ptype_open
 
 and copy_constructor_declaration :
   From.Parsetree.constructor_declaration ->
@@ -1318,8 +1144,7 @@ and copy_constructor_declaration :
         (copy_constructor_arguments pcd_args);
       To.Parsetree.pcd_res =
         (copy_option copy_core_type pcd_res);
-      To.Parsetree.pcd_loc =
-        (copy_location pcd_loc);
+      To.Parsetree.pcd_loc = (copy_location pcd_loc);
       To.Parsetree.pcd_attributes =
         (copy_attributes pcd_attributes)
     }
@@ -1337,8 +1162,7 @@ and copy_constructor_arguments :
         (List.map copy_label_declaration x0)
 
 and copy_label_declaration :
-  From.Parsetree.label_declaration ->
-    To.Parsetree.label_declaration
+  From.Parsetree.label_declaration -> To.Parsetree.label_declaration
   =
   fun
     { From.Parsetree.pld_name = pld_name;
@@ -1354,34 +1178,26 @@ and copy_label_declaration :
         (copy_mutable_flag pld_mutable);
       To.Parsetree.pld_type =
         (copy_core_type pld_type);
-      To.Parsetree.pld_loc =
-        (copy_location pld_loc);
+      To.Parsetree.pld_loc = (copy_location pld_loc);
       To.Parsetree.pld_attributes =
         (copy_attributes pld_attributes)
     }
 
 and copy_mutable_flag :
-  From.Asttypes.mutable_flag ->
-    To.Asttypes.mutable_flag
-  =
+  From.Asttypes.mutable_flag -> To.Asttypes.mutable_flag =
   function
-  | From.Asttypes.Immutable  ->
-      To.Asttypes.Immutable
+  | From.Asttypes.Immutable  -> To.Asttypes.Immutable
   | From.Asttypes.Mutable  -> To.Asttypes.Mutable
 
 and copy_variance :
   From.Asttypes.variance -> To.Asttypes.variance =
   function
-  | From.Asttypes.Covariant  ->
-      To.Asttypes.Covariant
-  | From.Asttypes.Contravariant  ->
-      To.Asttypes.Contravariant
-  | From.Asttypes.Invariant  ->
-      To.Asttypes.Invariant
+  | From.Asttypes.Covariant  -> To.Asttypes.Covariant
+  | From.Asttypes.Contravariant  -> To.Asttypes.Contravariant
+  | From.Asttypes.Invariant  -> To.Asttypes.Invariant
 
 and copy_value_description :
-  From.Parsetree.value_description ->
-    To.Parsetree.value_description
+  From.Parsetree.value_description -> To.Parsetree.value_description
   =
   fun
     { From.Parsetree.pval_name = pval_name;
@@ -1395,92 +1211,69 @@ and copy_value_description :
         (copy_loc (fun x  -> x) pval_name);
       To.Parsetree.pval_type =
         (copy_core_type pval_type);
-      To.Parsetree.pval_prim =
-        (List.map (fun x  -> x) pval_prim);
+      To.Parsetree.pval_prim = (List.map (fun x  -> x) pval_prim);
       To.Parsetree.pval_attributes =
         (copy_attributes pval_attributes);
-      To.Parsetree.pval_loc =
-        (copy_location pval_loc)
+      To.Parsetree.pval_loc = (copy_location pval_loc)
     }
 
 and copy_arg_label :
-  From.Asttypes.arg_label -> To.Asttypes.arg_label
-  =
+  From.Asttypes.arg_label -> To.Asttypes.arg_label =
   function
   | From.Asttypes.Nolabel  -> To.Asttypes.Nolabel
-  | From.Asttypes.Labelled x0 ->
-      To.Asttypes.Labelled x0
-  | From.Asttypes.Optional x0 ->
-      To.Asttypes.Optional x0
+  | From.Asttypes.Labelled x0 -> To.Asttypes.Labelled x0
+  | From.Asttypes.Optional x0 -> To.Asttypes.Optional x0
 
 and copy_closed_flag :
-  From.Asttypes.closed_flag ->
-    To.Asttypes.closed_flag
-  =
+  From.Asttypes.closed_flag -> To.Asttypes.closed_flag =
   function
   | From.Asttypes.Closed  -> To.Asttypes.Closed
   | From.Asttypes.Open  -> To.Asttypes.Open
 
 and copy_label :
-  From.Asttypes.label -> To.Asttypes.label =
-  fun x  -> x
+  From.Asttypes.label -> To.Asttypes.label = fun x  -> x
 
 and copy_rec_flag :
   From.Asttypes.rec_flag -> To.Asttypes.rec_flag =
   function
-  | From.Asttypes.Nonrecursive  ->
-      To.Asttypes.Nonrecursive
-  | From.Asttypes.Recursive  ->
-      To.Asttypes.Recursive
+  | From.Asttypes.Nonrecursive  -> To.Asttypes.Nonrecursive
+  | From.Asttypes.Recursive  -> To.Asttypes.Recursive
 
 and copy_constant :
-  From.Parsetree.constant -> To.Parsetree.constant
-  =
+  From.Parsetree.constant -> To.Parsetree.constant =
   function
   | From.Parsetree.Pconst_integer (x0,x1) ->
-      To.Parsetree.Pconst_integer
-        (x0, (copy_option (fun x  -> x) x1))
-  | From.Parsetree.Pconst_char x0 ->
-      To.Parsetree.Pconst_char x0
+      To.Parsetree.Pconst_integer (x0, (copy_option (fun x  -> x) x1))
+  | From.Parsetree.Pconst_char x0 -> To.Parsetree.Pconst_char x0
   | From.Parsetree.Pconst_string (x0,x1) ->
-      To.Parsetree.Pconst_string
-        (x0, (copy_option (fun x  -> x) x1))
+      To.Parsetree.Pconst_string (x0, (copy_option (fun x  -> x) x1))
   | From.Parsetree.Pconst_float (x0,x1) ->
-      To.Parsetree.Pconst_float
-        (x0, (copy_option (fun x  -> x) x1))
+      To.Parsetree.Pconst_float (x0, (copy_option (fun x  -> x) x1))
 
 and copy_option : 'f0 'g0 . ('f0 -> 'g0) -> 'f0 option -> 'g0 option =
   fun f0  -> function | None  -> None | Some x0 -> Some (f0 x0)
 
-and copy_longident :
-  From.Longident.t -> To.Longident.t =
+and copy_longident : From.Longident.t -> To.Longident.t =
   function
-  | From.Longident.Lident x0 ->
-      To.Longident.Lident x0
+  | From.Longident.Lident x0 -> To.Longident.Lident x0
   | From.Longident.Ldot (x0,x1) ->
-      To.Longident.Ldot
-        ((copy_longident x0), x1)
+      To.Longident.Ldot ((copy_longident x0), x1)
   | From.Longident.Lapply (x0,x1) ->
       To.Longident.Lapply
         ((copy_longident x0), (copy_longident x1))
 
 and copy_loc :
   'f0 'g0 .
-    ('f0 -> 'g0) ->
-      'f0 From.Asttypes.loc -> 'g0 To.Asttypes.loc
+    ('f0 -> 'g0) -> 'f0 From.Asttypes.loc -> 'g0 To.Asttypes.loc
   =
   fun f0  ->
-    fun
-      { From.Asttypes.txt = txt;
-        From.Asttypes.loc = loc }
-       ->
+    fun { From.Asttypes.txt = txt; From.Asttypes.loc = loc }  ->
       {
         To.Asttypes.txt = (f0 txt);
         To.Asttypes.loc = (copy_location loc)
       }
 
-and copy_location :
-  From.Location.t -> To.Location.t =
+and copy_location : From.Location.t -> To.Location.t =
   fun
     { From.Location.loc_start = loc_start;
       From.Location.loc_end = loc_end;
@@ -1505,3 +1298,4 @@ and copy_Lexing_position : Lexing.position -> Lexing.position =
       Lexing.pos_bol = pos_bol;
       Lexing.pos_cnum = pos_cnum
     }
+

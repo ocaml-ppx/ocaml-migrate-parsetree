@@ -7,6 +7,7 @@ module rec Asttypes : Asttypes = Asttypes
 module rec Parsetree : Parsetree = Parsetree
 module Config = Config
 
-type ast =
-  (Parsetree.signature, Parsetree.structure) Migrate_parsetree_def.intf_or_impl
+open Migrate_parsetree_def
+
+type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
 
