@@ -92,7 +92,7 @@ let from_bytes bytes pos =
 let to_channel oc (filename : filename) x =
   output_string oc (magic_number x);
   output_value oc filename;
-  output_value oc x
+  output_value oc (payload x)
 
 let to_bytes (filename : filename) x =
   Bytes.cat (
