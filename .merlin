@@ -1,3 +1,6 @@
+S bin
+S src
+B bin
+B src
 PKG compiler-libs
-
 FLG -safe-string
