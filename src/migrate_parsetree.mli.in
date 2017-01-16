@@ -24,22 +24,23 @@ type ast =
 (** A simple alias used for the filename of the source that produced an AST *)
 type filename = string
 
-(** This exception is raised by the `from_*` functions when the file cannot be
-    decoded. *)
-exception Unknown_magic_number of string
+type read_error =
+  | Not_a_binary_ast of string
+  (** The input doesn't contain a binary AST. The argument corresponds
+      to the bytes from the input that were consumed. *)
+  | Unknown_version of string
+  (** The input contains a binary AST for an unknown version of OCaml.
+      The argument is the unknown magic number. *)
 
 (** Load a marshalled AST from a channel
 
-    It can raise the [Unknown_magic_number str] exception, in which case only
-    the [str] string was read from the channel.
-    After that, any exception raised during unmarshalling (see [Marshal]) can
-    escape.  *)
-val from_channel : in_channel -> filename * ast
+    Any exception raised during unmarshalling (see [Marshal]) can escape.  *)
+val from_channel : in_channel -> (filename * ast, read_error) result
 
 (** Load a marshalled AST from a byte string.
 
     See [from_channel] description for exception that can be raised. *)
-val from_bytes : bytes -> int -> filename * ast
+val from_bytes : bytes -> int -> (filename * ast, read_error) result
 
 (** Marshal an AST to a channel *)
 val to_channel : out_channel -> filename -> ast -> unit
