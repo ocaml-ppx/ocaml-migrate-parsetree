@@ -47,7 +47,7 @@ clean:
 
 # Default rules
 
-.SUFFIXES: .ml .mli .cmo .cmi .cmx
+.SUFFIXES: .ml .mli .cmo .cmi .cmx .native
 
 .ml.cmo:
 	$(OCAMLC) $(COMPFLAGS) -c $<
@@ -57,6 +57,9 @@ clean:
 
 .ml.cmx:
 	$(OCAMLOPT) $(COMPFLAGS) -c $<
+
+.cmx.native: src/migrate_parsetree.cmxa
+	$(OCAMLOPT) $(COMPFLAGS) ocamlcommon.cmxa migrate_parsetree.cmxa $< -o $@
 
 # Install/uninstall
 
