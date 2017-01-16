@@ -83,9 +83,8 @@ reinstall:
 
 # Ast selection
 
-src/ast_$(OCAML_VERSION).ml: asts/ast_current.ml
-	cp $< $@
-	echo 'let version = OCaml_$(OCAML_VERSION)' >> $@
+src/ast_$(OCAML_VERSION).ml: asts/ast_$(OCAML_VERSION).ml
+	sed -e 's|(\*IF_CURRENT \([^\*]*\)\*)|\1|' $< > $@
 
 src/ast_%.ml: asts/ast_%.ml
 	cp $< $@
