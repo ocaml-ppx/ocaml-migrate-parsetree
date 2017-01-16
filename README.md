@@ -14,7 +14,7 @@ to the next and/or previous version.
 module Migrate_parsetree_def : sig
   type ('a, 'b) intf_or_impl = Intf of 'a | Impl of 'b
   type ocaml_version = OCaml_402 | OCaml_403 | OCaml_404 | OCaml_405
-end 
+end
 
 module Ast_402, Ast_403, Ast_404, Ast_405 : sig
 
@@ -89,7 +89,8 @@ Snapshot the ast:
     keeping type definitions from the upstream files in `parsing/` directory
   * create a `Config` module containing `ast_impl_magic_number`
     `ast_impl_magic_number` from upstream `Config`
-  * append 
+  * call `tools/add_special_comments.native` on the file
+  * append
 ```
 open Migrate_parsetree_def
 
