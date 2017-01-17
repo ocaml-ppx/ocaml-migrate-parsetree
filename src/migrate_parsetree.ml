@@ -245,3 +245,6 @@ module Ast_current = Ast_OCAML_VERSION
 
 (* Make sure the preprocessing worked as expected *)
 let _f (x : Parsetree.expression) : Ast_current.Parsetree.expression = x
+
+let ast_of_current ast = Ast_OCAML_VERSION ast
+let current_of_ast ast = migrate_to_OCAML_VERSION ast
