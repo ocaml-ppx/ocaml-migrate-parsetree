@@ -24,15 +24,12 @@ COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
 endif
 
 # Files
-OCAML_ASTS= \
-  src/ast_402.ml \
-	src/ast_403.ml \
-	src/ast_404.ml \
-	src/ast_405.ml
-
 OBJECTS= \
 	src/migrate_parsetree_def.cmo \
-  $(OCAML_ASTS:.ml=.cmo) \
+	src/ast_402.cmo \
+	src/ast_403.cmo \
+	src/ast_404.cmo \
+	src/ast_405.cmo \
 	src/migrate_parsetree_402_403.cmo \
 	src/migrate_parsetree_403_402.cmo \
 	src/migrate_parsetree_403_404.cmo \
@@ -47,14 +44,19 @@ all: migrate_parsetree.cma migrate_parsetree.cmxa
 .PHONY: clean
 clean:
 	rm -f src/*.cm* src/*.o src/*.obj src/*.a src/*.lib
-	rm -f migrate_parsetree.* src/migrate_parsetree.ml src/migrate_parsetree.mli
-	rm -f $(OCAML_ASTS) src/ast_current.ml
+	rm -f migrate_parsetree.*
 
 # Default rules
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .native
 
-PP=-pp 'sed s/OCAML_VERSION/$(OCAML_VERSION)/g'
+# Note: the spaces in the replacements are to preserve locations
+SED_VERSION = "s/OCAML_VERSION/$(OCAML_VERSION)      /g"
+SED_IF_CURRENT = "s/(\*IF_CURRENT \([^\*]*\)\*)/             \1/"
+src/ast_$(OCAML_VERSION).cmi: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
+src/ast_$(OCAML_VERSION).cmo: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
+src/ast_$(OCAML_VERSION).cmx: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
+%.cmi %.cmo %.cmx: PP := -pp 'sed -e $(SED_VERSION)'
 
 .ml.cmo:
 	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
@@ -90,14 +92,6 @@ reinstall:
 
 # Ast selection
 
-src/ast_$(OCAML_VERSION).ml: asts/ast_$(OCAML_VERSION).ml
-	sed -e 's|(\*IF_CURRENT \([^\*]*\)\*)|\1|' $< > $@
-
-src/ast_%.ml: asts/ast_%.ml
-	cp $< $@
-
-$(OCAML_ASTS:.ml=.cmo): $(OCAML_ASTS)
-
 migrate_parsetree.cma: $(OBJECTS)
 	$(OCAMLC) -a -o migrate_parsetree.cma $^
 
@@ -117,7 +111,7 @@ tools/add_special_comments.native: tools/add_special_comments.ml
 ## ./gencopy -I . -map Ast_403:Ast_402 Ast_403.Parsetree.expression > migrate_parsetree_403_402.ml
 
 .PHONY: depend
-depend: $(OCAML_ASTS)
+depend:
 	ocamldep -I src/ src/*.ml src/*.mli > .depend
 	dos2unix .depend
 -include .depend
