@@ -50,13 +50,7 @@ clean:
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .native
 
-# Note: the spaces in the replacements are to preserve locations
-SED_VERSION = "s/OCAML_VERSION/$(OCAML_VERSION)      /g"
-SED_IF_CURRENT = "s/(\*IF_CURRENT \([^\*]*\)\*)/             \1/"
-src/ast_$(OCAML_VERSION).cmi: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
-src/ast_$(OCAML_VERSION).cmo: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
-src/ast_$(OCAML_VERSION).cmx: PP := -pp 'sed -e $(SED_VERSION) -e $(SED_IF_CURRENT)'
-%.cmi %.cmo %.cmx: PP := -pp 'sed -e $(SED_VERSION)'
+PP = -pp "sh pp.sh $(OCAML_VERSION)"
 
 .ml.cmo:
 	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
