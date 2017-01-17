@@ -241,5 +241,7 @@ module Migrate_404_403 = Migrate_parsetree_404_403
 module Migrate_404_405 = Migrate_parsetree_404_405
 module Migrate_405_404 = Migrate_parsetree_405_404
 
-(** An alias to the ast version of the current compiler *)
 module Ast_current = Ast_OCAML_VERSION
+
+(* Make sure the preprocessing worked as expected *)
+let _f (x : Parsetree.expression) : Ast_current.Parsetree.expression = x
