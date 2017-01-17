@@ -97,3 +97,6 @@ module Migrate_405_404 = Migrate_parsetree_405_404
 
 (** An alias to the ast version of the current compiler *)
 module Ast_current = Ast_OCAML_VERSION
+
+val ast_of_current : Ast_current.ast -> ast
+val current_of_ast : ast -> Ast_current.ast
