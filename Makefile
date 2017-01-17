@@ -54,14 +54,16 @@ clean:
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .native
 
+PP=-pp 'sed s/OCAML_VERSION/$(OCAML_VERSION)/g'
+
 .ml.cmo:
-	$(OCAMLC) $(COMPFLAGS) -c $<
+	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
 
 .mli.cmi:
-	$(OCAMLC) $(COMPFLAGS) -c $<
+	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
 
 .ml.cmx:
-	$(OCAMLOPT) $(COMPFLAGS) -c $<
+	$(OCAMLOPT) $(COMPFLAGS) $(PP) -c $<
 
 .cmx.native: src/migrate_parsetree.cmxa
 	$(OCAMLOPT) $(COMPFLAGS) ocamlcommon.cmxa migrate_parsetree.cmxa $< -o $@
@@ -93,13 +95,6 @@ src/ast_$(OCAML_VERSION).ml: asts/ast_$(OCAML_VERSION).ml
 
 src/ast_%.ml: asts/ast_%.ml
 	cp $< $@
-
-src/migrate_parsetree.mli: src/migrate_parsetree.mli.in
-src/migrate_parsetree.ml: src/migrate_parsetree.ml.in src/migrate_parsetree.cmi
-
-src/migrate_parsetree.ml src/migrate_parsetree.mli:
-	cp $< $@
-	echo 'module Ast_current = Ast_$(OCAML_VERSION)' >> $@
 
 $(OCAML_ASTS:.ml=.cmo): $(OCAML_ASTS)
 
