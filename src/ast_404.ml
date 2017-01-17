@@ -2128,3 +2128,63 @@ open Migrate_parsetree_def
 type ast = (Parsetree.signature, Parsetree.structure) intf_or_impl
 
 let version = OCaml_404
+
+open Asttypes
+open Parsetree
+
+let noloc =
+  let pos = { Lexing. pos_fname = ""; pos_cnum = 0; pos_lnum = 0; pos_bol = 0 } in
+  { Location. loc_start = pos; loc_end = pos; loc_ghost = true }
+
+let ast_of_impl x = Impl x
+let ast_of_intf x = Intf x
+
+let ast_of_type_decls tds =
+  Impl [ { pstr_desc = Pstr_type (Nonrecursive, tds)
+         ; pstr_loc = noloc
+         } ]
+
+let ast_of_type_extension x =
+  Impl [ { pstr_desc = Pstr_typext x; pstr_loc = noloc } ]
+
+let ast_of_extension_constructor x =
+  Impl [ { pstr_desc = Pstr_exception x; pstr_loc = noloc } ]
+
+let ast_of_core_type x =
+  Impl [ { pstr_desc = Pstr_extension (({ txt = ""; loc = noloc }, PTyp x), [])
+         ; pstr_loc = noloc }
+       ]
+
+let ast_of_expression x =
+  Impl [ { pstr_desc = Pstr_eval (x, [])
+         ; pstr_loc = noloc }
+       ]
+
+let impl_of_ast = function
+  | Impl x -> x
+  | _ -> invalid_arg "Ast_403.impl_of_ast"
+
+let intf_of_ast = function
+  | Intf x -> x
+  | _ -> invalid_arg "Ast_403.intf_of_ast"
+
+let type_decls_of_ast = function
+  | Impl [ { pstr_desc = Pstr_type (_, tds); _ } ] -> tds
+  | _ -> invalid_arg "Ast_403.type_decls_of_ast"
+
+let type_extension_of_ast = function
+  | Impl [ { pstr_desc = Pstr_typext x; _ } ] -> x
+  | _ -> invalid_arg "Ast_403.extension_of_ast"
+
+let extension_constructor_of_ast = function
+  | Impl [ { pstr_desc = Pstr_exception x; _ } ] -> x
+  | _ -> invalid_arg "Ast_403.exception_of_ast"
+
+let core_type_of_ast = function
+  | Impl [ { pstr_desc = Pstr_extension ((_, PTyp x), _); _ } ] -> x
+  | _ -> invalid_arg "Ast_403.core_type_of_ast"
+
+let expression_of_ast = function
+  | Impl [ { pstr_desc = Pstr_eval (x, _); _ } ] -> x
+  | _ -> invalid_arg "Ast_403.core_type_of_ast"
+
