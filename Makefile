@@ -109,11 +109,11 @@ migrate_parsetree.cma: $(OBJECTS)
 migrate_parsetree.cmxa: $(OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -a -o migrate_parsetree.cmxa $^
 
-.PHONY: depend
-depend: $(OCAML_ASTS)
-	ocamldep -I src/ src/*.ml src/*.mli > .depend
-	dos2unix .depend
--include .depend
+# Auxiliary tools
+tools: tools/add_special_comments.native
+
+tools/add_special_comments.native: tools/add_special_comments.ml
+	ocamlfind opt -o $@ -linkpkg -package compiler-libs.common $<
 
 ## gencopy from ppx_tools package
 ## ./gencopy -I . -map Ast_403:Ast_404 Ast_403.Parsetree.expression > migrate_parsetree_403_404.ml
@@ -121,3 +121,8 @@ depend: $(OCAML_ASTS)
 ## ./gencopy -I . -map Ast_402:Ast_403 Ast_402.Parsetree.expression > migrate_parsetree_402_403.ml
 ## ./gencopy -I . -map Ast_403:Ast_402 Ast_403.Parsetree.expression > migrate_parsetree_403_402.ml
 
+.PHONY: depend
+depend: $(OCAML_ASTS)
+	ocamldep -I src/ src/*.ml src/*.mli > .depend
+	dos2unix .depend
+-include .depend
