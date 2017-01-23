@@ -5,16 +5,23 @@
 # It is forked from ppx-tools package, which is copyright 2013
 # Alain Frisch and LexiFi.
 
-include $(shell ocamlc -where)/Makefile.config
-
 # Don't forget to change META file as well
 PACKAGE = ocaml-migrate-parsetree
 VERSION = 0.1
 
 # Config
+include $(shell ocamlc -where)/Makefile.config
+OCAML_VERSION=$(shell ./ast_version.sh ocamlc)
+
+ifeq ($(OCAML_VERSION),402)
+OCAMLC = ocamlfind c -bin-annot
+OCAMLOPT = ocamlfind opt
+COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -safe-string -package compiler-libs -package result 
+else
 OCAMLC = ocamlc -bin-annot
 OCAMLOPT = ocamlopt
 COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
+endif
 
 # Files
 OCAML_ASTS= \
@@ -33,8 +40,6 @@ OBJECTS= \
 	src/migrate_parsetree_404_405.cmo \
 	src/migrate_parsetree_405_404.cmo \
 	src/migrate_parsetree.cmo
-
-OCAML_VERSION=$(shell ./ast_version.sh $(OCAMLC))
 
 .PHONY: all
 all: migrate_parsetree.cma migrate_parsetree.cmxa
