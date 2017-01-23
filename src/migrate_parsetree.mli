@@ -1,4 +1,3 @@
-open Result
 module Def = Migrate_parsetree_def
 
 (** Union of all supported versions *)

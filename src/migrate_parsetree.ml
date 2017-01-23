@@ -1,4 +1,3 @@
-open Result
 module Def = Migrate_parsetree_def
 
 type ocaml_version = Migrate_parsetree_def.ocaml_version =
