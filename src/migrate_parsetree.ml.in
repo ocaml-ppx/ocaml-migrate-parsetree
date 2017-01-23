@@ -64,30 +64,54 @@ let payload = function
 
 let magic_length = String.length Ast_402.Config.ast_impl_magic_number
 
-let read_magic ic = really_input_string ic magic_length
+let read_magic ic =
+  let buf = Bytes.create magic_length in
+  let len = input ic buf 0 magic_length in
+  let s = Bytes.sub_string buf 0 len in
+  if len = magic_length then
+    Ok s
+  else
+    Error s
 
-exception Unknown_magic_number of string
+type read_error =
+  | Not_a_binary_ast of string
+  | Unknown_version of string
+
+let find_magic magic =
+  match List.assoc magic magics with
+  | inj -> Ok inj
+  | exception Not_found ->
+    let prefix = String.sub magic 0 9 in
+    if prefix = String.sub Ast_402.Config.ast_impl_magic_number 0 9 ||
+       prefix = String.sub Ast_402.Config.ast_intf_magic_number 0 9 then
+      Error (Unknown_version magic)
+    else
+      Error (Not_a_binary_ast magic)
 
 let from_channel ic =
-  let magic = read_magic ic in
-  match List.assoc magic magics with
-  | inj ->
+  match read_magic ic with
+  | Error s -> Error (Not_a_binary_ast s)
+  | Ok s ->
+    match find_magic s with
+    | Ok inj ->
       let filename : filename = input_value ic in
       let payload = inj (input_value ic) in
-      (filename, payload)
-  | exception Not_found -> raise (Unknown_magic_number magic)
+      Ok (filename, payload)
+    | Error _ as e  -> e
 
 let from_bytes bytes pos =
-  let len = min magic_length (Bytes.length bytes - pos) in
-  let magic = Bytes.to_string (Bytes.sub bytes pos len) in
-  match List.assoc magic magics with
-  | inj ->
+  if Bytes.length bytes - pos < magic_length then
+    Error (Not_a_binary_ast "")
+  else
+    let magic = Bytes.to_string (Bytes.sub bytes pos magic_length) in
+    match find_magic magic with
+    | Ok inj ->
       let filename_pos = pos + magic_length in
       let filename : filename = Marshal.from_bytes bytes filename_pos in
       let payload_pos = filename_pos + Marshal.total_size bytes filename_pos in
       let payload = inj (Marshal.from_bytes bytes payload_pos) in
-      (filename, payload)
-  | exception Not_found -> raise (Unknown_magic_number magic)
+      Ok (filename, payload)
+    | Error _ as e -> e
 
 let to_channel oc (filename : filename) x =
   output_string oc (magic_number x);
