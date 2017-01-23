@@ -16,7 +16,7 @@ OCAML_VERSION=$(shell ./ast_version.sh ocamlc)
 ifeq ($(OCAML_VERSION),402)
 OCAMLC = ocamlfind c -bin-annot
 OCAMLOPT = ocamlfind opt
-COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -safe-string -package compiler-libs -package result 
+COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -safe-string -package compiler-libs -package result -open Result
 else
 OCAMLC = ocamlc -bin-annot
 OCAMLOPT = ocamlopt
