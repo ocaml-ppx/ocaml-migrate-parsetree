@@ -2222,29 +2222,29 @@ let ast_of_expression x =
 
 let impl_of_ast = function
   | Impl x -> x
-  | _ -> invalid_arg "Ast_403.impl_of_ast"
+  | _ -> invalid_arg "Ast_405.impl_of_ast"
 
 let intf_of_ast = function
   | Intf x -> x
-  | _ -> invalid_arg "Ast_403.intf_of_ast"
+  | _ -> invalid_arg "Ast_405.intf_of_ast"
 
 let type_decls_of_ast = function
   | Impl [ { pstr_desc = Pstr_type (_, tds); _ } ] -> tds
-  | _ -> invalid_arg "Ast_403.type_decls_of_ast"
+  | _ -> invalid_arg "Ast_405.type_decls_of_ast"
 
 let type_extension_of_ast = function
   | Impl [ { pstr_desc = Pstr_typext x; _ } ] -> x
-  | _ -> invalid_arg "Ast_403.extension_of_ast"
+  | _ -> invalid_arg "Ast_405.extension_of_ast"
 
 let extension_constructor_of_ast = function
   | Impl [ { pstr_desc = Pstr_exception x; _ } ] -> x
-  | _ -> invalid_arg "Ast_403.exception_of_ast"
+  | _ -> invalid_arg "Ast_405.exception_of_ast"
 
 let core_type_of_ast = function
   | Impl [ { pstr_desc = Pstr_extension ((_, PTyp x), _); _ } ] -> x
-  | _ -> invalid_arg "Ast_403.core_type_of_ast"
+  | _ -> invalid_arg "Ast_405.core_type_of_ast"
 
 let expression_of_ast = function
   | Impl [ { pstr_desc = Pstr_eval (x, _); _ } ] -> x
-  | _ -> invalid_arg "Ast_403.core_type_of_ast"
+  | _ -> invalid_arg "Ast_405.core_type_of_ast"
 
