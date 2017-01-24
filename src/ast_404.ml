@@ -1116,7 +1116,7 @@ end = struct
 
 end
 
-module Ast_helper : sig
+module Make_ast_helper(Docstrings : module type of Docstrings) : sig
   (**************************************************************************)
   (*                                                                        *)
   (*                                 OCaml                                  *)
@@ -2054,6 +2054,7 @@ end = struct
   end
 
 end
+module Ast_helper = Make_ast_helper(Docstrings)
 
 module Config = struct
   let ast_impl_magic_number = "Caml1999M020"
