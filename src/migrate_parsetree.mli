@@ -2,7 +2,7 @@ module Def = Migrate_parsetree_def
 
 (** Union of all supported versions *)
 
-type ocaml_version = Def.ocaml_version =
+type ocaml_version =
   | OCaml_402
   | OCaml_403
   | OCaml_404
@@ -10,16 +10,33 @@ type ocaml_version = Def.ocaml_version =
 
 val string_of_ocaml_version : ocaml_version -> string
 
-type ('intf, 'impl) intf_or_impl =
-  ('intf, 'impl) Migrate_parsetree_def.intf_or_impl =
-  | Intf of 'intf
-  | Impl of 'impl
+type _ signature =
+  | Sig_402 : Ast_402.Parsetree.signature signature
+  | Sig_403 : Ast_403.Parsetree.signature signature
+  | Sig_404 : Ast_404.Parsetree.signature signature
+  | Sig_405 : Ast_405.Parsetree.signature signature
+
+type _ structure =
+  | Str_402 : Ast_402.Parsetree.structure structure
+  | Str_403 : Ast_403.Parsetree.structure structure
+  | Str_404 : Ast_404.Parsetree.structure structure
+  | Str_405 : Ast_405.Parsetree.structure structure
+
+type _ toplevel_phrase =
+  | Top_402 : Ast_402.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_403 : Ast_403.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_404 : Ast_404.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_405 : Ast_405.Parsetree.toplevel_phrase toplevel_phrase
+
+type _ out_phrase =
+  | Out_402 : Ast_402.Outcometree.out_phrase out_phrase
+  | Out_403 : Ast_403.Outcometree.out_phrase out_phrase
+  | Out_404 : Ast_404.Outcometree.out_phrase out_phrase
+  | Out_405 : Ast_405.Outcometree.out_phrase out_phrase
 
 type ast =
-    Ast_402 of Ast_402.ast
-  | Ast_403 of Ast_403.ast
-  | Ast_404 of Ast_404.ast
-  | Ast_405 of Ast_405.ast
+  | Intf : 'concrete signature * 'concrete -> ast
+  | Impl : 'concrete structure * 'concrete -> ast
 
 (** A simple alias used for the filename of the source that produced an AST *)
 type filename = string
@@ -48,28 +65,21 @@ val to_channel : out_channel -> filename -> ast -> unit
 (** Marshal an AST to a byte string *)
 val to_bytes : filename -> ast -> bytes
 
-open Migrate_parsetree_def
-
-(** Get the OCaml version of an AST *)
+(** Get the OCaml version *)
+val signature_version : _ signature -> ocaml_version
+val structure_version : _ structure -> ocaml_version
+val toplevel_phrase_version : _ toplevel_phrase -> ocaml_version
+val out_phrase_version : _ out_phrase -> ocaml_version
 val ast_version : ast -> ocaml_version
 
 (** Migrate an AST to another version.
 
     Migration functions can raise [Migrate_parsetree_def.Migration_error]
     if a feature is not implemented in the targetted version.  *)
-val migrate_to_version : ast -> ocaml_version -> ast
-
-(** Migrate any version of an AST to 4.02 *)
-val migrate_to_402 : ast -> Ast_402.ast
-
-(** Migrate any version of an AST to 4.03 *)
-val migrate_to_403 : ast -> Ast_403.ast
-
-(** Migrate any version of an AST to 4.04 *)
-val migrate_to_404 : ast -> Ast_404.ast
-
-(** Migrate any version of an AST to 4.05 *)
-val migrate_to_405 : ast -> Ast_405.ast
+val signature_migrate : 'input signature -> 'input -> 'output signature -> 'output
+val structure_migrate : 'input structure -> 'input -> 'output structure -> 'output
+val toplevel_phrase_migrate : 'input toplevel_phrase -> 'input -> 'output toplevel_phrase -> 'output
+val out_phrase_migrate : 'input out_phrase -> 'input -> 'output out_phrase -> 'output
 
 (** [missing_feature_description x] is a text describing the feature [x]. *)
 val missing_feature_description : Def.missing_feature -> string
@@ -82,10 +92,41 @@ val missing_feature_minimal_version : Def.missing_feature -> ocaml_version
 val migration_error_message : Def.missing_feature -> string
 
 (** Aliases for all modules in the library *)
-module Ast_402 = Ast_402
-module Ast_403 = Ast_403
-module Ast_404 = Ast_404
-module Ast_405 = Ast_405
+module OCaml_402 : sig
+  module Ast = Ast_402
+  val version : ocaml_version
+  val signature : Ast.Parsetree.signature signature
+  val structure : Ast.Parsetree.structure structure
+  val toplevel_phrase : Ast.Parsetree.toplevel_phrase toplevel_phrase
+  val out_phrase : Ast.Outcometree.out_phrase out_phrase
+end
+
+module OCaml_403 : sig
+  module Ast = Ast_403
+  val version : ocaml_version
+  val signature : Ast.Parsetree.signature signature
+  val structure : Ast.Parsetree.structure structure
+  val toplevel_phrase : Ast.Parsetree.toplevel_phrase toplevel_phrase
+  val out_phrase : Ast.Outcometree.out_phrase out_phrase
+end
+
+module OCaml_404 : sig
+  module Ast = Ast_404
+  val version : ocaml_version
+  val signature : Ast.Parsetree.signature signature
+  val structure : Ast.Parsetree.structure structure
+  val toplevel_phrase : Ast.Parsetree.toplevel_phrase toplevel_phrase
+  val out_phrase : Ast.Outcometree.out_phrase out_phrase
+end
+
+module OCaml_405 : sig
+  module Ast = Ast_405
+  val version : ocaml_version
+  val signature : Ast.Parsetree.signature signature
+  val structure : Ast.Parsetree.structure structure
+  val toplevel_phrase : Ast.Parsetree.toplevel_phrase toplevel_phrase
+  val out_phrase : Ast.Outcometree.out_phrase out_phrase
+end
 
 module Migrate_402_403 = Migrate_parsetree_402_403
 module Migrate_403_402 = Migrate_parsetree_403_402
@@ -95,7 +136,4 @@ module Migrate_404_405 = Migrate_parsetree_404_405
 module Migrate_405_404 = Migrate_parsetree_405_404
 
 (** An alias to the ast version of the current compiler *)
-module Ast_current = Ast_OCAML_VERSION
-
-val ast_of_current : Ast_current.ast -> ast
-val current_of_ast : ast -> Ast_current.ast
+module OCaml_current = OCaml_OCAML_VERSION

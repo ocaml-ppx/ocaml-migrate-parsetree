@@ -33,7 +33,7 @@ and copy_expression_desc :
         (copy_constant x0)
   | From.Parsetree.Pexp_let (x0,x1,x2) ->
       To.Parsetree.Pexp_let
-        ((copy_From_Asttypes_rec_flag x0),
+        ((copy_rec_flag x0),
           (List.map copy_value_binding x1),
           (copy_expression x2))
   | From.Parsetree.Pexp_function x0 ->
@@ -41,7 +41,7 @@ and copy_expression_desc :
         (List.map copy_case x0)
   | From.Parsetree.Pexp_fun (x0,x1,x2,x3) ->
       To.Parsetree.Pexp_fun
-        ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+        ((copy_label_To_Asttypes_arg_label x0),
           (copy_option copy_expression x1),
           (copy_pattern x2),
           (copy_expression x3))
@@ -51,7 +51,7 @@ and copy_expression_desc :
           (List.map
              (fun x  ->
                 let (x0,x1) = x  in
-                ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+                ((copy_label_To_Asttypes_arg_label x0),
                   (copy_expression x1))) x1))
   | From.Parsetree.Pexp_match (x0,x1) ->
       To.Parsetree.Pexp_match
@@ -71,7 +71,7 @@ and copy_expression_desc :
           (copy_option copy_expression x1))
   | From.Parsetree.Pexp_variant (x0,x1) ->
       To.Parsetree.Pexp_variant
-        ((copy_From_Asttypes_label x0),
+        ((copy_label x0),
           (copy_option copy_expression x1))
   | From.Parsetree.Pexp_record (x0,x1) ->
       To.Parsetree.Pexp_record
@@ -114,7 +114,7 @@ and copy_expression_desc :
         ((copy_pattern x0),
           (copy_expression x1),
           (copy_expression x2),
-          (copy_From_Asttypes_direction_flag x3),
+          (copy_direction_flag x3),
           (copy_expression x4))
   | From.Parsetree.Pexp_constraint (x0,x1) ->
       To.Parsetree.Pexp_constraint
@@ -169,7 +169,7 @@ and copy_expression_desc :
         (copy_module_expr x0)
   | From.Parsetree.Pexp_open (x0,x1,x2) ->
       To.Parsetree.Pexp_open
-        ((copy_From_Asttypes_override_flag x0),
+        ((copy_override_flag x0),
           (copy_loc
              copy_longident x1),
           (copy_expression x2))
@@ -177,7 +177,7 @@ and copy_expression_desc :
       To.Parsetree.Pexp_extension
         (copy_extension x0)
 
-and copy_From_Asttypes_direction_flag :
+and copy_direction_flag :
   From.Asttypes.direction_flag ->
     To.Asttypes.direction_flag
   =
@@ -269,7 +269,7 @@ and copy_pattern_desc :
           (copy_option copy_pattern x1))
   | From.Parsetree.Ppat_variant (x0,x1) ->
       To.Parsetree.Ppat_variant
-        ((copy_From_Asttypes_label x0),
+        ((copy_label x0),
           (copy_option copy_pattern x1))
   | From.Parsetree.Ppat_record (x0,x1) ->
       To.Parsetree.Ppat_record
@@ -279,7 +279,7 @@ and copy_pattern_desc :
                ((copy_loc
                    copy_longident x0),
                  (copy_pattern x1))) x0),
-          (copy_From_Asttypes_closed_flag x1))
+          (copy_closed_flag x1))
   | From.Parsetree.Ppat_array x0 ->
       To.Parsetree.Ppat_array
         (List.map copy_pattern x0)
@@ -337,7 +337,7 @@ and copy_core_type_desc :
       To.Parsetree.Ptyp_var x0
   | From.Parsetree.Ptyp_arrow (x0,x1,x2) ->
       To.Parsetree.Ptyp_arrow
-        ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+        ((copy_label_To_Asttypes_arg_label x0),
           (copy_core_type x1),
           (copy_core_type x2))
   | From.Parsetree.Ptyp_tuple x0 ->
@@ -355,7 +355,7 @@ and copy_core_type_desc :
                let (x0,x1,x2) = x  in
                (x0, (copy_attributes x1),
                  (copy_core_type x2))) x0),
-          (copy_From_Asttypes_closed_flag x1))
+          (copy_closed_flag x1))
   | From.Parsetree.Ptyp_class (x0,x1) ->
       To.Parsetree.Ptyp_class
         ((copy_loc
@@ -367,9 +367,9 @@ and copy_core_type_desc :
   | From.Parsetree.Ptyp_variant (x0,x1,x2) ->
       To.Parsetree.Ptyp_variant
         ((List.map copy_row_field x0),
-          (copy_From_Asttypes_closed_flag x1),
+          (copy_closed_flag x1),
           (copy_option
-             (fun x  -> List.map copy_From_Asttypes_label x) x2))
+             (fun x  -> List.map copy_label x) x2))
   | From.Parsetree.Ptyp_poly (x0,x1) ->
       To.Parsetree.Ptyp_poly
         ((List.map (fun x  -> x) x0),
@@ -402,7 +402,7 @@ and copy_row_field :
   function
   | From.Parsetree.Rtag (x0,x1,x2,x3) ->
       To.Parsetree.Rtag
-        ((copy_From_Asttypes_label x0),
+        ((copy_label x0),
           (copy_attributes x1), (copy_bool x2),
           (List.map copy_core_type x3))
   | From.Parsetree.Rinherit x0 ->
@@ -468,7 +468,7 @@ and copy_structure_item_desc :
           (copy_attributes x1))
   | From.Parsetree.Pstr_value (x0,x1) ->
       To.Parsetree.Pstr_value
-        ((copy_From_Asttypes_rec_flag x0),
+        ((copy_rec_flag x0),
           (List.map copy_value_binding x1))
   | From.Parsetree.Pstr_primitive x0 ->
       To.Parsetree.Pstr_primitive
@@ -560,7 +560,7 @@ and copy_class_expr_desc :
         (copy_class_structure x0)
   | From.Parsetree.Pcl_fun (x0,x1,x2,x3) ->
       To.Parsetree.Pcl_fun
-        ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+        ((copy_label_To_Asttypes_arg_label x0),
           (copy_option copy_expression x1),
           (copy_pattern x2),
           (copy_class_expr x3))
@@ -570,11 +570,11 @@ and copy_class_expr_desc :
           (List.map
              (fun x  ->
                 let (x0,x1) = x  in
-                ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+                ((copy_label_To_Asttypes_arg_label x0),
                   (copy_expression x1))) x1))
   | From.Parsetree.Pcl_let (x0,x1,x2) ->
       To.Parsetree.Pcl_let
-        ((copy_From_Asttypes_rec_flag x0),
+        ((copy_rec_flag x0),
           (List.map copy_value_binding x1),
           (copy_class_expr x2))
   | From.Parsetree.Pcl_constraint (x0,x1) ->
@@ -625,20 +625,20 @@ and copy_class_field_desc :
   function
   | From.Parsetree.Pcf_inherit (x0,x1,x2) ->
       To.Parsetree.Pcf_inherit
-        ((copy_From_Asttypes_override_flag x0),
+        ((copy_override_flag x0),
           (copy_class_expr x1),
           (copy_option (fun x  -> x) x2))
   | From.Parsetree.Pcf_val x0 ->
       To.Parsetree.Pcf_val
         (let (x0,x1,x2) = x0  in
          ((copy_loc (fun x  -> x) x0),
-           (copy_From_Asttypes_mutable_flag x1),
+           (copy_mutable_flag x1),
            (copy_class_field_kind x2)))
   | From.Parsetree.Pcf_method x0 ->
       To.Parsetree.Pcf_method
         (let (x0,x1,x2) = x0  in
          ((copy_loc (fun x  -> x) x0),
-           (copy_From_Asttypes_private_flag x1),
+           (copy_private_flag x1),
            (copy_class_field_kind x2)))
   | From.Parsetree.Pcf_constraint x0 ->
       To.Parsetree.Pcf_constraint
@@ -665,7 +665,7 @@ and copy_class_field_kind :
         (copy_core_type x0)
   | From.Parsetree.Cfk_concrete (x0,x1) ->
       To.Parsetree.Cfk_concrete
-        ((copy_From_Asttypes_override_flag x0),
+        ((copy_override_flag x0),
           (copy_expression x1))
 
 and copy_module_binding :
@@ -929,7 +929,7 @@ and copy_class_type_desc :
         (copy_class_signature x0)
   | From.Parsetree.Pcty_arrow (x0,x1,x2) ->
       To.Parsetree.Pcty_arrow
-        ((copy_From_Asttypes_label_To_Asttypes_arg_label x0),
+        ((copy_label_To_Asttypes_arg_label x0),
           (copy_core_type x1),
           (copy_class_type x2))
   | From.Parsetree.Pcty_extension x0 ->
@@ -981,14 +981,14 @@ and copy_class_type_field_desc :
   | From.Parsetree.Pctf_val x0 ->
       To.Parsetree.Pctf_val
         (let (x0,x1,x2,x3) = x0  in
-         (x0, (copy_From_Asttypes_mutable_flag x1),
-           (copy_From_Asttypes_virtual_flag x2),
+         (x0, (copy_mutable_flag x1),
+           (copy_virtual_flag x2),
            (copy_core_type x3)))
   | From.Parsetree.Pctf_method x0 ->
       To.Parsetree.Pctf_method
         (let (x0,x1,x2,x3) = x0  in
-         (x0, (copy_From_Asttypes_private_flag x1),
-           (copy_From_Asttypes_virtual_flag x2),
+         (x0, (copy_private_flag x1),
+           (copy_virtual_flag x2),
            (copy_core_type x3)))
   | From.Parsetree.Pctf_constraint x0 ->
       To.Parsetree.Pctf_constraint
@@ -1028,13 +1028,13 @@ and copy_class_infos :
        ->
       {
         To.Parsetree.pci_virt =
-          (copy_From_Asttypes_virtual_flag pci_virt);
+          (copy_virtual_flag pci_virt);
         To.Parsetree.pci_params =
           (List.map
              (fun x  ->
                 let (x0,x1) = x  in
                 ((copy_core_type x0),
-                  (copy_From_Asttypes_variance x1))) pci_params);
+                  (copy_variance x1))) pci_params);
         To.Parsetree.pci_name =
           (copy_loc (fun x  -> x) pci_name);
         To.Parsetree.pci_expr = (f0 pci_expr);
@@ -1044,7 +1044,7 @@ and copy_class_infos :
           (copy_attributes pci_attributes)
       }
 
-and copy_From_Asttypes_virtual_flag :
+and copy_virtual_flag :
   From.Asttypes.virtual_flag ->
     To.Asttypes.virtual_flag
   =
@@ -1095,14 +1095,14 @@ and copy_open_description :
         (copy_loc copy_longident
            popen_lid);
       To.Parsetree.popen_override =
-        (copy_From_Asttypes_override_flag popen_override);
+        (copy_override_flag popen_override);
       To.Parsetree.popen_loc =
         (copy_location popen_loc);
       To.Parsetree.popen_attributes =
         (copy_attributes popen_attributes)
     }
 
-and copy_From_Asttypes_override_flag :
+and copy_override_flag :
   From.Asttypes.override_flag ->
     To.Asttypes.override_flag
   =
@@ -1172,12 +1172,12 @@ and copy_type_extension :
            (fun x  ->
               let (x0,x1) = x  in
               ((copy_core_type x0),
-                (copy_From_Asttypes_variance x1))) ptyext_params);
+                (copy_variance x1))) ptyext_params);
       To.Parsetree.ptyext_constructors =
         (List.map copy_extension_constructor
            ptyext_constructors);
       To.Parsetree.ptyext_private =
-        (copy_From_Asttypes_private_flag ptyext_private);
+        (copy_private_flag ptyext_private);
       To.Parsetree.ptyext_attributes =
         (copy_attributes ptyext_attributes)
     }
@@ -1239,7 +1239,7 @@ and copy_type_declaration :
            (fun x  ->
               let (x0,x1) = x  in
               ((copy_core_type x0),
-                (copy_From_Asttypes_variance x1))) ptype_params);
+                (copy_variance x1))) ptype_params);
       To.Parsetree.ptype_cstrs =
         (List.map
            (fun x  ->
@@ -1250,7 +1250,7 @@ and copy_type_declaration :
       To.Parsetree.ptype_kind =
         (copy_type_kind ptype_kind);
       To.Parsetree.ptype_private =
-        (copy_From_Asttypes_private_flag ptype_private);
+        (copy_private_flag ptype_private);
       To.Parsetree.ptype_manifest =
         (copy_option copy_core_type ptype_manifest);
       To.Parsetree.ptype_attributes =
@@ -1259,7 +1259,7 @@ and copy_type_declaration :
         (copy_location ptype_loc)
     }
 
-and copy_From_Asttypes_private_flag :
+and copy_private_flag :
   From.Asttypes.private_flag ->
     To.Asttypes.private_flag
   =
@@ -1298,7 +1298,7 @@ and copy_label_declaration :
       To.Parsetree.pld_name =
         (copy_loc (fun x  -> x) pld_name);
       To.Parsetree.pld_mutable =
-        (copy_From_Asttypes_mutable_flag pld_mutable);
+        (copy_mutable_flag pld_mutable);
       To.Parsetree.pld_type =
         (copy_core_type pld_type);
       To.Parsetree.pld_loc =
@@ -1307,7 +1307,7 @@ and copy_label_declaration :
         (copy_attributes pld_attributes)
     }
 
-and copy_From_Asttypes_mutable_flag :
+and copy_mutable_flag :
   From.Asttypes.mutable_flag ->
     To.Asttypes.mutable_flag
   =
@@ -1340,7 +1340,7 @@ and copy_constructor_declaration :
         (copy_attributes pcd_attributes)
     }
 
-and copy_From_Asttypes_variance :
+and copy_variance :
   From.Asttypes.variance -> To.Asttypes.variance =
   function
   | From.Asttypes.Covariant  ->
@@ -1374,7 +1374,7 @@ and copy_value_description :
         (copy_location pval_loc)
     }
 
-and copy_From_Asttypes_closed_flag :
+and copy_closed_flag :
   From.Asttypes.closed_flag ->
     To.Asttypes.closed_flag
   =
@@ -1382,12 +1382,12 @@ and copy_From_Asttypes_closed_flag :
   | From.Asttypes.Closed  -> To.Asttypes.Closed
   | From.Asttypes.Open  -> To.Asttypes.Open
 
-and copy_From_Asttypes_label :
+and copy_label :
   From.Asttypes.label -> To.Asttypes.label =
   fun x ->
     x
 
-and copy_From_Asttypes_label_To_Asttypes_arg_label :
+and copy_label_To_Asttypes_arg_label :
   From.Asttypes.label -> To.Asttypes.arg_label =
   fun x ->
     if x <> "" then
@@ -1398,7 +1398,7 @@ and copy_From_Asttypes_label_To_Asttypes_arg_label :
 
 
 
-and copy_From_Asttypes_rec_flag :
+and copy_rec_flag :
   From.Asttypes.rec_flag -> To.Asttypes.rec_flag =
   function
   | From.Asttypes.Nonrecursive  ->
@@ -1491,3 +1491,338 @@ and type_declarations types =
       (To.Asttypes.Nonrecursive,
        {x with To.Parsetree.ptype_attributes} :: xs)
   | types -> (To.Asttypes.Recursive, types)
+
+let rec copy_out_phrase :
+  From.Outcometree.out_phrase -> To.Outcometree.out_phrase =
+  function
+  | From.Outcometree.Ophr_eval (x0,x1) ->
+      To.Outcometree.Ophr_eval
+        ((copy_out_value x0),
+          (copy_out_type x1))
+  | From.Outcometree.Ophr_signature x0 ->
+      To.Outcometree.Ophr_signature
+        (List.map
+           (fun x  ->
+              let (x0,x1) = x  in
+              ((copy_out_sig_item x0),
+                (copy_option copy_out_value x1))) x0)
+  | From.Outcometree.Ophr_exception x0 ->
+      To.Outcometree.Ophr_exception
+        (let (x0,x1) = x0  in
+         ((copy_exn x0), (copy_out_value x1)))
+
+and copy_exn : exn -> exn = fun x  -> x
+
+and copy_out_sig_item :
+  From.Outcometree.out_sig_item -> To.Outcometree.out_sig_item =
+  function
+  | From.Outcometree.Osig_class (x0,x1,x2,x3,x4) ->
+      To.Outcometree.Osig_class
+        ((copy_bool x0), x1,
+          (List.map
+             (fun x  ->
+                let (x0,x1) = x  in
+                (x0, (let (x0,x1) = x1  in ((copy_bool x0), (copy_bool x1)))))
+             x2), (copy_out_class_type x3),
+          (copy_out_rec_status x4))
+  | From.Outcometree.Osig_class_type (x0,x1,x2,x3,x4) ->
+      To.Outcometree.Osig_class_type
+        ((copy_bool x0), x1,
+          (List.map
+             (fun x  ->
+                let (x0,x1) = x  in
+                (x0, (let (x0,x1) = x1  in ((copy_bool x0), (copy_bool x1)))))
+             x2), (copy_out_class_type x3),
+          (copy_out_rec_status x4))
+  | From.Outcometree.Osig_typext (x0,x1) ->
+      To.Outcometree.Osig_typext
+        ((copy_out_extension_constructor x0),
+          (copy_out_ext_status x1))
+  | From.Outcometree.Osig_modtype (x0,x1) ->
+      To.Outcometree.Osig_modtype
+        (x0, (copy_out_module_type x1))
+  | From.Outcometree.Osig_module (x0,x1,x2) ->
+      To.Outcometree.Osig_module
+        (x0, (copy_out_module_type x1),
+          (copy_out_rec_status x2))
+  | From.Outcometree.Osig_type (x0,x1) ->
+      To.Outcometree.Osig_type
+        ((copy_out_type_decl x0),
+          (copy_out_rec_status x1))
+  | From.Outcometree.Osig_value (x0,x1,x2) ->
+      To.Outcometree.Osig_value { To.Outcometree.
+                                  oval_name = x0;
+                                  oval_type = copy_out_type x1;
+                                  oval_prims = List.map (fun x -> x) x2;
+                                  oval_attributes = [] }
+
+and copy_out_type_decl :
+  From.Outcometree.out_type_decl -> To.Outcometree.out_type_decl =
+  fun
+    { From.Outcometree.otype_name = otype_name;
+      From.Outcometree.otype_params = otype_params;
+      From.Outcometree.otype_type = otype_type;
+      From.Outcometree.otype_private = otype_private;
+      From.Outcometree.otype_cstrs = otype_cstrs }
+     ->
+    {
+      To.Outcometree.otype_name = otype_name;
+      To.Outcometree.otype_params =
+        (List.map
+           (fun x  ->
+              let (x0,x1) = x  in
+              (x0, (let (x0,x1) = x1  in ((copy_bool x0), (copy_bool x1)))))
+           otype_params);
+      To.Outcometree.otype_type =
+        (copy_out_type otype_type);
+      To.Outcometree.otype_private =
+        (copy_private_flag otype_private);
+      To.Outcometree.otype_cstrs =
+        (List.map
+           (fun x  ->
+              let (x0,x1) = x  in
+              ((copy_out_type x0),
+               (copy_out_type x1))) otype_cstrs);
+      To.Outcometree.otype_immediate = false;
+    }
+
+and copy_out_module_type :
+  From.Outcometree.out_module_type -> To.Outcometree.out_module_type
+  =
+  function
+  | From.Outcometree.Omty_abstract  -> To.Outcometree.Omty_abstract
+  | From.Outcometree.Omty_functor (x0,x1,x2) ->
+      To.Outcometree.Omty_functor
+        (x0, (copy_option copy_out_module_type x1),
+          (copy_out_module_type x2))
+  | From.Outcometree.Omty_ident x0 ->
+      To.Outcometree.Omty_ident (copy_out_ident x0)
+  | From.Outcometree.Omty_signature x0 ->
+      To.Outcometree.Omty_signature
+        (List.map copy_out_sig_item x0)
+  | From.Outcometree.Omty_alias x0 ->
+      To.Outcometree.Omty_alias (copy_out_ident x0)
+
+and copy_out_ext_status :
+  From.Outcometree.out_ext_status -> To.Outcometree.out_ext_status =
+  function
+  | From.Outcometree.Oext_first  -> To.Outcometree.Oext_first
+  | From.Outcometree.Oext_next  -> To.Outcometree.Oext_next
+  | From.Outcometree.Oext_exception  -> To.Outcometree.Oext_exception
+
+and copy_out_extension_constructor :
+  From.Outcometree.out_extension_constructor ->
+    To.Outcometree.out_extension_constructor
+  =
+  fun
+    { From.Outcometree.oext_name = oext_name;
+      From.Outcometree.oext_type_name = oext_type_name;
+      From.Outcometree.oext_type_params = oext_type_params;
+      From.Outcometree.oext_args = oext_args;
+      From.Outcometree.oext_ret_type = oext_ret_type;
+      From.Outcometree.oext_private = oext_private }
+     ->
+    {
+      To.Outcometree.oext_name = oext_name;
+      To.Outcometree.oext_type_name = oext_type_name;
+      To.Outcometree.oext_type_params =
+        (List.map (fun x  -> x) oext_type_params);
+      To.Outcometree.oext_args =
+        (List.map copy_out_type oext_args);
+      To.Outcometree.oext_ret_type =
+        (copy_option copy_out_type oext_ret_type);
+      To.Outcometree.oext_private =
+        (copy_private_flag oext_private)
+    }
+
+and copy_out_rec_status :
+  From.Outcometree.out_rec_status -> To.Outcometree.out_rec_status =
+  function
+  | From.Outcometree.Orec_not  -> To.Outcometree.Orec_not
+  | From.Outcometree.Orec_first  -> To.Outcometree.Orec_first
+  | From.Outcometree.Orec_next  -> To.Outcometree.Orec_next
+
+and copy_out_class_type :
+  From.Outcometree.out_class_type -> To.Outcometree.out_class_type =
+  function
+  | From.Outcometree.Octy_constr (x0,x1) ->
+      To.Outcometree.Octy_constr
+        ((copy_out_ident x0),
+          (List.map copy_out_type x1))
+  | From.Outcometree.Octy_arrow (x0,x1,x2) ->
+      To.Outcometree.Octy_arrow
+        (x0, (copy_out_type x1),
+          (copy_out_class_type x2))
+  | From.Outcometree.Octy_signature (x0,x1) ->
+      To.Outcometree.Octy_signature
+        ((copy_option copy_out_type x0),
+          (List.map copy_out_class_sig_item x1))
+
+and copy_out_class_sig_item :
+  From.Outcometree.out_class_sig_item ->
+    To.Outcometree.out_class_sig_item
+  =
+  function
+  | From.Outcometree.Ocsg_constraint (x0,x1) ->
+      To.Outcometree.Ocsg_constraint
+        ((copy_out_type x0),
+          (copy_out_type x1))
+  | From.Outcometree.Ocsg_method (x0,x1,x2,x3) ->
+      To.Outcometree.Ocsg_method
+        (x0, (copy_bool x1), (copy_bool x2),
+          (copy_out_type x3))
+  | From.Outcometree.Ocsg_value (x0,x1,x2,x3) ->
+      To.Outcometree.Ocsg_value
+        (x0, (copy_bool x1), (copy_bool x2),
+          (copy_out_type x3))
+
+and copy_out_type :
+  From.Outcometree.out_type -> To.Outcometree.out_type =
+  function
+  | From.Outcometree.Otyp_abstract  -> To.Outcometree.Otyp_abstract
+  | From.Outcometree.Otyp_open  -> To.Outcometree.Otyp_open
+  | From.Outcometree.Otyp_alias (x0,x1) ->
+      To.Outcometree.Otyp_alias
+        ((copy_out_type x0), x1)
+  | From.Outcometree.Otyp_arrow (x0,x1,x2) ->
+      To.Outcometree.Otyp_arrow
+        (x0, (copy_out_type x1),
+          (copy_out_type x2))
+  | From.Outcometree.Otyp_class (x0,x1,x2) ->
+      To.Outcometree.Otyp_class
+        ((copy_bool x0), (copy_out_ident x1),
+          (List.map copy_out_type x2))
+  | From.Outcometree.Otyp_constr (x0,x1) ->
+      To.Outcometree.Otyp_constr
+        ((copy_out_ident x0),
+          (List.map copy_out_type x1))
+  | From.Outcometree.Otyp_manifest (x0,x1) ->
+      To.Outcometree.Otyp_manifest
+        ((copy_out_type x0),
+          (copy_out_type x1))
+  | From.Outcometree.Otyp_object (x0,x1) ->
+      To.Outcometree.Otyp_object
+        ((List.map
+            (fun x  ->
+               let (x0,x1) = x  in
+               (x0, (copy_out_type x1))) x0),
+          (copy_option copy_bool x1))
+  | From.Outcometree.Otyp_record x0 ->
+      To.Outcometree.Otyp_record
+        (List.map
+           (fun x  ->
+              let (x0,x1,x2) = x  in
+              (x0, (copy_bool x1), (copy_out_type x2)))
+           x0)
+  | From.Outcometree.Otyp_stuff x0 -> To.Outcometree.Otyp_stuff x0
+  | From.Outcometree.Otyp_sum x0 ->
+      To.Outcometree.Otyp_sum
+        (List.map
+           (fun x  ->
+              let (x0,x1,x2) = x  in
+              (x0, (List.map copy_out_type x1),
+                (copy_option copy_out_type x2))) x0)
+  | From.Outcometree.Otyp_tuple x0 ->
+      To.Outcometree.Otyp_tuple
+        (List.map copy_out_type x0)
+  | From.Outcometree.Otyp_var (x0,x1) ->
+      To.Outcometree.Otyp_var ((copy_bool x0), x1)
+  | From.Outcometree.Otyp_variant (x0,x1,x2,x3) ->
+      To.Outcometree.Otyp_variant
+        ((copy_bool x0), (copy_out_variant x1),
+          (copy_bool x2),
+          (copy_option (fun x  -> List.map (fun x  -> x) x) x3))
+  | From.Outcometree.Otyp_poly (x0,x1) ->
+      To.Outcometree.Otyp_poly
+        ((List.map (fun x  -> x) x0), (copy_out_type x1))
+  | From.Outcometree.Otyp_module (x0,x1,x2) ->
+      To.Outcometree.Otyp_module
+        (x0, (List.map (fun x  -> x) x1),
+          (List.map copy_out_type x2))
+
+and copy_out_variant :
+  From.Outcometree.out_variant -> To.Outcometree.out_variant =
+  function
+  | From.Outcometree.Ovar_fields x0 ->
+      To.Outcometree.Ovar_fields
+        (List.map
+           (fun x  ->
+              let (x0,x1,x2) = x  in
+              (x0, (copy_bool x1),
+                (List.map copy_out_type x2))) x0)
+  | From.Outcometree.Ovar_name (x0,x1) ->
+      To.Outcometree.Ovar_name
+        ((copy_out_ident x0),
+          (List.map copy_out_type x1))
+
+and copy_out_value :
+  From.Outcometree.out_value -> To.Outcometree.out_value =
+  function
+  | From.Outcometree.Oval_array x0 ->
+      To.Outcometree.Oval_array
+        (List.map copy_out_value x0)
+  | From.Outcometree.Oval_char x0 -> To.Outcometree.Oval_char x0
+  | From.Outcometree.Oval_constr (x0,x1) ->
+      To.Outcometree.Oval_constr
+        ((copy_out_ident x0),
+          (List.map copy_out_value x1))
+  | From.Outcometree.Oval_ellipsis  -> To.Outcometree.Oval_ellipsis
+  | From.Outcometree.Oval_float x0 ->
+      To.Outcometree.Oval_float (copy_float x0)
+  | From.Outcometree.Oval_int x0 -> To.Outcometree.Oval_int x0
+  | From.Outcometree.Oval_int32 x0 -> To.Outcometree.Oval_int32 x0
+  | From.Outcometree.Oval_int64 x0 -> To.Outcometree.Oval_int64 x0
+  | From.Outcometree.Oval_nativeint x0 ->
+      To.Outcometree.Oval_nativeint x0
+  | From.Outcometree.Oval_list x0 ->
+      To.Outcometree.Oval_list
+        (List.map copy_out_value x0)
+  | From.Outcometree.Oval_printer x0 ->
+      To.Outcometree.Oval_printer x0
+  | From.Outcometree.Oval_record x0 ->
+      To.Outcometree.Oval_record
+        (List.map
+           (fun x  ->
+              let (x0,x1) = x  in
+              ((copy_out_ident x0),
+                (copy_out_value x1))) x0)
+  | From.Outcometree.Oval_string x0 -> To.Outcometree.Oval_string x0
+  | From.Outcometree.Oval_stuff x0 -> To.Outcometree.Oval_stuff x0
+  | From.Outcometree.Oval_tuple x0 ->
+      To.Outcometree.Oval_tuple
+        (List.map copy_out_value x0)
+  | From.Outcometree.Oval_variant (x0,x1) ->
+      To.Outcometree.Oval_variant
+        (x0, (copy_option copy_out_value x1))
+
+and copy_float : float -> float = fun x  -> x
+
+and copy_out_ident :
+  From.Outcometree.out_ident -> To.Outcometree.out_ident =
+  function
+  | From.Outcometree.Oide_apply (x0,x1) ->
+      To.Outcometree.Oide_apply
+        ((copy_out_ident x0),
+          (copy_out_ident x1))
+  | From.Outcometree.Oide_dot (x0,x1) ->
+      To.Outcometree.Oide_dot
+        ((copy_out_ident x0), x1)
+  | From.Outcometree.Oide_ident x0 -> To.Outcometree.Oide_ident x0
+
+let rec copy_toplevel_phrase :
+  From.Parsetree.toplevel_phrase -> To.Parsetree.toplevel_phrase =
+  function
+  | From.Parsetree.Ptop_def x0 ->
+      To.Parsetree.Ptop_def (copy_structure x0)
+  | From.Parsetree.Ptop_dir (x0,x1) ->
+      To.Parsetree.Ptop_dir
+        (x0, (copy_directive_argument x1))
+
+and copy_directive_argument :
+  From.Parsetree.directive_argument -> To.Parsetree.directive_argument =
+  function
+  | From.Parsetree.Pdir_none  -> To.Parsetree.Pdir_none
+  | From.Parsetree.Pdir_string x0 -> To.Parsetree.Pdir_string x0
+  | From.Parsetree.Pdir_int x0 -> To.Parsetree.Pdir_int (string_of_int x0, None)
+  | From.Parsetree.Pdir_ident x0 -> To.Parsetree.Pdir_ident (copy_longident x0)
+  | From.Parsetree.Pdir_bool x0 -> To.Parsetree.Pdir_bool (copy_bool x0)

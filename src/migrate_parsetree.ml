@@ -1,6 +1,16 @@
 module Def = Migrate_parsetree_def
+module Ast_402 = Ast_402
+module Ast_403 = Ast_403
+module Ast_404 = Ast_404
+module Ast_405 = Ast_405
+module Migrate_402_403 = Migrate_parsetree_402_403
+module Migrate_403_402 = Migrate_parsetree_403_402
+module Migrate_403_404 = Migrate_parsetree_403_404
+module Migrate_404_403 = Migrate_parsetree_404_403
+module Migrate_404_405 = Migrate_parsetree_404_405
+module Migrate_405_404 = Migrate_parsetree_405_404
 
-type ocaml_version = Migrate_parsetree_def.ocaml_version =
+type ocaml_version =
   | OCaml_402
   | OCaml_403
   | OCaml_404
@@ -12,55 +22,60 @@ let string_of_ocaml_version = function
   | OCaml_404 -> "4.04"
   | OCaml_405 -> "4.05"
 
-type ('intf, 'impl) intf_or_impl =
-  ('intf, 'impl) Migrate_parsetree_def.intf_or_impl =
-  | Intf of 'intf
-  | Impl of 'impl
+type _ signature =
+  | Sig_402 : Ast_402.Parsetree.signature signature
+  | Sig_403 : Ast_403.Parsetree.signature signature
+  | Sig_404 : Ast_404.Parsetree.signature signature
+  | Sig_405 : Ast_405.Parsetree.signature signature
+
+type _ structure =
+  | Str_402 : Ast_402.Parsetree.structure structure
+  | Str_403 : Ast_403.Parsetree.structure structure
+  | Str_404 : Ast_404.Parsetree.structure structure
+  | Str_405 : Ast_405.Parsetree.structure structure
+
+type _ toplevel_phrase =
+  | Top_402 : Ast_402.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_403 : Ast_403.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_404 : Ast_404.Parsetree.toplevel_phrase toplevel_phrase
+  | Top_405 : Ast_405.Parsetree.toplevel_phrase toplevel_phrase
+
+type _ out_phrase =
+  | Out_402 : Ast_402.Outcometree.out_phrase out_phrase
+  | Out_403 : Ast_403.Outcometree.out_phrase out_phrase
+  | Out_404 : Ast_404.Outcometree.out_phrase out_phrase
+  | Out_405 : Ast_405.Outcometree.out_phrase out_phrase
 
 type ast =
-  | Ast_402 of Ast_402.ast
-  | Ast_403 of Ast_403.ast
-  | Ast_404 of Ast_404.ast
-  | Ast_405 of Ast_405.ast
+  | Intf : 'concrete signature * 'concrete -> ast
+  | Impl : 'concrete structure * 'concrete -> ast
 
 type filename = string
 
 let magics = [
-  Ast_402.Config.ast_intf_magic_number,
-  (fun x -> Ast_402 (Intf (Obj.obj x)));
-  Ast_402.Config.ast_impl_magic_number,
-  (fun x -> Ast_402 (Impl (Obj.obj x)));
-  Ast_403.Config.ast_intf_magic_number,
-  (fun x -> Ast_403 (Intf (Obj.obj x)));
-  Ast_403.Config.ast_impl_magic_number,
-  (fun x -> Ast_403 (Impl (Obj.obj x)));
-  Ast_404.Config.ast_intf_magic_number,
-  (fun x -> Ast_404 (Intf (Obj.obj x)));
-  Ast_404.Config.ast_impl_magic_number,
-  (fun x -> Ast_404 (Impl (Obj.obj x)));
-  Ast_405.Config.ast_impl_magic_number,
-  (fun x -> Ast_405 (Impl (Obj.obj x)));
+  Ast_402.Config.ast_intf_magic_number, (fun x -> Intf (Sig_402, Obj.obj x));
+  Ast_402.Config.ast_impl_magic_number, (fun x -> Impl (Str_402, Obj.obj x));
+  Ast_403.Config.ast_intf_magic_number, (fun x -> Intf (Sig_403, Obj.obj x));
+  Ast_403.Config.ast_impl_magic_number, (fun x -> Impl (Str_403, Obj.obj x));
+  Ast_404.Config.ast_intf_magic_number, (fun x -> Intf (Sig_404, Obj.obj x));
+  Ast_404.Config.ast_impl_magic_number, (fun x -> Impl (Str_404, Obj.obj x));
+  Ast_405.Config.ast_intf_magic_number, (fun x -> Intf (Sig_404, Obj.obj x));
+  Ast_405.Config.ast_impl_magic_number, (fun x -> Impl (Str_405, Obj.obj x));
 ]
 
 let magic_number = function
-  | Ast_402 (Intf _) -> Ast_402.Config.ast_intf_magic_number
-  | Ast_402 (Impl _) -> Ast_402.Config.ast_impl_magic_number
-  | Ast_403 (Intf _) -> Ast_403.Config.ast_intf_magic_number
-  | Ast_403 (Impl _) -> Ast_403.Config.ast_impl_magic_number
-  | Ast_404 (Intf _) -> Ast_404.Config.ast_intf_magic_number
-  | Ast_404 (Impl _) -> Ast_404.Config.ast_impl_magic_number
-  | Ast_405 (Intf _) -> Ast_405.Config.ast_intf_magic_number
-  | Ast_405 (Impl _) -> Ast_405.Config.ast_impl_magic_number
+  | Intf (Sig_402, _) -> Ast_402.Config.ast_intf_magic_number
+  | Impl (Str_402, _) -> Ast_402.Config.ast_impl_magic_number
+  | Intf (Sig_403, _) -> Ast_403.Config.ast_intf_magic_number
+  | Impl (Str_403, _) -> Ast_403.Config.ast_impl_magic_number
+  | Intf (Sig_404, _) -> Ast_404.Config.ast_intf_magic_number
+  | Impl (Str_404, _) -> Ast_404.Config.ast_impl_magic_number
+  | Intf (Sig_405, _) -> Ast_405.Config.ast_intf_magic_number
+  | Impl (Str_405, _) -> Ast_405.Config.ast_impl_magic_number
 
 let payload = function
-  | Ast_402 (Intf x) -> Obj.repr x
-  | Ast_402 (Impl x) -> Obj.repr x
-  | Ast_403 (Intf x) -> Obj.repr x
-  | Ast_403 (Impl x) -> Obj.repr x
-  | Ast_404 (Intf x) -> Obj.repr x
-  | Ast_404 (Impl x) -> Obj.repr x
-  | Ast_405 (Intf x) -> Obj.repr x
-  | Ast_405 (Impl x) -> Obj.repr x
+  | Intf (_, x) -> Obj.repr x
+  | Impl (_, x) -> Obj.repr x
 
 let magic_length = String.length Ast_402.Config.ast_impl_magic_number
 
@@ -126,69 +141,152 @@ let to_bytes (filename : filename) x =
   ) (Marshal.to_bytes (payload x) [])
 
 let ast_version = function
-  | Ast_402 _ -> OCaml_402
-  | Ast_403 _ -> OCaml_403
-  | Ast_404 _ -> OCaml_404
-  | Ast_405 _ -> OCaml_405
+  | Impl (Str_402, _) -> OCaml_402
+  | Impl (Str_403, _) -> OCaml_403
+  | Impl (Str_404, _) -> OCaml_404
+  | Impl (Str_405, _) -> OCaml_405
+  | Intf (Sig_402, _) -> OCaml_402
+  | Intf (Sig_403, _) -> OCaml_403
+  | Intf (Sig_404, _) -> OCaml_404
+  | Intf (Sig_405, _) -> OCaml_405
 
-let down_to_405 = function
-  | Ast_405 x -> x
-  | _ -> assert false
+let migrate_objects (i_ver : _ -> ocaml_version) (o_ver : _ -> ocaml_version) =
+  fun down up i_v i o_v ->
+    if i_ver i_v < o_ver o_v then up i_v i o_v else down i_v i o_v
 
-let down_to_404 = function
-  | Ast_404 x -> x
-  | x -> match down_to_405 x with
-    | Impl x -> Impl (Migrate_parsetree_405_404.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_405_404.copy_signature x)
+let rec sig_down : type i o. i signature -> i -> o signature -> o =
+  fun (type i) (type o) (i_v : i signature) (i : i) (o_v : o signature) ->
+    match i_v, o_v with
+    | Sig_405, Sig_405 -> (i : o)
+    | Sig_404, Sig_404 -> (i : o)
+    | Sig_403, Sig_403 -> (i : o)
+    | Sig_402, Sig_402 -> (i : o)
+    | Sig_405, _ -> sig_down Sig_404 (Migrate_405_404.copy_signature i) o_v
+    | Sig_404, _ -> sig_down Sig_403 (Migrate_404_403.copy_signature i) o_v
+    | Sig_403, _ -> sig_down Sig_402 (Migrate_403_402.copy_signature i) o_v
+    | Sig_402, _ -> assert false
 
-let down_to_403 = function
-  | Ast_403 x -> x
-  | x -> match down_to_404 x with
-    | Impl x -> Impl (Migrate_parsetree_404_403.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_404_403.copy_signature x)
+let rec sig_up : type i o. i signature -> i -> o signature -> o =
+  fun (type i) (type o) (i_v : i signature) (i : i) (o_v : o signature) ->
+    match i_v, o_v with
+    | Sig_405, Sig_405 -> (i : o)
+    | Sig_404, Sig_404 -> (i : o)
+    | Sig_403, Sig_403 -> (i : o)
+    | Sig_402, Sig_402 -> (i : o)
+    | Sig_402, _ -> sig_up Sig_403 (Migrate_402_403.copy_signature i) o_v
+    | Sig_403, _ -> sig_up Sig_404 (Migrate_403_404.copy_signature i) o_v
+    | Sig_404, _ -> sig_up Sig_405 (Migrate_404_405.copy_signature i) o_v
+    | Sig_405, _ -> assert false
 
-let down_to_402 = function
-  | Ast_402 x -> x
-  | x -> match down_to_403 x with
-    | Impl x -> Impl (Migrate_parsetree_403_402.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_403_402.copy_signature x)
+let signature_version (type a) (x : a signature) = match x with
+  | Sig_402 -> OCaml_402
+  | Sig_403 -> OCaml_403
+  | Sig_404 -> OCaml_404
+  | Sig_405 -> OCaml_405
 
-let up_to_402 = function
-  | Ast_402 x -> x
-  | _ -> assert false
+let signature_migrate i_v i o_v =
+  migrate_objects signature_version signature_version sig_down sig_up i_v i o_v
 
-let up_to_403 = function
-  | Ast_403 x -> x
-  | x -> match up_to_402 x with
-    | Impl x -> Impl (Migrate_parsetree_402_403.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_402_403.copy_signature x)
+let rec str_down : type i o. i structure -> i -> o structure -> o =
+  fun (type i) (type o) (i_v : i structure) (i : i) (o_v : o structure) ->
+    match i_v, o_v with
+    | Str_405, Str_405 -> (i : o)
+    | Str_404, Str_404 -> (i : o)
+    | Str_403, Str_403 -> (i : o)
+    | Str_402, Str_402 -> (i : o)
+    | Str_405, _ -> str_down Str_404 (Migrate_405_404.copy_structure i) o_v
+    | Str_404, _ -> str_down Str_403 (Migrate_404_403.copy_structure i) o_v
+    | Str_403, _ -> str_down Str_402 (Migrate_403_402.copy_structure i) o_v
+    | Str_402, _ -> assert false
 
-let up_to_404 = function
-  | Ast_404 x -> x
-  | x -> match up_to_403 x with
-    | Impl x -> Impl (Migrate_parsetree_403_404.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_403_404.copy_signature x)
+let rec str_up : type i o. i structure -> i -> o structure -> o =
+  fun (type i) (type o) (i_v : i structure) (i : i) (o_v : o structure) ->
+    match i_v, o_v with
+    | Str_405, Str_405 -> (i : o)
+    | Str_404, Str_404 -> (i : o)
+    | Str_403, Str_403 -> (i : o)
+    | Str_402, Str_402 -> (i : o)
+    | Str_402, _ -> str_up Str_403 (Migrate_402_403.copy_structure i) o_v
+    | Str_403, _ -> str_up Str_404 (Migrate_403_404.copy_structure i) o_v
+    | Str_404, _ -> str_up Str_405 (Migrate_404_405.copy_structure i) o_v
+    | Str_405, _ -> assert false
 
-let up_to_405 = function
-  | Ast_405 x -> x
-  | x -> match up_to_404 x with
-    | Impl x -> Impl (Migrate_parsetree_404_405.copy_structure x)
-    | Intf x -> Intf (Migrate_parsetree_404_405.copy_signature x)
+let structure_version (type a) (x : a structure) = match x with
+  | Str_402 -> OCaml_402
+  | Str_403 -> OCaml_403
+  | Str_404 -> OCaml_404
+  | Str_405 -> OCaml_405
 
-let migrate_to_402 = down_to_402
+let structure_migrate i_v i o_v =
+  migrate_objects structure_version structure_version str_down str_up i_v i o_v
 
-let migrate_fun version down_to up_to ast =
-  if ast_version ast <= version then up_to ast else down_to ast
+let rec top_down : type i o. i toplevel_phrase -> i -> o toplevel_phrase -> o =
+  fun (type i) (type o) (i_v : i toplevel_phrase) (i : i) (o_v : o toplevel_phrase) ->
+    match i_v, o_v with
+    | Top_405, Top_405 -> (i : o)
+    | Top_404, Top_404 -> (i : o)
+    | Top_403, Top_403 -> (i : o)
+    | Top_402, Top_402 -> (i : o)
+    | Top_405, _ -> top_down Top_404 (Migrate_405_404.copy_toplevel_phrase i) o_v
+    | Top_404, _ -> top_down Top_403 (Migrate_404_403.copy_toplevel_phrase i) o_v
+    | Top_403, _ -> top_down Top_402 (Migrate_403_402.copy_toplevel_phrase i) o_v
+    | Top_402, _ -> assert false
 
-let migrate_to_403 ast = migrate_fun OCaml_403 down_to_403 up_to_403 ast
-let migrate_to_404 ast = migrate_fun OCaml_404 down_to_404 up_to_404 ast
-let migrate_to_405 ast = migrate_fun OCaml_405 down_to_405 up_to_405 ast
+let rec top_up : type i o. i toplevel_phrase -> i -> o toplevel_phrase -> o =
+  fun (type i) (type o) (i_v : i toplevel_phrase) (i : i) (o_v : o toplevel_phrase) ->
+    match i_v, o_v with
+    | Top_405, Top_405 -> (i : o)
+    | Top_404, Top_404 -> (i : o)
+    | Top_403, Top_403 -> (i : o)
+    | Top_402, Top_402 -> (i : o)
+    | Top_402, _ -> top_up Top_403 (Migrate_402_403.copy_toplevel_phrase i) o_v
+    | Top_403, _ -> top_up Top_404 (Migrate_403_404.copy_toplevel_phrase i) o_v
+    | Top_404, _ -> top_up Top_405 (Migrate_404_405.copy_toplevel_phrase i) o_v
+    | Top_405, _ -> assert false
 
-let migrate_to_version ast = function
-  | OCaml_402 -> Ast_402 (migrate_to_402 ast)
-  | OCaml_403 -> Ast_403 (migrate_to_403 ast)
-  | OCaml_404 -> Ast_404 (migrate_to_404 ast)
-  | OCaml_405 -> Ast_405 (migrate_to_405 ast)
+let toplevel_phrase_version (type a) (x : a toplevel_phrase) = match x with
+  | Top_402 -> OCaml_402
+  | Top_403 -> OCaml_403
+  | Top_404 -> OCaml_404
+  | Top_405 -> OCaml_405
+
+let toplevel_phrase_migrate i_v i o_v =
+  migrate_objects toplevel_phrase_version toplevel_phrase_version
+    top_down top_up i_v i o_v
+
+let rec out_down : type i o. i out_phrase -> i -> o out_phrase -> o =
+  fun (type i) (type o) (i_v : i out_phrase) (i : i) (o_v : o out_phrase) ->
+    match i_v, o_v with
+    | Out_405, Out_405 -> (i : o)
+    | Out_404, Out_404 -> (i : o)
+    | Out_403, Out_403 -> (i : o)
+    | Out_402, Out_402 -> (i : o)
+    | Out_405, _ -> out_down Out_404 (Migrate_405_404.copy_out_phrase i) o_v
+    | Out_404, _ -> out_down Out_403 (Migrate_404_403.copy_out_phrase i) o_v
+    | Out_403, _ -> out_down Out_402 (Migrate_403_402.copy_out_phrase i) o_v
+    | Out_402, _ -> assert false
+
+let rec out_up : type i o. i out_phrase -> i -> o out_phrase -> o =
+  fun (type i) (type o) (i_v : i out_phrase) (i : i) (o_v : o out_phrase) ->
+    match i_v, o_v with
+    | Out_405, Out_405 -> (i : o)
+    | Out_404, Out_404 -> (i : o)
+    | Out_403, Out_403 -> (i : o)
+    | Out_402, Out_402 -> (i : o)
+    | Out_402, _ -> out_up Out_403 (Migrate_402_403.copy_out_phrase i) o_v
+    | Out_403, _ -> out_up Out_404 (Migrate_403_404.copy_out_phrase i) o_v
+    | Out_404, _ -> out_up Out_405 (Migrate_404_405.copy_out_phrase i) o_v
+    | Out_405, _ -> assert false
+
+let out_phrase_version (type a) (x : a out_phrase) = match x with
+  | Out_402 -> OCaml_402
+  | Out_403 -> OCaml_403
+  | Out_404 -> OCaml_404
+  | Out_405 -> OCaml_405
+
+let out_phrase_migrate i_v i o_v =
+  migrate_objects out_phrase_version out_phrase_version
+    out_down out_up i_v i o_v
 
 let missing_feature_description = function
   | Def.Pexp_letexception -> "local exceptions"
@@ -229,21 +327,43 @@ let () = Printexc.register_printer (function
     | _ -> None
   )
 
-module Ast_402 = Ast_402
-module Ast_403 = Ast_403
-module Ast_404 = Ast_404
-module Ast_405 = Ast_405
-module Migrate_402_403 = Migrate_parsetree_402_403
-module Migrate_403_402 = Migrate_parsetree_403_402
-module Migrate_403_404 = Migrate_parsetree_403_404
-module Migrate_404_403 = Migrate_parsetree_404_403
-module Migrate_404_405 = Migrate_parsetree_404_405
-module Migrate_405_404 = Migrate_parsetree_405_404
+module OCaml_402 = struct
+  module Ast = Ast_402
+  let version = OCaml_402
+  let signature = Sig_402
+  let structure = Str_402
+  let toplevel_phrase = Top_402
+  let out_phrase = Out_402
+end
 
-module Ast_current = Ast_OCAML_VERSION
+module OCaml_403 = struct
+  module Ast = Ast_403
+  let version = OCaml_403
+  let signature = Sig_403
+  let structure = Str_403
+  let toplevel_phrase = Top_403
+  let out_phrase = Out_403
+end
+
+module OCaml_404 = struct
+  module Ast = Ast_404
+  let version = OCaml_404
+  let signature = Sig_404
+  let structure = Str_404
+  let toplevel_phrase = Top_404
+  let out_phrase = Out_404
+end
+
+module OCaml_405 = struct
+  module Ast = Ast_405
+  let version = OCaml_405
+  let signature = Sig_405
+  let structure = Str_405
+  let toplevel_phrase = Top_405
+  let out_phrase = Out_405
+end
+
+module OCaml_current = OCaml_OCAML_VERSION
 
 (* Make sure the preprocessing worked as expected *)
-let _f (x : Parsetree.expression) : Ast_current.Parsetree.expression = x
-
-let ast_of_current ast = Ast_OCAML_VERSION ast
-let current_of_ast ast = migrate_to_OCAML_VERSION ast
+let _f (x : Parsetree.expression) : OCaml_current.Ast.Parsetree.expression = x

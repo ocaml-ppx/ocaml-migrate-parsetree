@@ -1,13 +1,3 @@
-type ocaml_version =
-  | OCaml_402
-  | OCaml_403
-  | OCaml_404
-  | OCaml_405
-
-type ('intf, 'impl) intf_or_impl =
-  | Intf of 'intf
-  | Impl of 'impl
-
 (** Errors that can happen when converting constructions that doesn't exist in
     older version of the AST. *)
 type missing_feature =
@@ -33,8 +23,5 @@ type location = Location.t = {
   loc_end   : Lexing.position;
   loc_ghost : bool;
 }
-
-let location ~loc_start ~loc_end ~loc_ghost =
-  { loc_start; loc_end; loc_ghost }
 
 exception Migration_error of missing_feature * location
