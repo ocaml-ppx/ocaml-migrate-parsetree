@@ -1,6 +1,8 @@
 module From = Ast_404
 module To = Ast_405
 
+let noloc x = { Location. txt = x; loc = Location.none }
+
 let rec copy_expression :
   From.Parsetree.expression -> To.Parsetree.expression =
   fun
@@ -116,7 +118,7 @@ and copy_expression_desc :
           (copy_core_type x2))
   | From.Parsetree.Pexp_send (x0,x1) ->
       To.Parsetree.Pexp_send
-        ((copy_expression x0), x1)
+        ((copy_expression x0), noloc x1)
   | From.Parsetree.Pexp_new x0 ->
       To.Parsetree.Pexp_new
         (copy_loc copy_longident x0)
@@ -153,7 +155,7 @@ and copy_expression_desc :
         (copy_class_structure x0)
   | From.Parsetree.Pexp_newtype (x0,x1) ->
       To.Parsetree.Pexp_newtype
-        (x0, (copy_expression x1))
+        (noloc x0, (copy_expression x1))
   | From.Parsetree.Pexp_pack x0 ->
       To.Parsetree.Pexp_pack (copy_module_expr x0)
   | From.Parsetree.Pexp_open (x0,x1,x2) ->
@@ -317,7 +319,7 @@ and copy_core_type_desc :
         ((List.map
             (fun x  ->
                let (x0,x1,x2) = x  in
-               (x0, (copy_attributes x1),
+               (noloc x0, (copy_attributes x1),
                  (copy_core_type x2))) x0),
           (copy_closed_flag x1))
   | From.Parsetree.Ptyp_class (x0,x1) ->
@@ -334,7 +336,7 @@ and copy_core_type_desc :
           (copy_option (fun x  -> List.map copy_label x) x2))
   | From.Parsetree.Ptyp_poly (x0,x1) ->
       To.Parsetree.Ptyp_poly
-        ((List.map (fun x  -> x) x0), (copy_core_type x1))
+        ((List.map (fun x  -> noloc x) x0), (copy_core_type x1))
   | From.Parsetree.Ptyp_package x0 ->
       To.Parsetree.Ptyp_package (copy_package_type x0)
   | From.Parsetree.Ptyp_extension x0 ->
@@ -556,7 +558,7 @@ and copy_class_field_desc :
       To.Parsetree.Pcf_inherit
         ((copy_override_flag x0),
           (copy_class_expr x1),
-          (copy_option (fun x  -> x) x2))
+          (copy_option (fun x  -> noloc x) x2))
   | From.Parsetree.Pcf_val x0 ->
       To.Parsetree.Pcf_val
         (let (x0,x1,x2) = x0  in
@@ -856,13 +858,13 @@ and copy_class_type_field_desc :
   | From.Parsetree.Pctf_val x0 ->
       To.Parsetree.Pctf_val
         (let (x0,x1,x2,x3) = x0  in
-         (x0, (copy_mutable_flag x1),
+         (noloc x0, (copy_mutable_flag x1),
            (copy_virtual_flag x2),
            (copy_core_type x3)))
   | From.Parsetree.Pctf_method x0 ->
       To.Parsetree.Pctf_method
         (let (x0,x1,x2,x3) = x0  in
-         (x0, (copy_private_flag x1),
+         (noloc x0, (copy_private_flag x1),
            (copy_virtual_flag x2),
            (copy_core_type x3)))
   | From.Parsetree.Pctf_constraint x0 ->

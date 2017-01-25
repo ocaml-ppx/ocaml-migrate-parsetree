@@ -158,7 +158,7 @@ module Parsetree = struct
              T tconstr
              (T1, ..., Tn) tconstr
            *)
-    | Ptyp_object of (string * attributes * core_type) list * closed_flag
+    | Ptyp_object of (string loc * attributes * core_type) list * closed_flag
           (* < l1:T1; ...; ln:Tn >     (flag = Closed)
              < l1:T1; ...; ln:Tn; .. > (flag = Open)
            *)
@@ -175,7 +175,7 @@ module Parsetree = struct
              [< `A|`B ]        (flag = Closed; labels = Some [])
              [< `A|`B > `X `Y ](flag = Closed; labels = Some ["X";"Y"])
            *)
-    | Ptyp_poly of string list * core_type
+    | Ptyp_poly of string loc list * core_type
           (* 'a1 ... 'an. T
 
              Can only appear in the following context:
@@ -374,7 +374,7 @@ module Parsetree = struct
           (* (E :> T)        (None, T)
              (E : T0 :> T)   (Some T0, T)
            *)
-    | Pexp_send of expression * string
+    | Pexp_send of expression * string loc
           (*  E # m *)
     | Pexp_new of Longident.t loc
           (* new M.c *)
@@ -399,7 +399,7 @@ module Parsetree = struct
              for methods (not values). *)
     | Pexp_object of class_structure
           (* object ... end *)
-    | Pexp_newtype of string * expression
+    | Pexp_newtype of string loc * expression
           (* fun (type t) -> E *)
     | Pexp_pack of module_expr
           (* (module ME)
@@ -585,9 +585,9 @@ module Parsetree = struct
   and class_type_field_desc (*IF_CURRENT = Parsetree.class_type_field_desc *) =
     | Pctf_inherit of class_type
           (* inherit CT *)
-    | Pctf_val of (string * mutable_flag * virtual_flag * core_type)
+    | Pctf_val of (string loc * mutable_flag * virtual_flag * core_type)
           (* val x: T *)
-    | Pctf_method  of (string * private_flag * virtual_flag * core_type)
+    | Pctf_method  of (string loc * private_flag * virtual_flag * core_type)
           (* method x: T
 
              Note: T can be a Ptyp_poly.
@@ -673,7 +673,7 @@ module Parsetree = struct
       }
 
   and class_field_desc (*IF_CURRENT = Parsetree.class_field_desc *) =
-    | Pcf_inherit of override_flag * class_expr * string option
+    | Pcf_inherit of override_flag * class_expr * string loc option
           (* inherit CE
              inherit CE as x
              inherit! CE
@@ -1143,91 +1143,91 @@ module Ast_helper : sig
   type loc = Location.t
   type attrs = attribute list
 
-  (** {2 Default locations} *)
+(** {2 Default locations} *)
 
-  val default_loc: loc ref
-      (** Default value for all optional location arguments. *)
+val default_loc: loc ref
+    (** Default value for all optional location arguments. *)
 
-  val with_default_loc: loc -> (unit -> 'a) -> 'a
-      (** Set the [default_loc] within the scope of the execution
-          of the provided function. *)
+val with_default_loc: loc -> (unit -> 'a) -> 'a
+    (** Set the [default_loc] within the scope of the execution
+        of the provided function. *)
 
-  (** {2 Constants} *)
+(** {2 Constants} *)
 
-  module Const : sig
-    val char : char -> constant
-    val string : ?quotation_delimiter:string -> string -> constant
-    val integer : ?suffix:char -> string -> constant
-    val int : ?suffix:char -> int -> constant
-    val int32 : ?suffix:char -> int32 -> constant
-    val int64 : ?suffix:char -> int64 -> constant
-    val nativeint : ?suffix:char -> nativeint -> constant
-    val float : ?suffix:char -> string -> constant
+module Const : sig
+  val char : char -> constant
+  val string : ?quotation_delimiter:string -> string -> constant
+  val integer : ?suffix:char -> string -> constant
+  val int : ?suffix:char -> int -> constant
+  val int32 : ?suffix:char -> int32 -> constant
+  val int64 : ?suffix:char -> int64 -> constant
+  val nativeint : ?suffix:char -> nativeint -> constant
+  val float : ?suffix:char -> string -> constant
+end
+
+(** {2 Core language} *)
+
+(** Type expressions *)
+module Typ :
+  sig
+    val mk: ?loc:loc -> ?attrs:attrs -> core_type_desc -> core_type
+    val attr: core_type -> attribute -> core_type
+
+    val any: ?loc:loc -> ?attrs:attrs -> unit -> core_type
+    val var: ?loc:loc -> ?attrs:attrs -> string -> core_type
+    val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type -> core_type
+               -> core_type
+    val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
+    val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
+    val object_: ?loc:loc -> ?attrs:attrs ->
+                  (str * attributes * core_type) list -> closed_flag ->
+                  core_type
+    val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
+    val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
+    val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
+                 -> label list option -> core_type
+    val poly: ?loc:loc -> ?attrs:attrs -> str list -> core_type -> core_type
+    val package: ?loc:loc -> ?attrs:attrs -> lid -> (lid * core_type) list
+                 -> core_type
+    val extension: ?loc:loc -> ?attrs:attrs -> extension -> core_type
+
+    val force_poly: core_type -> core_type
+
+    val varify_constructors: str list -> core_type -> core_type
+    (** [varify_constructors newtypes te] is type expression [te], of which
+        any of nullary type constructor [tc] is replaced by type variable of
+        the same name, if [tc]'s name appears in [newtypes].
+        Raise [Syntaxerr.Variable_in_scope] if any type variable inside [te]
+        appears in [newtypes].
+        @since 4.05
+     *)
   end
 
-  (** {2 Core language} *)
+(** Patterns *)
+module Pat:
+  sig
+    val mk: ?loc:loc -> ?attrs:attrs -> pattern_desc -> pattern
+    val attr:pattern -> attribute -> pattern
 
-  (** Type expressions *)
-  module Typ :
-    sig
-      val mk: ?loc:loc -> ?attrs:attrs -> core_type_desc -> core_type
-      val attr: core_type -> attribute -> core_type
-
-      val any: ?loc:loc -> ?attrs:attrs -> unit -> core_type
-      val var: ?loc:loc -> ?attrs:attrs -> string -> core_type
-      val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type -> core_type
-                 -> core_type
-      val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
-      val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
-      val object_: ?loc:loc -> ?attrs:attrs ->
-                    (string * attributes * core_type) list -> closed_flag ->
-                    core_type
-      val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
-      val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
-      val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
-                   -> label list option -> core_type
-      val poly: ?loc:loc -> ?attrs:attrs -> string list -> core_type -> core_type
-      val package: ?loc:loc -> ?attrs:attrs -> lid -> (lid * core_type) list
-                   -> core_type
-      val extension: ?loc:loc -> ?attrs:attrs -> extension -> core_type
-
-      val force_poly: core_type -> core_type
-
-      (*val varify_constructors: str list -> core_type -> core_type*)
-      (** [varify_constructors newtypes te] is type expression [te], of which
-          any of nullary type constructor [tc] is replaced by type variable of
-          the same name, if [tc]'s name appears in [newtypes].
-          Raise [Syntaxerr.Variable_in_scope] if any type variable inside [te]
-          appears in [newtypes].
-          @since 4.05
-       *)
-    end
-
-  (** Patterns *)
-  module Pat:
-    sig
-      val mk: ?loc:loc -> ?attrs:attrs -> pattern_desc -> pattern
-      val attr:pattern -> attribute -> pattern
-
-      val any: ?loc:loc -> ?attrs:attrs -> unit -> pattern
-      val var: ?loc:loc -> ?attrs:attrs -> str -> pattern
-      val alias: ?loc:loc -> ?attrs:attrs -> pattern -> str -> pattern
-      val constant: ?loc:loc -> ?attrs:attrs -> constant -> pattern
-      val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
-      val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
-      val construct: ?loc:loc -> ?attrs:attrs -> lid -> pattern option -> pattern
-      val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
-      val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list -> closed_flag
-                  -> pattern
-      val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
-      val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
-      val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
-      val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
-      val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-      val unpack: ?loc:loc -> ?attrs:attrs -> str -> pattern
-      val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
-      val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
-      val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
+    val any: ?loc:loc -> ?attrs:attrs -> unit -> pattern
+    val var: ?loc:loc -> ?attrs:attrs -> str -> pattern
+    val alias: ?loc:loc -> ?attrs:attrs -> pattern -> str -> pattern
+    val constant: ?loc:loc -> ?attrs:attrs -> constant -> pattern
+    val interval: ?loc:loc -> ?attrs:attrs -> constant -> constant -> pattern
+    val tuple: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
+    val construct: ?loc:loc -> ?attrs:attrs -> lid -> pattern option -> pattern
+    val variant: ?loc:loc -> ?attrs:attrs -> label -> pattern option -> pattern
+    val record: ?loc:loc -> ?attrs:attrs -> (lid * pattern) list -> closed_flag
+                -> pattern
+    val array: ?loc:loc -> ?attrs:attrs -> pattern list -> pattern
+    val or_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern -> pattern
+    val constraint_: ?loc:loc -> ?attrs:attrs -> pattern -> core_type -> pattern
+    val type_: ?loc:loc -> ?attrs:attrs -> lid -> pattern
+    val lazy_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+    val unpack: ?loc:loc -> ?attrs:attrs -> str -> pattern
+    val open_: ?loc:loc -> ?attrs:attrs  -> lid -> pattern -> pattern
+    val exception_: ?loc:loc -> ?attrs:attrs -> pattern -> pattern
+    val extension: ?loc:loc -> ?attrs:attrs -> extension -> pattern
     end
 
   (** Expressions *)
@@ -1271,7 +1271,7 @@ module Ast_helper : sig
                   -> core_type -> expression
       val constraint_: ?loc:loc -> ?attrs:attrs -> expression -> core_type
                        -> expression
-      val send: ?loc:loc -> ?attrs:attrs -> expression -> string -> expression
+      val send: ?loc:loc -> ?attrs:attrs -> expression -> str -> expression
       val new_: ?loc:loc -> ?attrs:attrs -> lid -> expression
       val setinstvar: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
       val override: ?loc:loc -> ?attrs:attrs -> (str * expression) list
@@ -1286,7 +1286,7 @@ module Ast_helper : sig
       val poly: ?loc:loc -> ?attrs:attrs -> expression -> core_type option
                 -> expression
       val object_: ?loc:loc -> ?attrs:attrs -> class_structure -> expression
-      val newtype: ?loc:loc -> ?attrs:attrs -> string -> expression -> expression
+      val newtype: ?loc:loc -> ?attrs:attrs -> str -> expression -> expression
       val pack: ?loc:loc -> ?attrs:attrs -> module_expr -> expression
       val open_: ?loc:loc -> ?attrs:attrs -> override_flag -> lid -> expression
                  -> expression
@@ -1439,78 +1439,78 @@ module Ast_helper : sig
     end
 
   (** Opens *)
-  module Opn:
-    sig
-      val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs ->
-        ?override:override_flag -> lid -> open_description
-    end
+module Opn:
+  sig
+    val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs ->
+      ?override:override_flag -> lid -> open_description
+  end
 
-  (** Includes *)
-  module Incl:
-    sig
-      val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> 'a -> 'a include_infos
-    end
+(** Includes *)
+module Incl:
+  sig
+    val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> 'a -> 'a include_infos
+  end
 
-  (** Value bindings *)
-  module Vb:
-    sig
-      val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
-        pattern -> expression -> value_binding
-    end
+(** Value bindings *)
+module Vb:
+  sig
+    val mk: ?loc: loc -> ?attrs:attrs -> ?docs:docs -> ?text:text ->
+      pattern -> expression -> value_binding
+  end
 
 
-  (** {2 Class language} *)
+(** {2 Class language} *)
 
-  (** Class type expressions *)
-  module Cty:
-    sig
-      val mk: ?loc:loc -> ?attrs:attrs -> class_type_desc -> class_type
-      val attr: class_type -> attribute -> class_type
+(** Class type expressions *)
+module Cty:
+  sig
+    val mk: ?loc:loc -> ?attrs:attrs -> class_type_desc -> class_type
+    val attr: class_type -> attribute -> class_type
 
-      val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> class_type
-      val signature: ?loc:loc -> ?attrs:attrs -> class_signature -> class_type
-      val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type ->
-        class_type -> class_type
-      val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type
-    end
+    val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> class_type
+    val signature: ?loc:loc -> ?attrs:attrs -> class_signature -> class_type
+    val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type ->
+      class_type -> class_type
+    val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type
+  end
 
-  (** Class type fields *)
-  module Ctf:
-    sig
-      val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
-        class_type_field_desc -> class_type_field
-      val attr: class_type_field -> attribute -> class_type_field
+(** Class type fields *)
+module Ctf:
+  sig
+    val mk: ?loc:loc -> ?attrs:attrs -> ?docs:docs ->
+      class_type_field_desc -> class_type_field
+    val attr: class_type_field -> attribute -> class_type_field
 
-      val inherit_: ?loc:loc -> ?attrs:attrs -> class_type -> class_type_field
-      val val_: ?loc:loc -> ?attrs:attrs -> string -> mutable_flag ->
-        virtual_flag -> core_type -> class_type_field
-      val method_: ?loc:loc -> ?attrs:attrs -> string -> private_flag ->
-        virtual_flag -> core_type -> class_type_field
-      val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
-        class_type_field
-      val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type_field
-      val attribute: ?loc:loc -> attribute -> class_type_field
-      val text: text -> class_type_field list
-    end
+    val inherit_: ?loc:loc -> ?attrs:attrs -> class_type -> class_type_field
+    val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
+      virtual_flag -> core_type -> class_type_field
+    val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
+      virtual_flag -> core_type -> class_type_field
+    val constraint_: ?loc:loc -> ?attrs:attrs -> core_type -> core_type ->
+      class_type_field
+    val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type_field
+    val attribute: ?loc:loc -> attribute -> class_type_field
+    val text: text -> class_type_field list
+  end
 
-  (** Class expressions *)
-  module Cl:
-    sig
-      val mk: ?loc:loc -> ?attrs:attrs -> class_expr_desc -> class_expr
-      val attr: class_expr -> attribute -> class_expr
+(** Class expressions *)
+module Cl:
+  sig
+    val mk: ?loc:loc -> ?attrs:attrs -> class_expr_desc -> class_expr
+    val attr: class_expr -> attribute -> class_expr
 
-      val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> class_expr
-      val structure: ?loc:loc -> ?attrs:attrs -> class_structure -> class_expr
-      val fun_: ?loc:loc -> ?attrs:attrs -> arg_label -> expression option ->
-        pattern -> class_expr -> class_expr
-      val apply: ?loc:loc -> ?attrs:attrs -> class_expr ->
-        (arg_label * expression) list -> class_expr
-      val let_: ?loc:loc -> ?attrs:attrs -> rec_flag -> value_binding list ->
-        class_expr -> class_expr
-      val constraint_: ?loc:loc -> ?attrs:attrs -> class_expr -> class_type ->
-        class_expr
-      val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr
-    end
+    val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> class_expr
+    val structure: ?loc:loc -> ?attrs:attrs -> class_structure -> class_expr
+    val fun_: ?loc:loc -> ?attrs:attrs -> arg_label -> expression option ->
+      pattern -> class_expr -> class_expr
+    val apply: ?loc:loc -> ?attrs:attrs -> class_expr ->
+      (arg_label * expression) list -> class_expr
+    val let_: ?loc:loc -> ?attrs:attrs -> rec_flag -> value_binding list ->
+      class_expr -> class_expr
+    val constraint_: ?loc:loc -> ?attrs:attrs -> class_expr -> class_type ->
+      class_expr
+    val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr
+  end
 
   (** Class fields *)
   module Cf:
@@ -1520,7 +1520,7 @@ module Ast_helper : sig
       val attr: class_field -> attribute -> class_field
 
       val inherit_: ?loc:loc -> ?attrs:attrs -> override_flag -> class_expr ->
-        string option -> class_field
+        str option -> class_field
       val val_: ?loc:loc -> ?attrs:attrs -> str -> mutable_flag ->
         class_field_kind -> class_field
       val method_: ?loc:loc -> ?attrs:attrs -> str -> private_flag ->
@@ -1556,7 +1556,6 @@ module Ast_helper : sig
     sig
       val mk: pattern -> class_field list -> class_structure
     end
-
 end = struct
   (**************************************************************************)
   (*                                                                        *)
@@ -1626,7 +1625,7 @@ end = struct
       | Ptyp_poly _ -> t
       | _ -> poly ~loc:t.ptyp_loc [] t (* -> ghost? *)
 
-    (*let varify_constructors var_names t =
+    let varify_constructors var_names t =
       let check_variable vl loc v =
         if List.mem v vl then
           raise Syntaxerr.(Error(Variable_in_scope(loc,v))) in
@@ -1641,7 +1640,7 @@ end = struct
           | Ptyp_arrow (label,core_type,core_type') ->
               Ptyp_arrow(label, loop core_type, loop core_type')
           | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-          | Ptyp_constr( { txt = Longident.Lident s ; _ }, [])
+          | Ptyp_constr( { txt = Longident.Lident s; _ }, [])
             when List.mem s var_names ->
               Ptyp_var s
           | Ptyp_constr(longident, lst) ->
@@ -1674,7 +1673,7 @@ end = struct
           | Rinherit t ->
               Rinherit (loop t)
       in
-      loop t*)
+      loop t
 
   end
 
@@ -1978,73 +1977,73 @@ end = struct
 
   module Incl = struct
     let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs) mexpr =
-      {
-       pincl_mod = mexpr;
-       pincl_loc = loc;
-       pincl_attributes = add_docs_attrs docs attrs;
-      }
+    {
+     pincl_mod = mexpr;
+     pincl_loc = loc;
+     pincl_attributes = add_docs_attrs docs attrs;
+    }
 
-  end
+end
 
-  module Vb = struct
-    let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
-          ?(text = []) pat expr =
-      {
-       pvb_pat = pat;
-       pvb_expr = expr;
-       pvb_attributes =
-         add_text_attrs text (add_docs_attrs docs attrs);
-       pvb_loc = loc;
-      }
-  end
+module Vb = struct
+  let mk ?(loc = !default_loc) ?(attrs = []) ?(docs = empty_docs)
+        ?(text = []) pat expr =
+    {
+     pvb_pat = pat;
+     pvb_expr = expr;
+     pvb_attributes =
+       add_text_attrs text (add_docs_attrs docs attrs);
+     pvb_loc = loc;
+    }
+end
 
-  module Ci = struct
-    let mk ?(loc = !default_loc) ?(attrs = [])
-          ?(docs = empty_docs) ?(text = [])
-          ?(virt = Concrete) ?(params = []) name expr =
-      {
-       pci_virt = virt;
-       pci_params = params;
-       pci_name = name;
-       pci_expr = expr;
-       pci_attributes =
-         add_text_attrs text (add_docs_attrs docs attrs);
-       pci_loc = loc;
-      }
-  end
+module Ci = struct
+  let mk ?(loc = !default_loc) ?(attrs = [])
+        ?(docs = empty_docs) ?(text = [])
+        ?(virt = Concrete) ?(params = []) name expr =
+    {
+     pci_virt = virt;
+     pci_params = params;
+     pci_name = name;
+     pci_expr = expr;
+     pci_attributes =
+       add_text_attrs text (add_docs_attrs docs attrs);
+     pci_loc = loc;
+    }
+end
 
-  module Type = struct
-    let mk ?(loc = !default_loc) ?(attrs = [])
-          ?(docs = empty_docs) ?(text = [])
-        ?(params = [])
-        ?(cstrs = [])
-        ?(kind = Ptype_abstract)
-        ?(priv = Public)
-        ?manifest
-        name =
-      {
-       ptype_name = name;
-       ptype_params = params;
-       ptype_cstrs = cstrs;
-       ptype_kind = kind;
-       ptype_private = priv;
-       ptype_manifest = manifest;
-       ptype_attributes =
-         add_text_attrs text (add_docs_attrs docs attrs);
-       ptype_loc = loc;
-      }
+module Type = struct
+  let mk ?(loc = !default_loc) ?(attrs = [])
+        ?(docs = empty_docs) ?(text = [])
+      ?(params = [])
+      ?(cstrs = [])
+      ?(kind = Ptype_abstract)
+      ?(priv = Public)
+      ?manifest
+      name =
+    {
+     ptype_name = name;
+     ptype_params = params;
+     ptype_cstrs = cstrs;
+     ptype_kind = kind;
+     ptype_private = priv;
+     ptype_manifest = manifest;
+     ptype_attributes =
+       add_text_attrs text (add_docs_attrs docs attrs);
+     ptype_loc = loc;
+    }
 
-    let constructor ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)
-          ?(args = Pcstr_tuple []) ?res name =
-      {
-       pcd_name = name;
-       pcd_args = args;
-       pcd_res = res;
-       pcd_loc = loc;
-       pcd_attributes = add_info_attrs info attrs;
-      }
+  let constructor ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)
+        ?(args = Pcstr_tuple []) ?res name =
+    {
+     pcd_name = name;
+     pcd_args = args;
+     pcd_res = res;
+     pcd_loc = loc;
+     pcd_attributes = add_info_attrs info attrs;
+    }
 
-    let field ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)
+  let field ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)
           ?(mut = Immutable) name typ =
       {
        pld_name = name;
@@ -2112,7 +2111,6 @@ end = struct
        pcstr_fields = fields;
       }
   end
-
 end
 
 module Config = struct
@@ -2184,4 +2182,3 @@ let core_type_of_ast = function
 let expression_of_ast = function
   | Impl [ { pstr_desc = Pstr_eval (x, _); _ } ] -> x
   | _ -> invalid_arg "Ast_405.core_type_of_ast"
-
