@@ -1826,3 +1826,26 @@ and copy_directive_argument :
   | From.Parsetree.Pdir_int x0 -> To.Parsetree.Pdir_int (string_of_int x0, None)
   | From.Parsetree.Pdir_ident x0 -> To.Parsetree.Pdir_ident (copy_longident x0)
   | From.Parsetree.Pdir_bool x0 -> To.Parsetree.Pdir_bool (copy_bool x0)
+
+let copy_out_type_extension :
+  From.Outcometree.out_type_extension -> To.Outcometree.out_type_extension =
+  fun
+    { From.Outcometree.otyext_name = otyext_name;
+      From.Outcometree.otyext_params = otyext_params;
+      From.Outcometree.otyext_constructors = otyext_constructors;
+      From.Outcometree.otyext_private = otyext_private }
+     ->
+    {
+      To.Outcometree.otyext_name = otyext_name;
+      To.Outcometree.otyext_params =
+        (List.map (fun x  -> x) otyext_params);
+      To.Outcometree.otyext_constructors =
+        (List.map
+           (fun x  ->
+              let (x0,x1,x2) = x  in
+              (x0, (List.map copy_out_type x1),
+                (copy_option copy_out_type x2)))
+           otyext_constructors);
+      To.Outcometree.otyext_private =
+        (copy_private_flag otyext_private)
+    }
