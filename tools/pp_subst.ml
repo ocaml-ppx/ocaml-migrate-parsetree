@@ -1,5 +1,38 @@
-(* A completely ad-hoc text substitution language friendly generating line
-   directives *)
+(* A completely ad-hoc text substitution language
+
+   Roughly specified:
+   - text can contain commands, beginning with (*$ and ending with *)
+     (so that they are treated as OCaml comments)
+   - commands are replaced by their evaluation, the rest is copied verbatim
+   - multine line commands or outputs cause the emission of a parser directive
+     to resynchronize output
+   - commands are s-expressions, with the outermost (*$ and *) treated as
+     parentheses: (*$concat a (b c)*) is really (concat a (b c))
+   - there are global variables:
+     * identifiers are lookup in a dictionary and replaced by the value of the
+       variable
+     * a value is a list of string
+     * looking up an inexisting name is a failure
+   - main commands are:
+     * (define name v0 v1 v2 ...)
+       binds name to [v0 v1 v2 ...]
+     * (foreach name expression body)
+       for each value in expression, evaluate body with name bound to the value
+     * (concat ...)
+       concatenate the values of all expressions
+     * (if cond a b)
+       evaluates to a if evaluation of cond is not an empty list
+       evaluates to b otherwise
+     * (if cond a)
+       evaluates to a if evaluation of cond is not an empty list
+       evaluates to an empty list otherwise
+     * (defined a)
+       returns a non empty list if name a is bound to a value
+     * (ifdef a ...)
+       is a shorthand for (if (defined a) ...)
+
+   I am ashamed.
+*)
 
 let delimit_command input offset =
   let len = String.length input in
