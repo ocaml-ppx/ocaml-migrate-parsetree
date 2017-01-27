@@ -1,5 +1,4 @@
-type _ witnesses
-
+(* Abstract view of the Asts of an OCaml frontend *)
 module type Ast = sig
   module Parsetree : sig
     type structure
@@ -24,33 +23,47 @@ module type Ast = sig
   end
 end
 
+(* A version of the OCaml frontend packs the ast with type witnesses
+   so that equalities can be recovered dynamically. *)
+type _ witnesses
+
 module type OCaml_version = sig
   module Ast : Ast
+  val string_version : string
+
   type types = <
-    core_type : Ast.Parsetree.core_type;
-    expression : Ast.Parsetree.expression;
-    out_class_type : Ast.Outcometree.out_class_type;
-    out_module_type : Ast.Outcometree.out_module_type;
-    out_phrase : Ast.Outcometree.out_phrase;
-    out_sig_item : Ast.Outcometree.out_sig_item;
-    out_type : Ast.Outcometree.out_type;
+    core_type          : Ast.Parsetree.core_type;
+    expression         : Ast.Parsetree.expression;
+    out_class_type     : Ast.Outcometree.out_class_type;
+    out_module_type    : Ast.Outcometree.out_module_type;
+    out_phrase         : Ast.Outcometree.out_phrase;
+    out_sig_item       : Ast.Outcometree.out_sig_item;
+    out_type           : Ast.Outcometree.out_type;
     out_type_extension : Ast.Outcometree.out_type_extension;
-    out_value : Ast.Outcometree.out_value;
-    pattern : Ast.Parsetree.pattern;
-    signature : Ast.Parsetree.signature;
-    structure : Ast.Parsetree.structure;
-    toplevel_phrase : Ast.Parsetree.toplevel_phrase
+    out_value          : Ast.Outcometree.out_value;
+    pattern            : Ast.Parsetree.pattern;
+    signature          : Ast.Parsetree.signature;
+    structure          : Ast.Parsetree.structure;
+    toplevel_phrase    : Ast.Parsetree.toplevel_phrase
   >
   type _ witnesses += Version : types witnesses
-  val string_version : string
 end
+
+(* Supported OCaml versions. *)
 
 module OCaml_402 : OCaml_version with module Ast = Ast_402
 module OCaml_403 : OCaml_version with module Ast = Ast_403
 module OCaml_404 : OCaml_version with module Ast = Ast_404
 module OCaml_405 : OCaml_version with module Ast = Ast_405
 
-module Make (A : OCaml_version) (B : OCaml_version) : sig
+(* An alias to the current compiler version *)
+module OCaml_current = OCaml_OCAML_VERSION
+
+val all_versions : (module OCaml_version) list
+
+(* A generic functor converting between any two versions of OCaml. *)
+
+module Convert (A : OCaml_version) (B : OCaml_version) : sig
   val copy_structure :
     A.Ast.Parsetree.structure ->
     B.Ast.Parsetree.structure

@@ -60,6 +60,7 @@ type 'a get_out_phrase         = 'x constraint 'a _types = < out_phrase         
 
 module type OCaml_version = sig
   module Ast : Ast
+  val string_version : string
   type types =
     < structure          : Ast.Parsetree.structure
     ; signature          : Ast.Parsetree.signature
@@ -76,7 +77,6 @@ module type OCaml_version = sig
     ; out_phrase         : Ast.Outcometree.out_phrase
     > _types
   type _ witnesses += Version : types witnesses
-  val string_version : string
 end
 
 module Make_witness(Raw : Ast) =
@@ -290,6 +290,13 @@ module OCaml_405 = struct
   let string_version = "4.05"
 end
 
+let all_versions : (module OCaml_version) list = [
+  (module OCaml_402 : OCaml_version);
+  (module OCaml_403 : OCaml_version);
+  (module OCaml_404 : OCaml_version);
+  (module OCaml_405 : OCaml_version);
+]
+
 let chain = Chain ((module OCaml_402), lazy (invalid_arg "Unknown Ast"))
 let chain = Chain ((module OCaml_403), lazy ((module Migrate_parsetree_403_402),
                                              (module Migrate_parsetree_402_403), chain))
@@ -298,4 +305,9 @@ let chain = Chain ((module OCaml_404), lazy ((module Migrate_parsetree_404_403),
 let chain = Chain ((module OCaml_405), lazy ((module Migrate_parsetree_405_404),
                                              (module Migrate_parsetree_404_405), chain))
 
-module Make = Make_conversion(struct let latest = Latest chain end)
+module Convert = Make_conversion(struct let latest = Latest chain end)
+
+module OCaml_current = OCaml_OCAML_VERSION
+
+(* Make sure the preprocessing worked as expected *)
+let _f (x : Parsetree.expression) : OCaml_current.Ast.Parsetree.expression = x
