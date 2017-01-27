@@ -1,6 +1,7 @@
 (* Abstract view of the Asts of an OCaml frontend *)
 (*$define parsetree_types
-  "structure" "signature" "toplevel_phrase" "core_type" "expression" "pattern"*)
+  "structure" "signature" "toplevel_phrase" "core_type" "expression" "pattern"
+  "case" "type_declaration" "type_extension" "extension_constructor" *)
 (*$define outcometree_types
   "out_value" "out_type" "out_class_type" "out_module_type" "out_sig_item"
   "out_type_extension" "out_phrase"*)
