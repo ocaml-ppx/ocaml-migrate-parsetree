@@ -36,6 +36,7 @@ OBJECTS= \
 	src/migrate_parsetree_404_403.cmo \
 	src/migrate_parsetree_404_405.cmo \
 	src/migrate_parsetree_405_404.cmo \
+	src/migrate_parsetree_convert.cmo \
 	src/migrate_parsetree.cmo
 
 .PHONY: all

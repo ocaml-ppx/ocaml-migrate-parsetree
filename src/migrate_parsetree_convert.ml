@@ -20,6 +20,10 @@ module type Ast = sig
     type out_type_extension
     type out_phrase
   end
+  module Config : sig
+    val ast_impl_magic_number : string
+    val ast_intf_magic_number : string
+  end
 end
 
 type 'a _types = 'a
@@ -72,6 +76,7 @@ module type OCaml_version = sig
     ; out_phrase         : Ast.Outcometree.out_phrase
     > _types
   type _ witnesses += Version : types witnesses
+  val string_version : string
 end
 
 module Make_witness(Raw : Ast) =
@@ -267,18 +272,22 @@ end
 module OCaml_402 = struct
   module Ast = Ast_402
   include Make_witness(Ast_402)
+  let string_version = "4.02"
 end
 module OCaml_403 = struct
   module Ast = Ast_403
   include Make_witness(Ast_403)
+  let string_version = "4.03"
 end
 module OCaml_404 = struct
   module Ast = Ast_404
   include Make_witness(Ast_404)
+  let string_version = "4.04"
 end
 module OCaml_405 = struct
   module Ast = Ast_405
   include Make_witness(Ast_405)
+  let string_version = "4.05"
 end
 
 let chain = Chain ((module OCaml_402), lazy (invalid_arg "Unknown Ast"))
@@ -289,4 +298,4 @@ let chain = Chain ((module OCaml_404), lazy ((module Migrate_parsetree_404_403),
 let chain = Chain ((module OCaml_405), lazy ((module Migrate_parsetree_405_404),
                                              (module Migrate_parsetree_404_405), chain))
 
-module Convert = Make_conversion(struct let latest = Latest chain end)
+module Make = Make_conversion(struct let latest = Latest chain end)

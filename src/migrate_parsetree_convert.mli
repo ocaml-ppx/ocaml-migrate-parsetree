@@ -18,6 +18,10 @@ module type Ast = sig
     type out_type_extension
     type out_phrase
   end
+  module Config : sig
+    val ast_impl_magic_number : string
+    val ast_intf_magic_number : string
+  end
 end
 
 module type OCaml_version = sig
@@ -38,6 +42,7 @@ module type OCaml_version = sig
     toplevel_phrase : Ast.Parsetree.toplevel_phrase
   >
   type _ witnesses += Version : types witnesses
+  val string_version : string
 end
 
 module OCaml_402 : OCaml_version with module Ast = Ast_402
@@ -45,7 +50,7 @@ module OCaml_403 : OCaml_version with module Ast = Ast_403
 module OCaml_404 : OCaml_version with module Ast = Ast_404
 module OCaml_405 : OCaml_version with module Ast = Ast_405
 
-module Convert (A : OCaml_version) (B : OCaml_version) : sig
+module Make (A : OCaml_version) (B : OCaml_version) : sig
   val copy_structure :
     A.Ast.Parsetree.structure ->
     B.Ast.Parsetree.structure
