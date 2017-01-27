@@ -3078,12 +3078,12 @@ module Outcometree = struct
         [Toploop.print_out_sig_item]
         [Toploop.print_out_phrase] *)
 
-  type out_ident =
+  type out_ident (*IF_CURRENT = Outcometree.out_ident *) =
     | Oide_apply of out_ident * out_ident
     | Oide_dot of out_ident * string
     | Oide_ident of string
 
-  type out_value =
+  type out_value (*IF_CURRENT = Outcometree.out_value *) =
     | Oval_array of out_value list
     | Oval_char of char
     | Oval_constr of out_ident * out_value list
@@ -3101,7 +3101,7 @@ module Outcometree = struct
     | Oval_tuple of out_value list
     | Oval_variant of string * out_value option
 
-  type out_type =
+  type out_type (*IF_CURRENT = Outcometree.out_type *) =
     | Otyp_abstract
     | Otyp_open
     | Otyp_alias of out_type * string
@@ -3120,26 +3120,26 @@ module Outcometree = struct
     | Otyp_poly of string list * out_type
     | Otyp_module of string * string list * out_type list
 
-  and out_variant =
+  and out_variant (*IF_CURRENT = Outcometree.out_variant *) =
     | Ovar_fields of (string * bool * out_type list) list
     | Ovar_name of out_ident * out_type list
 
-  type out_class_type =
+  type out_class_type (*IF_CURRENT = Outcometree.out_class_type *) =
     | Octy_constr of out_ident * out_type list
     | Octy_arrow of string * out_type * out_class_type
     | Octy_signature of out_type option * out_class_sig_item list
-  and out_class_sig_item =
+  and out_class_sig_item  (*IF_CURRENT = Outcometree.out_class_sig_item *) =
     | Ocsg_constraint of out_type * out_type
     | Ocsg_method of string * bool * bool * out_type
     | Ocsg_value of string * bool * bool * out_type
 
-  type out_module_type =
+  type out_module_type (*IF_CURRENT = Outcometree.out_module_type *) =
     | Omty_abstract
     | Omty_functor of string * out_module_type option * out_module_type
     | Omty_ident of out_ident
     | Omty_signature of out_sig_item list
     | Omty_alias of out_ident
-  and out_sig_item =
+  and out_sig_item  (*IF_CURRENT = Outcometree.out_sig_item *) =
     | Osig_class of
         bool * string * (string * (bool * bool)) list * out_class_type *
           out_rec_status
@@ -3151,34 +3151,34 @@ module Outcometree = struct
     | Osig_module of string * out_module_type * out_rec_status
     | Osig_type of out_type_decl * out_rec_status
     | Osig_value of string * out_type * string list
-  and out_type_decl =
+  and out_type_decl  (*IF_CURRENT = Outcometree.out_type_decl *) =
     { otype_name: string;
       otype_params: (string * (bool * bool)) list;
       otype_type: out_type;
       otype_private: Asttypes.private_flag;
       otype_cstrs: (out_type * out_type) list }
-  and out_extension_constructor =
+  and out_extension_constructor (*IF_CURRENT = Outcometree.out_extension_constructor *) =
     { oext_name: string;
       oext_type_name: string;
       oext_type_params: string list;
       oext_args: out_type list;
       oext_ret_type: out_type option;
       oext_private: Asttypes.private_flag }
-  and out_type_extension =
+  and out_type_extension (*IF_CURRENT = Outcometree.out_type_extension *) =
     { otyext_name: string;
       otyext_params: string list;
       otyext_constructors: (string * out_type list * out_type option) list;
       otyext_private: Asttypes.private_flag }
-  and out_rec_status =
+  and out_rec_status (*IF_CURRENT = Outcometree.out_rec_status *) =
     | Orec_not
     | Orec_first
     | Orec_next
-  and out_ext_status =
+  and out_ext_status (*IF_CURRENT = Outcometree.out_ext_status*) =
     | Oext_first
     | Oext_next
     | Oext_exception
 
-  type out_phrase =
+  type out_phrase (*IF_CURRENT = Outcometree.out_phrase *) =
     | Ophr_eval of out_value * out_type
     | Ophr_signature of (out_sig_item * out_value option) list
     | Ophr_exception of (exn * out_value)
