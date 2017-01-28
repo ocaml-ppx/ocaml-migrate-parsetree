@@ -2167,7 +2167,6 @@ end = struct
   *)
 
 
-  open Asttypes
   open Parsetree
   open Ast_helper
   open Location
@@ -2754,7 +2753,7 @@ end = struct
 
 
 
-      location = (fun this l -> l);
+      location = (fun _this l -> l);
 
       extension = (fun this (s, e) -> (map_loc this s, this.payload this e));
       attribute = (fun this (s, e) -> (map_loc this s, this.payload this e));
