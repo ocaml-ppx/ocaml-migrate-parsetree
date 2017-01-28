@@ -5,7 +5,7 @@
 (*$define outcometree_types
   "out_value" "out_type" "out_class_type" "out_module_type" "out_sig_item"
   "out_type_extension" "out_phrase"*)
-(*$define all_types parsetree_types outcometree_types*)
+(*$define all_types parsetree_types outcometree_types "mapper"*)
 
 module type Ast = sig
   module Parsetree : sig
@@ -13,6 +13,9 @@ module type Ast = sig
   end
   module Outcometree : sig
     (*$foreach type outcometree_types "type " type "\n"*)
+  end
+  module Ast_mapper : sig
+    type mapper
   end
   module Config : sig
     val ast_impl_magic_number : string
@@ -33,6 +36,7 @@ module type OCaml_version = sig
          "    " type " : Ast.Parsetree." type ";\n"*)
     (*$foreach type outcometree_types
          "   " type " : Ast.Outcometree." type ";\n"*)
+    mapper : Ast.Ast_mapper.mapper;
   >
   type _ witnesses += Version : types witnesses
 end
@@ -58,4 +62,5 @@ module Convert (A : OCaml_version) (B : OCaml_version) : sig
   (*$foreach type outcometree_types
        "  val copy_" type " : A.Ast.Outcometree." type
                          " -> B.Ast.Outcometree." type "\n"*)
+  val copy_mapper : A.Ast.Ast_mapper.mapper -> B.Ast.Ast_mapper.mapper
 end

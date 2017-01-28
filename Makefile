@@ -30,18 +30,24 @@ OBJECTS= \
 	src/ast_403.cmo \
 	src/ast_404.cmo \
 	src/ast_405.cmo \
-	src/migrate_parsetree_402_403.cmo \
-	src/migrate_parsetree_403_402.cmo \
-	src/migrate_parsetree_403_404.cmo \
-	src/migrate_parsetree_404_403.cmo \
-	src/migrate_parsetree_404_405.cmo \
-	src/migrate_parsetree_405_404.cmo \
+	src/migrate_parsetree_402_403_migrate.cmo \
+	src/migrate_parsetree_403_402_migrate.cmo \
+	src/migrate_parsetree_403_404_migrate.cmo \
+	src/migrate_parsetree_404_403_migrate.cmo \
+	src/migrate_parsetree_404_405_migrate.cmo \
+	src/migrate_parsetree_405_404_migrate.cmo \
 	src/migrate_parsetree_402_403_mapper.cmo \
 	src/migrate_parsetree_403_402_mapper.cmo \
 	src/migrate_parsetree_403_404_mapper.cmo \
 	src/migrate_parsetree_404_403_mapper.cmo \
 	src/migrate_parsetree_404_405_mapper.cmo \
 	src/migrate_parsetree_405_404_mapper.cmo \
+	src/migrate_parsetree_402_403.cmo \
+	src/migrate_parsetree_403_402.cmo \
+	src/migrate_parsetree_403_404.cmo \
+	src/migrate_parsetree_404_403.cmo \
+	src/migrate_parsetree_404_405.cmo \
+	src/migrate_parsetree_405_404.cmo \
 	src/migrate_parsetree_versions.cmo \
 	src/migrate_parsetree_ast_io.cmo \
 	src/migrate_parsetree.cmo

@@ -5,7 +5,7 @@
 (*$define outcometree_types
   "out_value" "out_type" "out_class_type" "out_module_type" "out_sig_item"
   "out_type_extension" "out_phrase"*)
-(*$define all_types parsetree_types outcometree_types*)
+(*$define all_types parsetree_types outcometree_types "mapper"*)
 
 type _ witnesses = ..
 
@@ -15,6 +15,9 @@ module type Ast = sig
   end
   module Outcometree : sig
     (*$foreach type outcometree_types "type " type "\n"*)
+  end
+  module Ast_mapper : sig
+    type mapper
   end
   module Config : sig
     val ast_impl_magic_number : string
@@ -35,6 +38,7 @@ module type OCaml_version = sig
   type types = <
     (*$foreach type parsetree_types " " type " : Ast.Parsetree." type ";\n"*)
     (*$foreach type outcometree_types " " type " : Ast.Outcometree." type ";\n"*)
+    mapper : Ast.Ast_mapper.mapper;
     > _types
   type _ witnesses += Version : types witnesses
 end
@@ -44,16 +48,18 @@ struct
   type types = <
     (*$foreach type parsetree_types " " type " : Ast.Parsetree." type ";\n"*)
     (*$foreach type outcometree_types " " type " : Ast.Outcometree." type ";\n"*)
+    mapper : Ast.Ast_mapper.mapper;
     > _types
   type _ witnesses += Version : types witnesses
 end
 
 type 'types ocaml_version =
   (module OCaml_version
-          (*$foreach type parsetree_types
-               (if first_type "with type " "and type ") "Ast.Parsetree." type " = 'types get_" type "\n"*)
-          (*$foreach type outcometree_types
-               "and type " "Ast.Outcometree." type " = 'types get_" type "\n"*)
+   with type Ast.Ast_mapper.mapper = 'types get_mapper
+    (*$foreach type parsetree_types
+         "and type Ast.Parsetree." type " = 'types get_" type "\n"*)
+    (*$foreach type outcometree_types
+         "and type Ast.Outcometree." type " = 'types get_" type "\n"*)
   )
 
 type an_ocaml_version = OCaml_version : 'a ocaml_version -> an_ocaml_version
@@ -65,12 +71,15 @@ module type Migration = sig
      "val copy_" type " : From.Parsetree." type " -> To.Parsetree." type "\n"*)
   (*$foreach type outcometree_types
      "val copy_" type " : From.Outcometree." type " -> To.Outcometree." type "\n"*)
+  val copy_mapper : From.Ast_mapper.mapper -> To.Ast_mapper.mapper
 end
 
 type ('from,'to_) migration =
   (module Migration
+    with type From.Ast_mapper.mapper = 'from get_mapper
+     and type To.Ast_mapper.mapper = 'to_ get_mapper
     (*$foreach type parsetree_types
-         (if first_type "with type " "and type ") "From.Parsetree." type " = 'from get_" type "\n"*)
+         "and type " "From.Parsetree." type " = 'from get_" type "\n"*)
     (*$foreach type outcometree_types
          "and type " "From.Outcometree." type " = 'from get_" type "\n"*)
     (*$foreach type parsetree_types

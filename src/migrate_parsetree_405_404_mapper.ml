@@ -2,14 +2,14 @@ module From = Ast_405
 module To = Ast_404
 
 module A = struct
-  include Migrate_parsetree_405_404
+  include Migrate_parsetree_405_404_migrate
   let copy_cases x = List.map copy_case x
   let copy_expr = copy_expression
   let copy_pat = copy_pattern
   let copy_typ = copy_core_type
 end
 module B = struct
-  include Migrate_parsetree_404_405
+  include Migrate_parsetree_404_405_migrate
   let copy_cases x = List.map copy_case x
   let copy_expr = copy_expression
   let copy_pat = copy_pattern
