@@ -2110,7 +2110,7 @@ module Ast_mapper : sig
 
   (** {2 A generic Parsetree mapper} *)
 
-  type mapper = {
+  type mapper (*$ifdef CURRENT " = Ast_mapper.mapper" *) = {
     attribute: mapper -> attribute -> attribute;
     attributes: mapper -> attribute list -> attribute list;
     case: mapper -> case -> case;
@@ -2285,7 +2285,7 @@ end = struct
   open Ast_helper
   open Location
 
-  type mapper = {
+  type mapper (*$ifdef CURRENT " = Ast_mapper.mapper" *) = {
     attribute: mapper -> attribute -> attribute;
     attributes: mapper -> attribute list -> attribute list;
     case: mapper -> case -> case;
