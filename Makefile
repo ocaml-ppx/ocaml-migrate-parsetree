@@ -55,6 +55,10 @@ OBJECTS= \
 .PHONY: all
 all: migrate_parsetree.cma migrate_parsetree.cmxa
 
+ifeq ($(NATDYNLINK),true)
+all: migrate_parsetree.cmxs
+endif
+
 .PHONY: clean
 clean:
 	rm -f src/*.cm* src/*.o src/*.obj src/*.a src/*.lib
@@ -85,7 +89,8 @@ targets = $(1).mli $(1).cmi $(1).cmt $(1).cmti $(wildcard $(1).cmx)
 INSTALL = META \
    migrate_parsetree.cma \
    $(wildcard migrate_parsetree.cmxa migrate_parsetree$(EXT_LIB)) \
-	 $(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti))
+	 $(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmx)) \
+	 $(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti))
 
 .PHONY: reinstall install uninstall
 
@@ -102,10 +107,13 @@ reinstall:
 # Ast selection
 
 migrate_parsetree.cma: $(OBJECTS)
-	$(OCAMLC) -a -o migrate_parsetree.cma $^
+	$(OCAMLC) -a -o $@ $^
 
 migrate_parsetree.cmxa: $(OBJECTS:.cmo=.cmx)
-	$(OCAMLOPT) -a -o migrate_parsetree.cmxa $^
+	$(OCAMLOPT) -a -o $@ $^
+
+migrate_parsetree.cmxs: migrate_parsetree.cmxa
+	$(OCAMLOPT) -shared -o $@ $^
 
 # Auxiliary tools
 tools: tools/add_special_comments.native tools/pp_subst
