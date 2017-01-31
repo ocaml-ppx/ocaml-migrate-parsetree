@@ -112,7 +112,7 @@ migrate_parsetree.cma: $(OBJECTS)
 migrate_parsetree.cmxa: $(OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -a -o $@ $^
 
-migrate_parsetree.cmxs: migrate_parsetree.cmxa
+migrate_parsetree.cmxs: $(OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -shared -o $@ $^
 
 # Auxiliary tools
