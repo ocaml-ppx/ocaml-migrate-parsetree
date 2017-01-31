@@ -1,13 +1,13 @@
 (* A completely ad-hoc text substitution language
 
    Roughly specified:
-   - text can contain commands, beginning with (*$ and ending with *)
+   - text can contain commands, beginning with (*# and ending with *)
      (so that they are treated as OCaml comments)
    - commands are replaced by their evaluation, the rest is copied verbatim
    - multine line commands or outputs cause the emission of a parser directive
      to resynchronize output
-   - commands are s-expressions, with the outermost (*$ and *) treated as
-     parentheses: (*$concat a (b c)*) is really (concat a (b c))
+   - commands are s-expressions, with the outermost (*# and *) treated as
+     parentheses: (*#concat a (b c)*) is really (concat a (b c))
    - there are global variables:
      * identifiers are lookup in a dictionary and replaced by the value of the
        variable
@@ -166,7 +166,7 @@ let process oc fname input =
     | '\n' ->
         incr line; bol := !i;
         output_char oc '\n'
-    | '(' when !i + 1 < len && input.[!i] = '*' && input.[!i+1] = '$' ->
+    | '(' when !i + 1 < len && input.[!i] = '*' && input.[!i+1] = '#' ->
         let offset = !i+2 in
         let i' = delimit_command input offset in
         let command = String.sub input offset (i' - offset - 2) in
