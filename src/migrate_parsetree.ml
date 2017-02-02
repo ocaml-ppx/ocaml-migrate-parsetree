@@ -29,6 +29,7 @@ module OCaml_402 = Versions.OCaml_402
 module OCaml_403 = Versions.OCaml_403
 module OCaml_404 = Versions.OCaml_404
 module OCaml_405 = Versions.OCaml_405
+module OCaml_current = Versions.OCaml_current
 
 (* A Functor taking two OCaml versions and producing a module of functions
    migrating from one to the other. *)
