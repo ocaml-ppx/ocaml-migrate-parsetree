@@ -36,12 +36,6 @@ OBJECTS= \
 	src/migrate_parsetree_404_403_migrate.cmo \
 	src/migrate_parsetree_404_405_migrate.cmo \
 	src/migrate_parsetree_405_404_migrate.cmo \
-	src/migrate_parsetree_402_403_mapper.cmo \
-	src/migrate_parsetree_403_402_mapper.cmo \
-	src/migrate_parsetree_403_404_mapper.cmo \
-	src/migrate_parsetree_404_403_mapper.cmo \
-	src/migrate_parsetree_404_405_mapper.cmo \
-	src/migrate_parsetree_405_404_mapper.cmo \
 	src/migrate_parsetree_402_403.cmo \
 	src/migrate_parsetree_403_402.cmo \
 	src/migrate_parsetree_403_404.cmo \
@@ -68,6 +62,7 @@ clean:
 .PHONY: cinaps
 cinaps:
 	cinaps -styler ocp-indent -i src/migrate_parsetree_versions.ml*
+	cinaps -styler ocp-indent -i src/migrate_parsetree_40?_40?.ml*
 
 # Default rules
 

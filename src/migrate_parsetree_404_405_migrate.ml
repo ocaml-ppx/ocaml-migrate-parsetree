@@ -1693,3 +1693,8 @@ let copy_out_type_extension :
       To.Outcometree.otyext_private =
         (copy_private_flag otyext_private)
     }
+
+let copy_cases x = List.map copy_case x
+let copy_pat = copy_pattern
+let copy_expr = copy_expression
+let copy_typ = copy_core_type

@@ -2,8 +2,13 @@
 (*$ #use "src/cinaps.ml" $*)
 
 module type Ast = sig
+  (*$ foreach_module (fun m types ->
+        printf "module %s : sig\n" m;
+        List.iter types ~f:(printf "type %s\n");
+        printf "end\n"
+      )
+  *)
   module Parsetree : sig
-    (*$ nl (); List.iter parsetree_types ~f:(printf "type %s\n") *)
     type structure
     type signature
     type toplevel_phrase
@@ -14,10 +19,8 @@ module type Ast = sig
     type type_declaration
     type type_extension
     type extension_constructor
-    (*$*)
   end
   module Outcometree : sig
-    (*$ nl (); List.iter outcometree_types ~f:(printf "type %s\n") *)
     type out_value
     type out_type
     type out_class_type
@@ -25,11 +28,11 @@ module type Ast = sig
     type out_sig_item
     type out_type_extension
     type out_phrase
-    (*$*)
   end
   module Ast_mapper : sig
     type mapper
   end
+  (*$*)
   module Config : sig
     val ast_impl_magic_number : string
     val ast_intf_magic_number : string
@@ -45,8 +48,8 @@ module type OCaml_version = sig
   val string_version : string
 
   type types = <
-    (*$ nl (); List.iter all_types_with_module ~f:(fun (m, s) ->
-          printf "    %-21s : Ast.%s.%s;\n" s m s)*)
+    (*$ foreach_type (fun m s -> printf "%-21s : Ast.%s.%s;\n" s m s) *)
+
     structure             : Ast.Parsetree.structure;
     signature             : Ast.Parsetree.signature;
     toplevel_phrase       : Ast.Parsetree.toplevel_phrase;
@@ -85,9 +88,10 @@ val all_versions : (module OCaml_version) list
 (* A generic functor converting between any two versions of OCaml. *)
 
 module Convert (A : OCaml_version) (B : OCaml_version) : sig
-  (*$ nl (); List.iter all_types_with_module ~f:(fun (m, s) ->
+  (*$ foreach_type (fun m s ->
         let fq = sprintf "%s.%s" m s in
         printf "  val copy_%-21s : A.Ast.%-31s -> B.Ast.%s\n" s fq fq) *)
+
   val copy_structure             : A.Ast.Parsetree.structure             -> B.Ast.Parsetree.structure
   val copy_signature             : A.Ast.Parsetree.signature             -> B.Ast.Parsetree.signature
   val copy_toplevel_phrase       : A.Ast.Parsetree.toplevel_phrase       -> B.Ast.Parsetree.toplevel_phrase

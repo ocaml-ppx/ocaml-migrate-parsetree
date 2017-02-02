@@ -3,7 +3,15 @@ open Printf
 
 let nl () = printf "\n"
 
-let parsetree_types =
+let supported_versions = [
+  ("402", "4.02");
+  ("403", "4.03");
+  ("404", "4.04");
+  ("405", "4.05");
+]
+
+let qualified_types = [
+  "Parsetree",
   [ "structure"
   ; "signature"
   ; "toplevel_phrase"
@@ -14,9 +22,9 @@ let parsetree_types =
   ; "type_declaration"
   ; "type_extension"
   ; "extension_constructor"
-  ]
+  ];
 
-let outcometree_types =
+  "Outcometree",
   [ "out_value"
   ; "out_type"
   ; "out_class_type"
@@ -24,20 +32,36 @@ let outcometree_types =
   ; "out_sig_item"
   ; "out_type_extension"
   ; "out_phrase"
-  ]
+  ];
 
-let all_types = parsetree_types @ outcometree_types @ ["mapper"]
+  "Ast_mapper",
+  [ "mapper"
+  ];
+]
 
-let all_types_with_module =
-  List.map parsetree_types ~f:(fun t -> ("Parsetree", t)) @
-  List.map outcometree_types ~f:(fun t -> ("Outcometree", t)) @
-  [("Ast_mapper", "mapper")]
+let all_types = List.concat (List.map ~f:snd qualified_types)
+
+let foreach_module f =
+  nl ();
+  List.iter qualified_types ~f:(fun (m, types) -> f m types)
+
+let foreach_type f =
+  nl ();
+  foreach_module (fun m -> List.iter ~f:(f m))
+
+let foreach_version f =
+  nl ();
+  List.iter supported_versions ~f:(fun (suffix, version) -> f suffix version)
+
+let foreach_version_pair f =
+  nl ();
+  let rec aux = function
+    | (x,_) :: ((y,_) :: _ as tail) -> f x y; aux tail
+    | [_] | [] -> ()
+  in
+  aux supported_versions
 
 let with_then_and () =
-  let first = ref true in
-  fun () ->
-    if !first then begin
-      first := false;
-      "with"
-    end else
-      " and"
+  let first = ref true in fun oc ->
+    output_string oc (if !first then "with" else "and");
+    first := false
