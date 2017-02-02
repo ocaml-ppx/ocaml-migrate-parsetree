@@ -65,6 +65,10 @@ clean:
 	rm -f tools/*.cm* tools/*.o tools/*.obj tools/*.a tools/*.lib tools/*.native
 	rm -f migrate_parsetree.*
 
+.PHONY: cinaps
+cinaps:
+	cinaps -styler ocp-indent -i src/migrate_parsetree_versions.ml*
+
 # Default rules
 
 .SUFFIXES: .ml .mli .cmo .cmi .cmx .native
