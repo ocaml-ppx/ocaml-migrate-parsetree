@@ -1,5 +1,5 @@
 (* BEGIN of BLACK MAGIC *)
-(*$ #use "src/cinaps.ml" $*)
+(*$ #use "src/cinaps_helpers" $*)
 
 type _ witnesses = ..
 

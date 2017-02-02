@@ -1,3 +1,5 @@
+(* -*- tuareg -*- *)
+
 open StdLabels
 open Printf
 

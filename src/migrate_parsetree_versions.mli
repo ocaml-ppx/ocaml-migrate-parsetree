@@ -1,5 +1,5 @@
 (* Abstract view of the Asts of an OCaml frontend *)
-(*$ #use "src/cinaps.ml" $*)
+(*$ #use "src/cinaps_helpers" $*)
 
 module type Ast = sig
   (*$ foreach_module (fun m types ->

@@ -1,0 +1,12 @@
+(library
+ ((name migrate_parsetree)
+  (public_name ocaml-migrate-parsetree)
+  (libraries (compiler-libs.common))
+  (preprocessor_deps (../pp.sh ocaml-version))
+  (preprocess (command "../pp.sh `cat ocaml-version`"))
+  (js_of_ocaml ())))
+
+(rule
+ ((targets (ocaml-version))
+  (deps    (../ast_version.sh))
+  (action  "${<} ${OCAMLC} > ${@}")))
