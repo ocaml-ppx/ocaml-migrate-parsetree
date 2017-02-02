@@ -81,7 +81,7 @@ module OCaml_404 : OCaml_version with module Ast = Ast_404
 module OCaml_405 : OCaml_version with module Ast = Ast_405
 
 (* An alias to the current compiler version *)
-module OCaml_current = OCaml_(*#concat OCAML_VERSION*)
+module OCaml_current = OCaml_OCAML_VERSION
 
 val all_versions : (module OCaml_version) list
 

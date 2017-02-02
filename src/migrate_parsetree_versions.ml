@@ -455,7 +455,7 @@ let chain = Chain ((module OCaml_405), lazy ((module Migrate_parsetree_405_404),
 
 module Convert = Make_conversion(struct let latest = Latest chain end)
 
-module OCaml_current = OCaml_(*#concat OCAML_VERSION*)
+module OCaml_current = OCaml_OCAML_VERSION
 
 (* Make sure the preprocessing worked as expected *)
 let _f (x : Parsetree.expression) : OCaml_current.Ast.Parsetree.expression = x

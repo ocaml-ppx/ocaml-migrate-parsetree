@@ -70,13 +70,13 @@ cinaps:
 
 PP = -pp "sh pp.sh $(OCAML_VERSION)"
 
-%.cmo: %.ml tools/pp_subst.native
+%.cmo: %.ml
 	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
 
-%.cmi: %.mli tools/pp_subst.native
+%.cmi: %.mli
 	$(OCAMLC) $(COMPFLAGS) $(PP) -c $<
 
-%.cmx: %.ml tools/pp_subst.native
+%.cmx: %.ml
 	$(OCAMLOPT) $(COMPFLAGS) $(PP) -c $<
 
 .cmx.native: src/migrate_parsetree.cmxa
@@ -115,13 +115,10 @@ migrate_parsetree.cmxs: $(OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -shared -o $@ $^
 
 # Auxiliary tools
-tools: tools/add_special_comments.native tools/pp_subst
+tools: tools/add_special_comments.native
 
 tools/add_special_comments.native: tools/add_special_comments.ml
 	ocamlfind opt -o $@ -linkpkg -package compiler-libs.common $<
-
-tools/pp_subst.native: tools/pp_subst.ml
-	ocamlopt -o $@ $<
 
 ## gencopy from ppx_tools package
 ## ./gencopy -I . -map Ast_403:Ast_404 Ast_403.Parsetree.expression > migrate_parsetree_403_404.ml
