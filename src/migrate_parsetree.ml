@@ -33,3 +33,19 @@ module OCaml_405 = Versions.OCaml_405
 (* A Functor taking two OCaml versions and producing a module of functions
    migrating from one to the other. *)
 module Convert = Versions.Convert
+
+(* Aliases for compiler-libs modules that might be shadowed *)
+module Compiler_libs = struct
+  module Location = Location
+  module Longident = Longident
+
+  module type Asttypes = module type of struct include Asttypes end
+  module rec Asttypes : Asttypes = Asttypes
+
+  module type Parsetree = module type of struct include Parsetree end
+  module rec Parsetree : Parsetree = Parsetree
+
+  module Docstrings = Docstrings
+  module Ast_helper = Ast_helper
+  module Ast_mapper = Ast_mapper
+end
