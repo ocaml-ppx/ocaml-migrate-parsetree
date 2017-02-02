@@ -6,9 +6,9 @@ authors: [
   "Alain Frisch <alain.frisch@lexifi.com>" 
 ]
 license: "MIT"
-homepage: "https://github.com/let-def/migrate-parsetree"
-bug-reports: "https://github.com/let-def/migrate-parsetree/issues"
-dev-repo: "git://github.com/let-def/migrate-parsetree.git"
+homepage: "https://github.com/let-def/ocaml-migrate-parsetree"
+bug-reports: "https://github.com/let-def/ocaml-migrate-parsetree/issues"
+dev-repo: "git://github.com/let-def/ocaml-migrate-parsetree.git"
 tags: [ "syntax" ]
 build: [[make "all"]]
 install: [[make "install"]]

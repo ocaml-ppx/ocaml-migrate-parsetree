@@ -1,4 +1,4 @@
-# migrate-parsetree
+# OCaml-migrate-parsetree
 Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
@@ -90,7 +90,7 @@ package:
 `opam pin add cinaps https://github.com/janestreet/cinaps.git`
 
 Add the new version in
-[src/cinaps.ml](https://github.com/let-def/migrate-parsetree/blob/master/src/cinaps.ml)
+[src/cinaps.ml](https://github.com/let-def/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
 `supported_versions`.
 
 Snapshot the ast in file "asts/ast\_NEW.ml".
