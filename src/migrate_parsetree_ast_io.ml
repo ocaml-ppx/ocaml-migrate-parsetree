@@ -1,3 +1,18 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                         OCaml Migrate Parsetree                        *)
+(*                                                                        *)
+(*                             Frédéric Bour                              *)
+(*                                                                        *)
+(*   Copyright 2017 Institut National de Recherche en Informatique et     *)
+(*     en Automatique (INRIA).                                            *)
+(*                                                                        *)
+(*   All rights reserved.  This file is distributed under the terms of    *)
+(*   the GNU Lesser General Public License version 2.1, with the          *)
+(*   special exception on linking described in the file LICENSE.          *)
+(*                                                                        *)
+(**************************************************************************)
+
 type ast =
   | Impl : (module Migrate_parsetree_versions.OCaml_version with
              type Ast.Parsetree.structure = 'concrete) * 'concrete -> ast

@@ -1,3 +1,19 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                         OCaml Migrate Parsetree                        *)
+(*                                                                        *)
+(*                             Frédéric Bour                              *)
+(*                   Jérémie Dimino, Jane Street Europe                   *)
+(*                                                                        *)
+(*   Copyright 2017 Institut National de Recherche en Informatique et     *)
+(*     en Automatique (INRIA).                                            *)
+(*                                                                        *)
+(*   All rights reserved.  This file is distributed under the terms of    *)
+(*   the GNU Lesser General Public License version 2.1, with the          *)
+(*   special exception on linking described in the file LICENSE.          *)
+(*                                                                        *)
+(**************************************************************************)
+
 (* Shared definitions.
    Mostly errors about features missing in older versions. *)
 module Def = Migrate_parsetree_def

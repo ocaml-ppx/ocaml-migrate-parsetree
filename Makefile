@@ -1,5 +1,5 @@
 # This file is part of the migrate-parsetree package. It is released under the
-# terms of the MIT license (see LICENSE file).
+# terms of the LGPL 2.1 license (see LICENSE file).
 # Copyright 2017  Frédéric Bour
 #
 # It is forked from ppx-tools package, which is copyright 2013

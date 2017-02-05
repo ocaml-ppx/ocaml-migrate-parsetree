@@ -1,22 +1,26 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                         OCaml Migrate Parsetree                        *)
+(*                                                                        *)
+(*                             Frédéric Bour                              *)
+(*            Jérémie Dimino and Leo White, Jane Street Europe            *)
+(*            Xavier Leroy, projet Cristal, INRIA Rocquencourt            *)
+(*                         Alain Frisch, LexiFi                           *)
+(*       Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt         *)
+(*                                                                        *)
+(*   Copyright 2017 Institut National de Recherche en Informatique et     *)
+(*     en Automatique (INRIA).                                            *)
+(*                                                                        *)
+(*   All rights reserved.  This file is distributed under the terms of    *)
+(*   the GNU Lesser General Public License version 2.1, with the          *)
+(*   special exception on linking described in the file LICENSE.          *)
+(*                                                                        *)
+(**************************************************************************)
+
 module Location = Location
 module Longident = Longident
 
 module Asttypes = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
-  (*                                                                        *)
-  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** Auxiliary AST types used by parsetree and typedtree. *)
 
   type constant (*IF_CURRENT = Asttypes.constant *) =
@@ -63,21 +67,6 @@ module Asttypes = struct
 end
 
 module Parsetree = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*             Xavier Leroy, projet Cristal, INRIA Rocquencourt           *)
-  (*                                                                        *)
-  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** Abstract syntax tree produced by parsing *)
 
   open Asttypes
@@ -931,21 +920,6 @@ module Parsetree = struct
 end
 
 module Docstrings : sig
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                               Leo White                                *)
-  (*                                                                        *)
-  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** {3 Docstrings} *)
 
   (** Documentation comments *)
@@ -1006,21 +980,6 @@ module Docstrings : sig
   val add_text_attrs : text -> Parsetree.attributes -> Parsetree.attributes
 
 end = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                               Leo White                                *)
-  (*                                                                        *)
-  (*   Copyright 1996 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   open Location
 
   (* Docstrings *)
@@ -1117,21 +1076,6 @@ end = struct
 end
 
 module Ast_helper : sig
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                         Alain Frisch, LexiFi                           *)
-  (*                                                                        *)
-  (*   Copyright 2012 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** Helpers to produce Parsetree fragments *)
 
   open Asttypes
@@ -1549,21 +1493,6 @@ module Ast_helper : sig
     end
 
 end = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                         Alain Frisch, LexiFi                           *)
-  (*                                                                        *)
-  (*   Copyright 2012 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** Helpers to produce Parsetree fragments *)
 
   open Asttypes
@@ -2056,21 +1985,6 @@ end = struct
 end
 
 module Ast_mapper : sig
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                         Alain Frisch, LexiFi                           *)
-  (*                                                                        *)
-  (*   Copyright 2012 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (** The interface of a -ppx rewriter
 
     A -ppx rewriter is a program that accepts a serialized abstract syntax
@@ -2258,21 +2172,6 @@ module Ast_mapper : sig
   val get_cookie: string -> Parsetree.expression option
 *)
 end = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*                         Alain Frisch, LexiFi                           *)
-  (*                                                                        *)
-  (*   Copyright 2012 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (* A generic Parsetree mapping class *)
 
   (*
@@ -3182,21 +3081,6 @@ end = struct
 end
 
 module Outcometree = struct
-  (**************************************************************************)
-  (*                                                                        *)
-  (*                                 OCaml                                  *)
-  (*                                                                        *)
-  (*      Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt          *)
-  (*                                                                        *)
-  (*   Copyright 2001 Institut National de Recherche en Informatique et     *)
-  (*     en Automatique.                                                    *)
-  (*                                                                        *)
-  (*   All rights reserved.  This file is distributed under the terms of    *)
-  (*   the GNU Lesser General Public License version 2.1, with the          *)
-  (*   special exception on linking described in the file LICENSE.          *)
-  (*                                                                        *)
-  (**************************************************************************)
-
   (* Module [Outcometree]: results displayed by the toplevel *)
 
   (* These types represent messages that the toplevel displays as normal

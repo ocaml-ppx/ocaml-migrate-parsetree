@@ -72,14 +72,7 @@ marshalling/unmarshalling.
 It started from the work of Alain Frisch in
 [ppx\_tools](https://github.com/alainfrisch/ppx_tools).
 
-The library includes code from different versions of OCaml. The resulting
-license is not yet clear. Other code is licensed under MIT.
-
-OCaml is copyright INRIA:
-- OCaml 4.02 is distributed under QPL 1 with exceptions.
-- OCaml 4.03 is distributed under LGPL 2.1.
-- OCaml 4.04 is distributed under LGPL 2.1.
-- OCaml 4.05 is distributed under LGPL 2.1.
+The library is distributed under LGPL 2.1 and is copyright INRIA.
 
 ## Adding a new OCaml version
 
