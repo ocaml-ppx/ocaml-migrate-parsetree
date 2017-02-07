@@ -7,7 +7,7 @@
 
 # Don't forget to change META file as well
 PACKAGE = ocaml-migrate-parsetree
-VERSION = 0.1
+VERSION = 0.2
 
 # Config
 include $(shell ocamlc -where)/Makefile.config
