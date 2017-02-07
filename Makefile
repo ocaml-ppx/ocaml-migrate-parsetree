@@ -86,10 +86,9 @@ PP = -pp "sh pp.sh $(OCAML_VERSION)"
 
 targets = $(1).mli $(1).cmi $(1).cmt $(1).cmti $(wildcard $(1).cmx)
 INSTALL = META \
-   migrate_parsetree.cma \
-   $(wildcard migrate_parsetree.cmxa migrate_parsetree$(EXT_LIB)) \
-	 $(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmx)) \
-	 $(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti))
+	$(wildcard migrate_parsetree.*) \
+	$(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmx)) \
+	$(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti))
 
 .PHONY: reinstall install uninstall
 
