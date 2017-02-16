@@ -7,7 +7,7 @@
 
 # Don't forget to change META file as well
 PACKAGE = ocaml-migrate-parsetree
-VERSION = 0.2
+VERSION = 0.3
 
 # Config
 include $(shell ocamlc -where)/Makefile.config
@@ -16,11 +16,11 @@ OCAML_VERSION=$(shell ./ast_version.sh ocamlc)
 ifeq ($(OCAML_VERSION),402)
 OCAMLC = ocamlfind c -bin-annot
 OCAMLOPT = ocamlfind opt
-COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -safe-string -package compiler-libs -package result -open Result
+COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -safe-string -package compiler-libs -package result -no-alias-deps -open Result
 else
 OCAMLC = ocamlc -bin-annot
 OCAMLOPT = ocamlopt
-COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -safe-string
+COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -no-alias-deps -safe-string
 endif
 
 # Files
