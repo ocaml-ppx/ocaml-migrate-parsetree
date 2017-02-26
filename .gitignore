@@ -11,6 +11,8 @@ src/ast_*.ml
 *.cmx
 *.cmxs
 *.cmxa
+*.merlin
+*.install
 
 # ocamlbuild working directory
 _build/
