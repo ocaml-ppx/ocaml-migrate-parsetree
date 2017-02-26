@@ -1,12 +1,33 @@
+(* -*- tuareg -*- *)
+
+module J = Jbuild_plugin.V1
+
+let () =
+  let ocaml_version =
+    Scanf.sscanf J.ocaml_version "%u.%u" (fun a b -> (a, b))
+  in
+  let need_result = ocaml_version < (4, 03) in
+  Printf.ksprintf J.send {|
+(jbuild_version 1)
+
 (library
  ((name migrate_parsetree)
   (public_name ocaml-migrate-parsetree)
-  (libraries (compiler-libs.common))
+  (libraries (compiler-libs.common %s))
+  (flags (:standard %s))
   (preprocessor_deps (../pp.sh ocaml-version))
-  (preprocess (command "../pp.sh `cat ocaml-version`"))
-  (js_of_ocaml ())))
+  (preprocess (command "../pp.sh `cat ocaml-version`"))))
 
 (rule
  ((targets (ocaml-version))
   (deps    (../ast_version.sh))
   (action  "${<} ${OCAMLC} > ${@}")))
+|}
+    (if need_result then
+       "result"
+     else
+       "")
+    (if need_result then
+       "-open Result"
+     else
+       "")
