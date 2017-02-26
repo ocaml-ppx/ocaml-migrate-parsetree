@@ -3,9 +3,12 @@ Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
 
-Supported versions are 4.02, 4.03, 4.04 and 4.05 (trunk).
+Supported versions are 4.02, 4.03, 4.04, 4.05 and 4.06 (trunk).
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
+
+Note that there is no snapshot for 4.06 since the parsetree hasn't changed
+yet.
 
 ## Asts
 
