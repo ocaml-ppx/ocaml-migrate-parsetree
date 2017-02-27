@@ -3,7 +3,6 @@ maintainer: "frederic.bour@lakaban.net"
 authors: [ 
   "Frédéric Bour <frederic.bour@lakaban.net>"
   "Jérémie Dimino <jeremie@dimino.org>"
-  "Alain Frisch <alain.frisch@lexifi.com>" 
 ]
 license: "LGPL-2.1"
 homepage: "https://github.com/let-def/ocaml-migrate-parsetree"
