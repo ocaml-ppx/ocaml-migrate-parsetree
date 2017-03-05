@@ -48,7 +48,6 @@ let foreach_module f =
   List.iter qualified_types ~f:(fun (m, types) -> f m types)
 
 let foreach_type f =
-  nl ();
   foreach_module (fun m -> List.iter ~f:(f m))
 
 let foreach_version f =
