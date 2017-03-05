@@ -14,9 +14,11 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Abstract view of the Asts of an OCaml frontend *)
 (*$ #use "src/cinaps_helpers" $*)
 
+(** {1 Abstracting an OCaml frontend} *)
+
+(** Abstract view of a version of an OCaml Ast *)
 module type Ast = sig
   (*$ foreach_module (fun m types ->
         printf "module %s : sig\n" m;
@@ -55,14 +57,79 @@ module type Ast = sig
   end
 end
 
-(* A version of the OCaml frontend packs the ast with type witnesses
-   so that equalities can be recovered dynamically. *)
+(* Shortcuts for talking about ast types outside of the module language *)
+
+type 'a _types = 'a constraint 'a
+  = <
+  (*$ foreach_type (fun _ s -> printf "%-21s : _;\n" s) *)
+
+  structure             : _;
+  signature             : _;
+  toplevel_phrase       : _;
+  core_type             : _;
+  expression            : _;
+  pattern               : _;
+  case                  : _;
+  type_declaration      : _;
+  type_extension        : _;
+  extension_constructor : _;
+  out_value             : _;
+  out_type              : _;
+  out_class_type        : _;
+  out_module_type       : _;
+  out_sig_item          : _;
+  out_type_extension    : _;
+  out_phrase            : _;
+  mapper                : _;
+  (*$*)
+  >
+
+(*$ foreach_type (fun _ s ->
+      printf "type 'a get_%s =\n" s;
+      printf " 'x constraint 'a _types = < %s : 'x; .. >\n" s
+    ) *)
+type 'a get_structure             = 'x constraint 'a _types = < structure : 'x; .. >
+type 'a get_signature             = 'x constraint 'a _types = < signature : 'x; .. >
+type 'a get_toplevel_phrase       = 'x constraint 'a _types = < toplevel_phrase : 'x; .. >
+type 'a get_core_type             = 'x constraint 'a _types = < core_type : 'x; .. >
+type 'a get_expression            = 'x constraint 'a _types = < expression : 'x; .. >
+type 'a get_pattern               = 'x constraint 'a _types = < pattern : 'x; .. >
+type 'a get_case                  = 'x constraint 'a _types = < case : 'x; .. >
+type 'a get_type_declaration      = 'x constraint 'a _types = < type_declaration : 'x; .. >
+type 'a get_type_extension        = 'x constraint 'a _types = < type_extension : 'x; .. >
+type 'a get_extension_constructor = 'x constraint 'a _types = < extension_constructor : 'x; .. >
+type 'a get_out_value             = 'x constraint 'a _types = < out_value : 'x; .. >
+type 'a get_out_type              = 'x constraint 'a _types = < out_type : 'x; .. >
+type 'a get_out_class_type        = 'x constraint 'a _types = < out_class_type : 'x; .. >
+type 'a get_out_module_type       = 'x constraint 'a _types = < out_module_type : 'x; .. >
+type 'a get_out_sig_item          = 'x constraint 'a _types = < out_sig_item : 'x; .. >
+type 'a get_out_type_extension    = 'x constraint 'a _types = < out_type_extension : 'x; .. >
+type 'a get_out_phrase            = 'x constraint 'a _types = < out_phrase : 'x; .. >
+type 'a get_mapper                = 'x constraint 'a _types = < mapper : 'x; .. >
+(*$*)
+
+(** A version of the OCaml frontend packs the ast with type witnesses
+    so that equalities can be recovered dynamically. *)
 type _ witnesses
 
-module type OCaml_version = sig
-  module Ast : Ast
-  val string_version : string
+(** [migration_info] is an opaque type that is used to generate migration
+    functions. *)
+type _ migration_info
 
+(** An OCaml frontend versions an Ast, version number and some witnesses for
+    conversion. *)
+module type OCaml_version = sig
+
+  (** Ast definition for this version *)
+  module Ast : Ast
+
+  (* Version number as an integer, 402, 403, 404, ... *)
+  val version : int
+
+  (* Version number as a user-friendly string *)
+  val string_version : string (* 4.02, 4.03, 4.04, ... *)
+
+  (** Shortcut for talking about Ast types *)
   type types = <
     (*$ foreach_type (fun m s -> printf "%-21s : Ast.%s.%s;\n" s m s) *)
 
@@ -85,11 +152,17 @@ module type OCaml_version = sig
     out_phrase            : Ast.Outcometree.out_phrase;
     mapper                : Ast.Ast_mapper.mapper;
     (*$*)
-  >
+  > _types
+
+  (** A construtor for recovering type equalities between two arbitrary
+      versions. *)
   type _ witnesses += Version : types witnesses
+
+  (** Information used to derive migration functions, see below *)
+  val migration_info : types migration_info
 end
 
-(* Supported OCaml versions. *)
+(** {1 Concrete frontend instances} *)
 
 module OCaml_402 : OCaml_version with module Ast = Ast_402
 module OCaml_403 : OCaml_version with module Ast = Ast_403
@@ -101,8 +174,79 @@ module OCaml_current = OCaml_OCAML_VERSION
 
 val all_versions : (module OCaml_version) list
 
-(* A generic functor converting between any two versions of OCaml. *)
+(** {1 Migrating between different versions} *)
 
+(** Representing an ocaml version in type language *)
+type 'types ocaml_version =
+  (module OCaml_version
+    (*$ let sep = with_then_and () in
+        foreach_type (fun m s ->
+          printf "%t type Ast.%s.%s = 'types get_%s\n" sep m s s) *)
+
+    with type Ast.Parsetree.structure = 'types get_structure
+     and type Ast.Parsetree.signature = 'types get_signature
+     and type Ast.Parsetree.toplevel_phrase = 'types get_toplevel_phrase
+     and type Ast.Parsetree.core_type = 'types get_core_type
+     and type Ast.Parsetree.expression = 'types get_expression
+     and type Ast.Parsetree.pattern = 'types get_pattern
+     and type Ast.Parsetree.case = 'types get_case
+     and type Ast.Parsetree.type_declaration = 'types get_type_declaration
+     and type Ast.Parsetree.type_extension = 'types get_type_extension
+     and type Ast.Parsetree.extension_constructor = 'types get_extension_constructor
+     and type Ast.Outcometree.out_value = 'types get_out_value
+     and type Ast.Outcometree.out_type = 'types get_out_type
+     and type Ast.Outcometree.out_class_type = 'types get_out_class_type
+     and type Ast.Outcometree.out_module_type = 'types get_out_module_type
+     and type Ast.Outcometree.out_sig_item = 'types get_out_sig_item
+     and type Ast.Outcometree.out_type_extension = 'types get_out_type_extension
+     and type Ast.Outcometree.out_phrase = 'types get_out_phrase
+     and type Ast.Ast_mapper.mapper = 'types get_mapper
+     (*$*)
+  )
+
+(** A record for migrating each AST construct between two known versions *)
+type ('from, 'to_) migration_functions = {
+  copy_structure             : 'from get_structure             -> 'to_ get_structure;
+  copy_signature             : 'from get_signature             -> 'to_ get_signature;
+  copy_toplevel_phrase       : 'from get_toplevel_phrase       -> 'to_ get_toplevel_phrase;
+  copy_core_type             : 'from get_core_type             -> 'to_ get_core_type;
+  copy_expression            : 'from get_expression            -> 'to_ get_expression;
+  copy_pattern               : 'from get_pattern               -> 'to_ get_pattern;
+  copy_case                  : 'from get_case                  -> 'to_ get_case;
+  copy_type_declaration      : 'from get_type_declaration      -> 'to_ get_type_declaration;
+  copy_type_extension        : 'from get_type_extension        -> 'to_ get_type_extension;
+  copy_extension_constructor : 'from get_extension_constructor -> 'to_ get_extension_constructor;
+  copy_out_value             : 'from get_out_value             -> 'to_ get_out_value;
+  copy_out_type              : 'from get_out_type              -> 'to_ get_out_type;
+  copy_out_class_type        : 'from get_out_class_type        -> 'to_ get_out_class_type;
+  copy_out_module_type       : 'from get_out_module_type       -> 'to_ get_out_module_type;
+  copy_out_sig_item          : 'from get_out_sig_item          -> 'to_ get_out_sig_item;
+  copy_out_type_extension    : 'from get_out_type_extension    -> 'to_ get_out_type_extension;
+  copy_out_phrase            : 'from get_out_phrase            -> 'to_ get_out_phrase;
+  copy_mapper                : 'from get_mapper                -> 'to_ get_mapper;
+}
+
+(** Migrating to the same version is no-op *)
+val migration_identity : ('a, 'a) migration_functions
+
+(** Migrations can be composed *)
+val migration_compose : ('a, 'b) migration_functions -> ('b, 'c) migration_functions -> ('a, 'c) migration_functions
+
+(** Represent the next or previous version of an Ast *)
+type 'from immediate_migration =
+  | (** Cannot migrate earliest or latest supported version *)
+    No_migration : 'from immediate_migration
+  | (** Pack the migration functions and the new version *)
+    Immediate_migration :
+      ('from, 'to_) migration_functions * 'to_ ocaml_version -> 'from immediate_migration
+
+val immediate_migration : 'types ocaml_version -> [< `Next | `Previous ] -> 'types immediate_migration
+
+val migrate : 'from ocaml_version -> 'to_ ocaml_version -> ('from, 'to_) migration_functions
+
+(** {1 Convenience definitions} *)
+
+(** Module level migration *)
 module Convert (A : OCaml_version) (B : OCaml_version) : sig
   (*$ foreach_type (fun m s ->
         let fq = sprintf "%s.%s" m s in
