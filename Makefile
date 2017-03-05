@@ -24,7 +24,7 @@ COMPFLAGS = -w +A-4-17-44-45-105-42 -I src -I +compiler-libs -no-alias-deps -saf
 endif
 
 # Files
-OBJECTS= \
+MIGRATE_OBJECTS= \
 	src/migrate_parsetree_def.cmo \
 	src/ast_402.cmo \
 	src/ast_403.cmo \
@@ -46,8 +46,13 @@ OBJECTS= \
 	src/migrate_parsetree_ast_io.cmo \
 	src/migrate_parsetree.cmo
 
+DRIVER_OBJECTS= \
+	src/migrate_driver.cmo src/migrate_driver_main.cmo
+
+OBJECTS=$(MIGRATE_OBJECTS) $(DRIVER_OBJECTS)
+
 .PHONY: all
-all: migrate_parsetree.cma migrate_parsetree.cmxa
+all: migrate_parsetree.cma migrate_parsetree.cmxa $(DRIVER_OBJECTS)
 
 ifeq ($(NATDYNLINK),true)
 all: migrate_parsetree.cmxs
@@ -104,13 +109,13 @@ reinstall:
 
 # Ast selection
 
-migrate_parsetree.cma: $(OBJECTS)
+migrate_parsetree.cma: $(MIGRATE_OBJECTS)
 	$(OCAMLC) -a -o $@ $^
 
-migrate_parsetree.cmxa: $(OBJECTS:.cmo=.cmx)
+migrate_parsetree.cmxa: $(MIGRATE_OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -a -o $@ $^
 
-migrate_parsetree.cmxs: $(OBJECTS:.cmo=.cmx)
+migrate_parsetree.cmxs: $(MIGRATE_OBJECTS:.cmo=.cmx)
 	$(OCAMLOPT) -shared -o $@ $^
 
 # Auxiliary tools

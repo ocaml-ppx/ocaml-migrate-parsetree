@@ -2075,7 +2075,6 @@ module Ast_mapper : sig
   val set_cookie: string -> Parsetree.expression -> unit
   val get_cookie: string -> Parsetree.expression option
     *)
-
 end = struct
   (* A generic Parsetree mapping class *)
 
@@ -3094,3 +3093,59 @@ module Config = struct
   let ast_impl_magic_number = "Caml1999M016"
   let ast_intf_magic_number = "Caml1999N015"
 end
+
+let map_signature mapper = mapper.Ast_mapper.signature mapper
+let map_structure mapper = mapper.Ast_mapper.structure mapper
+
+let failing_mapper =
+  let fail _ _ =
+    invalid_arg "failing_mapper: this mapper function should never get called"
+  in
+  {
+    Ast_mapper.
+    structure               = fail;
+    structure_item          = fail;
+    module_expr             = fail;
+    signature               = fail;
+    signature_item          = fail;
+    module_type             = fail;
+    with_constraint         = fail;
+    class_declaration       = fail;
+    class_expr              = fail;
+    class_field             = fail;
+    class_structure         = fail;
+    class_type              = fail;
+    class_type_field        = fail;
+    class_signature         = fail;
+    class_type_declaration  = fail;
+    class_description       = fail;
+    type_declaration        = fail;
+    type_kind               = fail;
+    typ                     = fail;
+    type_extension          = fail;
+    extension_constructor   = fail;
+    value_description       = fail;
+    pat                     = fail;
+    expr                    = fail;
+    module_declaration      = fail;
+    module_type_declaration = fail;
+    module_binding          = fail;
+    open_description        = fail;
+    include_description     = fail;
+    include_declaration     = fail;
+    value_binding           = fail;
+    constructor_declaration = fail;
+    label_declaration       = fail;
+    cases                   = fail;
+    case                    = fail;
+    location                = fail;
+    extension               = fail;
+    attribute               = fail;
+    attributes              = fail;
+    payload                 = fail;
+  }
+
+let make_top_mapper ~signature ~structure =
+  {failing_mapper with Ast_mapper.
+                    signature = (fun _ x -> signature x);
+                    structure = (fun _ x -> structure x) }

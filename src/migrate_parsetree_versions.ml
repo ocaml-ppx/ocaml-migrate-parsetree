@@ -64,6 +64,12 @@ module type Ast = sig
     val ast_impl_magic_number : string
     val ast_intf_magic_number : string
   end
+  val map_signature : Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
+  val map_structure : Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
+  val make_top_mapper
+    :  signature:(Parsetree.signature -> Parsetree.signature)
+    -> structure:(Parsetree.structure -> Parsetree.structure)
+    -> Ast_mapper.mapper
 end
 
 (* Shortcuts for talking about ast types outside of the module language *)
