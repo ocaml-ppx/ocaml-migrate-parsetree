@@ -203,6 +203,13 @@ type 'types ocaml_version =
      (*$*)
   )
 
+type ('a, 'b) type_comparison =
+  | Lt : ('a, 'b) type_comparison
+  | Eq : ('a, 'a) type_comparison
+  | Gt : ('a, 'b) type_comparison
+
+val compare_ocaml_version : 'a ocaml_version -> 'b ocaml_version -> ('a, 'b) type_comparison
+
 (** A record for migrating each AST construct between two known versions *)
 type ('from, 'to_) migration_functions = {
   (*$ foreach_type (fun _ s ->
