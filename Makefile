@@ -94,7 +94,8 @@ targets = $(1).mli $(1).cmi $(1).cmt $(1).cmti $(wildcard $(1).cmx)
 INSTALL = META \
 	$(wildcard migrate_parsetree.*) \
 	$(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmx)) \
-	$(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti))
+	$(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti)) \
+	$(DRIVER_OBJECTS:.cmo:.o)
 
 .PHONY: reinstall install uninstall
 
