@@ -328,13 +328,13 @@ let run_as_standalone_driver () =
     ; "--dump-ast", Arg.Set dump_ast,
       " Output a binary AST instead of source code"
     ; "-o", Arg.String (fun o -> output := Some o),
-      "FILE output to this file instead of the standard output"
+      "FILE Output to this file instead of the standard output"
     ; "--intf", Arg.String (fun fn -> files := Intf fn :: !files),
-      "FILE treat FILE as a .mli file"
+      "FILE Treat FILE as a .mli file"
     ; "--impl", Arg.String (fun fn -> files := Impl fn :: !files),
-      "FILE treat FILE as a .ml file"
+      "FILE Treat FILE as a .ml file"
     ; "--cookie", Arg.String set_cookie,
-      "NAME=EXPR sets the cookie NAME to EXPR"
+      "NAME=EXPR Set the cookie NAME to EXPR"
     ]
   in
   let spec = Arg.align (spec @ List.rev !registered_args) in
