@@ -1,8 +1,8 @@
 (executables
  ((names (foo))
   (preprocess (pps (ppx1 ppx2
-                    "-message=Hello, world!"
-                    --cookie=plop={|Chocolate|})))))
+                    (-message "Hello, world!")
+                    (--cookie "plop=\"Chocolate\""))))))
 
 (rule
  ((targets (foo.output))
