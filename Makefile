@@ -95,7 +95,7 @@ INSTALL = META \
 	$(wildcard migrate_parsetree.*) \
 	$(OBJECTS:.cmo=.cmi) $(wildcard $(OBJECTS:.cmo=.cmx)) \
 	$(wildcard $(OBJECTS:.cmo=.cmt) $(OBJECTS:.cmo=.cmti)) \
-	$(DRIVER_OBJECTS:.cmo:.o)
+	$(DRIVER_OBJECTS:.cmo=.o)
 
 .PHONY: reinstall install uninstall
 
