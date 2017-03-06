@@ -1,0 +1,13 @@
+(executables
+ ((names (foo))
+  (preprocess (pps (ppx1)))))
+
+(rule
+ ((targets (foo.output))
+  (deps    (foo.exe))
+  (action  (with-stdout-to ${@} (run ${<})))))
+
+(alias
+ ((name   runtest)
+  (deps   (foo.expected foo.output))
+  (action (run diff -u foo.expected foo.output))))
