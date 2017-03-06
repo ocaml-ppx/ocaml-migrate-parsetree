@@ -222,10 +222,10 @@ let load_file file =
     | Ok (fn, Ast_io.Impl ((module V), st)) ->
       check_kind fn ~expected:file ~got:(Impl ());
       (fn, Impl ((migrate (module V) (module OCaml_current)).copy_structure st))
-    | Error (Unknown_version _) ->
+    | Error (Ast_io.Unknown_version _) ->
       Location.raise_errorf ~loc:(Location.in_file fn)
         "File is a binary ast for an unknown version of OCaml"
-    | Error (Not_a_binary_ast prefix_read_from_file) ->
+    | Error (Ast_io.Not_a_binary_ast prefix_read_from_file) ->
       (* To test if a file is a binary AST file, we have to read the first few bytes of
          the file.
 
@@ -234,10 +234,11 @@ let load_file file =
          the file to do the test. *)
       let lexbuf = Lexing.from_channel ic in
       let len = String.length prefix_read_from_file in
-      String.blit prefix_read_from_file 0 lexbuf.lex_buffer 0 len;
-      lexbuf.lex_buffer_len <- len;
-      lexbuf.lex_curr_p <-
-        { pos_fname = fn
+      String.blit prefix_read_from_file 0 lexbuf.Lexing.lex_buffer 0 len;
+      lexbuf.Lexing.lex_buffer_len <- len;
+      lexbuf.Lexing.lex_curr_p <-
+        { Lexing.
+          pos_fname = fn
         ; pos_lnum  = 1
         ; pos_bol   = 0
         ; pos_cnum  = 0
@@ -310,8 +311,9 @@ let run_as_standalone_driver () =
       let input_name = "<command-line>" in
       Location.input_name := input_name;
       let lexbuf = Lexing.from_string value in
-      lexbuf.lex_curr_p <-
-        { pos_fname = input_name
+      lexbuf.Lexing.lex_curr_p <-
+        { Lexing.
+          pos_fname = input_name
         ; pos_lnum  = 1
         ; pos_bol   = 0
         ; pos_cnum  = 0
