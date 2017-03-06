@@ -6,6 +6,16 @@ let () =
   let ocaml_version =
     Scanf.sscanf J.ocaml_version "%u.%u" (fun a b -> (a, b))
   in
+  let ast_version =
+    match ocaml_version with
+    | (4, 02) -> "402"
+    | (4, 03) -> "403"
+    | (4, 04) -> "404"
+    | (4, (05|06)) -> "405"
+    | _ ->
+      Printf.eprintf "Unkown OCaml version %s\n" J.ocaml_version;
+      exit 1
+  in
   let need_result = ocaml_version < (4, 03) in
   let result_lib, open_result =
     if need_result then
@@ -22,13 +32,7 @@ let () =
   (libraries (compiler-libs.common %s))
   (flags (:standard %s))
   (modules (:standard \ migrate_driver migrate_driver_main))
-  (preprocessor_deps (../pp.sh ocaml-version))
-  (preprocess (command "./pp.sh `cat src/ocaml-version`"))))
-
-(rule
- ((targets (ocaml-version))
-  (deps    (../ast_version.sh))
-  (action  (with-stdout-to ${@} (run ${<} ${OCAMLC})))))
+  (preprocess (action (run ${path:../pp.sh} %s ${<})))))
 
 (library
  ((name migrate_driver)
@@ -44,4 +48,4 @@ let () =
   (library_flags (-linkall))
   (libraries (migrate_driver))))
 |}
-    result_lib open_result open_result
+    result_lib open_result ast_version open_result
