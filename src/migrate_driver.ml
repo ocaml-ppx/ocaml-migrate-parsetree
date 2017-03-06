@@ -337,7 +337,7 @@ let run_as_standalone_driver () =
       "NAME=EXPR sets the cookie NAME to EXPR"
     ]
   in
-  let spec = spec @ List.rev !registered_args in
+  let spec = Arg.align (spec @ List.rev !registered_args) in
   let me = Filename.basename Sys.executable_name in
   let usage = Printf.sprintf "%s [options] [<files>]" me in
   try
