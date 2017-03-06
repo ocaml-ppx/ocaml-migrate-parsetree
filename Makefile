@@ -47,12 +47,13 @@ MIGRATE_OBJECTS= \
 	src/migrate_parsetree.cmo
 
 DRIVER_OBJECTS= \
-	src/migrate_driver.cmo src/migrate_driver_main.cmx
+	src/migrate_driver.cmo src/migrate_driver_main.cmo
 
 OBJECTS=$(MIGRATE_OBJECTS) $(DRIVER_OBJECTS)
 
 .PHONY: all
-all: migrate_parsetree.cma migrate_parsetree.cmxa $(DRIVER_OBJECTS)
+all: migrate_parsetree.cma migrate_parsetree.cmxa $(DRIVER_OBJECTS) \
+	$(DRIVER_OBJECTS:.cmo=.cmx)
 
 ifeq ($(NATDYNLINK),true)
 all: migrate_parsetree.cmxs
