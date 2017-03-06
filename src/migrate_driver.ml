@@ -346,7 +346,7 @@ let run_as_standalone_driver () =
     let dump_ast = !dump_ast in
     let config =
       (* TODO: we could add -I, -L and -g options to populate these fields. *)
-      { tool_name    = me
+      { tool_name    = "migrate_driver"
       ; include_dirs = []
       ; load_path    = []
       ; debug        = false
