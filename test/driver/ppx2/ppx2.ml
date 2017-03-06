@@ -27,6 +27,6 @@ let rewriter _config cookies _args =
 
 let () =
   Migrate_driver.register ~name:"ppx2"
-    ~args:[("-message", Arg.Set_string cmd_line_arg, "")]
+    ~args:[("-message", Arg.Set_string cmd_line_arg, "MSG Set [%cmd_line_arg] to MSG")]
     (module OCaml_403)
     rewriter
