@@ -1,4 +1,3 @@
 let () =
-  Printf.printf "%d\n" [%forty_two];
-  Printf.printf "%s\n" [%cmd_line_arg]
-
+  Printf.printf "%d\n%s\n%s\n"
+    [%forty_two] [%cmd_line_arg] [%plop]
