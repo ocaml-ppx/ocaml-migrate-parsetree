@@ -47,7 +47,7 @@ MIGRATE_OBJECTS= \
 	src/migrate_parsetree.cmo
 
 DRIVER_OBJECTS= \
-	src/migrate_driver.cmo src/migrate_driver_main.cmo
+	src/migrate_driver.cmo src/migrate_driver_main.cmx
 
 OBJECTS=$(MIGRATE_OBJECTS) $(DRIVER_OBJECTS)
 
