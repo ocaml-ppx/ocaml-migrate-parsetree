@@ -19,4 +19,5 @@ package "driver-main" (
   version = "0.1"
   archive(byte) = "migrate_driver_main.cmo"
   archive(native) = "migrate_driver_main.cmx"
+  requires = "ocaml-migrate-parsetree.driver"
 )
