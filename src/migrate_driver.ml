@@ -1,4 +1,5 @@
 open Migrate_parsetree.Versions
+module Ast_io = Migrate_parsetree.Ast_io
 
 (** {1 State a rewriter can access} *)
 
@@ -166,6 +167,179 @@ let run_as_ast_mapper args =
         str
       )
 
+let protectx x ~finally ~f =
+  match f x with
+  | y -> finally x; y
+  | exception e -> finally x; raise e
+
+let with_file_in fn ~f =
+  protectx (open_in_bin fn) ~finally:close_in ~f
+
+let with_file_out fn ~f =
+  protectx (open_out_bin fn) ~finally:close_out ~f
+
+type ('a, 'b) intf_or_impl =
+  | Intf of 'a
+  | Impl of 'b
+
+let guess_file_kind fn =
+  if Filename.check_suffix fn ".ml" then
+    Impl fn
+  else if Filename.check_suffix fn ".mli" then
+    Intf fn
+  else
+    Location.raise_errorf ~loc:(Location.in_file fn)
+      "I can't decide whether %s is an implementation or interface file"
+      fn
+
+let check_kind fn ~expected ~got =
+  let describe = function
+    | Intf _ -> "interface"
+    | Impl _ -> "implementation"
+  in
+  match expected, got with
+  | Impl _, Impl _
+  | Intf _, Intf _ -> ()
+  | _ ->
+    Location.raise_errorf ~loc:(Location.in_file fn)
+      "Expected an %s got an %s instead"
+      (describe expected)
+      (describe got)
+
+let load_file file =
+  let fn =
+    match file with
+    | Intf fn -> fn
+    | Impl fn -> fn
+  in
+  with_file_in fn ~f:(fun ic ->
+    match Ast_io.from_channel ic with
+    | Ok (fn, Ast_io.Intf ((module V), sg)) ->
+      check_kind fn ~expected:file ~got:(Intf ());
+      (* We need to convert to the current version in order to interpret the cookies using
+         [Ast_mapper.drop_ppx_context_*] from the compiler *)
+      (fn, Intf ((migrate (module V) (module OCaml_current)).copy_signature sg))
+    | Ok (fn, Ast_io.Impl ((module V), st)) ->
+      check_kind fn ~expected:file ~got:(Impl ());
+      (fn, Impl ((migrate (module V) (module OCaml_current)).copy_structure st))
+    | Error (Unknown_version _) ->
+      Location.raise_errorf ~loc:(Location.in_file fn)
+        "File is a binary ast for an unknown version of OCaml"
+    | Error (Not_a_binary_ast prefix_read_from_file) ->
+      (* To test if a file is a binary AST file, we have to read the first few bytes of
+         the file.
+
+         If it is not a binary AST, we have to parse these bytes and the rest of the file
+         as source code. To do that, we prefill the lexbuf buffer with what we read from
+         the file to do the test. *)
+      let lexbuf = Lexing.from_channel ic in
+      let len = String.length prefix_read_from_file in
+      String.blit prefix_read_from_file 0 lexbuf.lex_buffer 0 len;
+      lexbuf.lex_buffer_len <- len;
+      lexbuf.lex_curr_p <-
+        { pos_fname = fn
+        ; pos_lnum  = 1
+        ; pos_bol   = 0
+        ; pos_cnum  = 0
+        };
+      Location.input_name := fn;
+      if Filename.check_suffix fn ".ml" then
+        (fn, Impl (Parse.implementation lexbuf))
+      else if Filename.check_suffix fn ".mli" then
+        (fn, Intf (Parse.interface lexbuf))
+      else
+        (* TODO: add support for -intf and -impl *)
+        Location.raise_errorf ~loc:(Location.in_file fn)
+          "I can't decide whether %s is an implementation or interface file"
+          fn)
+
+let with_output output ~f =
+  match output with
+  | None -> f stdout
+  | Some fn -> with_file_out fn ~f
+
+let process_file ~config ~output ~dump_ast file =
+  let cookies = Hashtbl.create 3 in
+  let fn, ast = load_file file in
+  let ast =
+    match ast with
+    | Intf sg ->
+      let sg = Ast_mapper.drop_ppx_context_sig ~restore:true sg in
+      let sg =
+        rewrite_signature config cookies [] Signature
+          (module OCaml_current) sg !registered_rewriters
+      in
+      apply_cookies cookies;
+      Intf (sg, Ast_mapper.add_ppx_context_sig ~tool_name:config.tool_name sg)
+    | Impl st ->
+      let st = Ast_mapper.drop_ppx_context_str ~restore:true st in
+      let st =
+        rewrite_structure config cookies [] Structure
+          (module OCaml_current) st !registered_rewriters
+      in
+      apply_cookies cookies;
+      Impl (st, Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st)
+  in
+  with_output output ~f:(fun oc ->
+    if dump_ast then begin
+      let ast =
+        match ast with
+        | Intf (_, sg) -> Ast_io.Intf ((module OCaml_current), sg)
+        | Impl (_, st) -> Ast_io.Impl ((module OCaml_current), st)
+      in
+      Ast_io.to_channel oc fn ast
+    end else begin
+      let ppf = Format.formatter_of_out_channel oc in
+      (match ast with
+       | Intf (sg, _) -> Pprintast.signature ppf sg
+       | Impl (st, _) -> Pprintast.structure ppf st);
+      Format.pp_print_newline ppf ()
+    end)
+
+let run_as_standalone_driver () =
+  let output = ref None in
+  let dump_ast = ref false in
+  let files = ref [] in
+  let spec =
+    let as_ppx () =
+      raise (Arg.Bad "--as-ppx must be passed as first argument")
+    in
+    [ "--as-ppx", Arg.Unit as_ppx,
+      " Act as a -ppx rewriter"
+    ; "--dump-ast", Arg.Set dump_ast,
+      " Output a binary AST instead of source code"
+    ; "-o", Arg.String (fun o -> output := Some o),
+      "FILE output to this file instead of the standard output"
+    ; "--intf", Arg.String (fun fn -> files := Intf fn :: !files),
+      "FILE treat FILE as a .mli file"
+    ; "--impl", Arg.String (fun fn -> files := Impl fn :: !files),
+      "FILE treat FILE as a .ml file"
+    ]
+  in
+  let spec = spec @ List.rev !registered_args in
+  let me = Filename.basename Sys.executable_name in
+  let usage = Printf.sprintf "%s [options] [<files>]" me in
+  Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
+  let output = !output in
+  let dump_ast = !dump_ast in
+  let config =
+    (* TODO: we could add -I, -L and -g options to populate these fields. *)
+    { tool_name    = me
+    ; include_dirs = []
+    ; load_path    = []
+    ; debug        = false
+    ; for_package  = None
+    }
+  in
+  try
+    List.iter (process_file ~config ~output ~dump_ast) (List.rev !files)
+  with exn ->
+    Location.report_exception Format.err_formatter exn;
+    exit 1
+
 let run_main () =
-  Ast_mapper.run_main run_as_ast_mapper;
+  if Array.length Sys.argv >= 2 && Sys.argv.(1) = "--as-ppx" then
+    Ast_mapper.run_main run_as_ast_mapper
+  else
+    run_as_standalone_driver ();
   exit 0

@@ -41,6 +41,7 @@ let () =
  ((name migrate_driver_main)
   (public_name ocaml-migrate-parsetree.driver-main)
   (modules (migrate_driver_main))
+  (library_flags (-linkall))
   (libraries (migrate_driver))))
 |}
     result_lib open_result open_result
