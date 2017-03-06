@@ -300,6 +300,25 @@ let run_as_standalone_driver () =
   let output = ref None in
   let dump_ast = ref false in
   let files = ref [] in
+  let set_cookie s =
+    match String.index s '=' with
+    | exception _ ->
+      raise (Arg.Bad "invalid cookie, must be of the form \"<name>=<expr>\"")
+    | i ->
+      let name = String.sub s 0 i in
+      let value = String.sub s (i + 1) (String.length s - i - 1) in
+      let input_name = "<command-line>" in
+      Location.input_name := input_name;
+      let lexbuf = Lexing.from_string value in
+      lexbuf.lex_curr_p <-
+        { pos_fname = input_name
+        ; pos_lnum  = 1
+        ; pos_bol   = 0
+        ; pos_cnum  = 0
+        };
+      let expr = Parse.expression lexbuf in
+      Ast_mapper.set_cookie name expr
+  in
   let spec =
     let as_ppx () =
       raise (Arg.Bad "--as-ppx must be passed as first argument")
@@ -314,24 +333,26 @@ let run_as_standalone_driver () =
       "FILE treat FILE as a .mli file"
     ; "--impl", Arg.String (fun fn -> files := Impl fn :: !files),
       "FILE treat FILE as a .ml file"
+    ; "--cookie", Arg.String set_cookie,
+      "NAME=EXPR sets the cookie NAME to EXPR"
     ]
   in
   let spec = spec @ List.rev !registered_args in
   let me = Filename.basename Sys.executable_name in
   let usage = Printf.sprintf "%s [options] [<files>]" me in
-  Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
-  let output = !output in
-  let dump_ast = !dump_ast in
-  let config =
-    (* TODO: we could add -I, -L and -g options to populate these fields. *)
-    { tool_name    = me
-    ; include_dirs = []
-    ; load_path    = []
-    ; debug        = false
-    ; for_package  = None
-    }
-  in
   try
+    Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
+    let output = !output in
+    let dump_ast = !dump_ast in
+    let config =
+      (* TODO: we could add -I, -L and -g options to populate these fields. *)
+      { tool_name    = me
+      ; include_dirs = []
+      ; load_path    = []
+      ; debug        = false
+      ; for_package  = None
+      }
+    in
     List.iter (process_file ~config ~output ~dump_ast) (List.rev !files)
   with exn ->
     Location.report_exception Format.err_formatter exn;
