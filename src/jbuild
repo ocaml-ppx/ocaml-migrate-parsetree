@@ -7,6 +7,12 @@ let () =
     Scanf.sscanf J.ocaml_version "%u.%u" (fun a b -> (a, b))
   in
   let need_result = ocaml_version < (4, 03) in
+  let result_lib, open_result =
+    if need_result then
+      ("result", "-open Result")
+    else
+      ("", "")
+  in
   Printf.ksprintf J.send {|
 (jbuild_version 1)
 
@@ -15,19 +21,26 @@ let () =
   (public_name ocaml-migrate-parsetree)
   (libraries (compiler-libs.common %s))
   (flags (:standard %s))
+  (modules (:standard \ migrate_driver migrate_driver_main))
   (preprocessor_deps (../pp.sh ocaml-version))
-  (preprocess (command "../pp.sh `cat ocaml-version`"))))
+  (preprocess (command "./pp.sh `cat src/ocaml-version`"))))
 
 (rule
  ((targets (ocaml-version))
   (deps    (../ast_version.sh))
-  (action  "${<} ${OCAMLC} > ${@}")))
+  (action  (with-stdout-to ${@} (run ${<} ${OCAMLC})))))
+
+(library
+ ((name migrate_driver)
+  (public_name ocaml-migrate-parsetree.driver)
+  (modules (migrate_driver))
+  (libraries (migrate_parsetree))
+  (flags (:standard %s))))
+
+(library
+ ((name migrate_driver_main)
+  (public_name ocaml-migrate-parsetree.driver-main)
+  (modules (migrate_driver_main))
+  (libraries (migrate_driver))))
 |}
-    (if need_result then
-       "result"
-     else
-       "")
-    (if need_result then
-       "-open Result"
-     else
-       "")
+    result_lib open_result open_result
