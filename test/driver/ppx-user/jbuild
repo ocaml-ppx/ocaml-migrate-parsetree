@@ -1,6 +1,6 @@
 (executables
  ((names (foo))
-  (preprocess (pps (ppx1)))))
+  (preprocess (pps (ppx1 ppx2 "-message=Hello, world!")))))
 
 (rule
  ((targets (foo.output))
