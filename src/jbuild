@@ -29,6 +29,7 @@ let () =
 (library
  ((name migrate_parsetree)
   (public_name ocaml-migrate-parsetree)
+  (wrapped false)
   (libraries (compiler-libs.common %s))
   (flags (:standard %s))
   (modules (:standard \ migrate_parsetree_driver_main))
