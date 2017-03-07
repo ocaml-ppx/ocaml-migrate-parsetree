@@ -370,9 +370,13 @@ let run_as_standalone_driver () =
     Location.report_exception Format.err_formatter exn;
     exit 1
 
+let run_as_ppx_rewriter () =
+  Ast_mapper.run_main run_as_ast_mapper;
+  exit 0
+
 let run_main () =
   if Array.length Sys.argv >= 2 && Sys.argv.(1) = "--as-ppx" then
-    Ast_mapper.run_main run_as_ast_mapper
+    run_as_ppx_rewriter ()
   else
     run_as_standalone_driver ();
   exit 0

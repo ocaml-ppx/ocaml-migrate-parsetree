@@ -36,4 +36,6 @@ val register
 
 val run_as_ast_mapper : string list -> Ast_mapper.mapper
 
+val run_as_ppx_rewriter : unit -> 'a
+
 val run_main : unit -> 'a
