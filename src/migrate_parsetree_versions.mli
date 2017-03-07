@@ -214,6 +214,7 @@ val ocaml_405 : OCaml_405.types ocaml_version
 
 (* An alias to the current compiler version *)
 module OCaml_current = OCaml_OCAML_VERSION
+val ocaml_current : OCaml_current.types ocaml_version
 
 val all_versions : (module OCaml_version) list
 

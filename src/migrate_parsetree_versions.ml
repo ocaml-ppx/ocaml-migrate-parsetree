@@ -694,6 +694,7 @@ include Register_migration(OCaml_404)(OCaml_405)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION
+let ocaml_current : OCaml_current.types ocaml_version = (module OCaml_current)
 
 (* Make sure the preprocessing worked as expected *)
 let _f (x : Parsetree.expression) : OCaml_current.Ast.Parsetree.expression = x
