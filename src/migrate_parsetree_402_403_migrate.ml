@@ -17,6 +17,16 @@
 module From = Ast_402
 module To = Ast_403
 
+let extract_predef_option label typ =
+  let open From in
+  let open Longident in
+  match label, typ.Parsetree.ptyp_desc with
+  | To.Asttypes.Optional _,
+    From.Parsetree.Ptyp_constr (
+      {Location.txt = Ldot (Lident "*predef*", "option"); _}, [d]) ->
+      d
+  | _ -> typ
+
 let rec copy_expression :
   From.Parsetree.expression ->
     To.Parsetree.expression
@@ -57,7 +67,7 @@ and copy_expression_desc :
         (List.map copy_case x0)
   | From.Parsetree.Pexp_fun (x0,x1,x2,x3) ->
       To.Parsetree.Pexp_fun
-        ((copy_label_To_Asttypes_arg_label x0),
+        ((copy_arg_label x0),
           (copy_option copy_expression x1),
           (copy_pattern x2),
           (copy_expression x3))
@@ -67,7 +77,7 @@ and copy_expression_desc :
           (List.map
              (fun x  ->
                 let (x0,x1) = x  in
-                ((copy_label_To_Asttypes_arg_label x0),
+                ((copy_arg_label x0),
                   (copy_expression x1))) x1))
   | From.Parsetree.Pexp_match (x0,x1) ->
       To.Parsetree.Pexp_match
@@ -352,10 +362,11 @@ and copy_core_type_desc :
   | From.Parsetree.Ptyp_var x0 ->
       To.Parsetree.Ptyp_var x0
   | From.Parsetree.Ptyp_arrow (x0,x1,x2) ->
+      let label = copy_arg_label x0 in
       To.Parsetree.Ptyp_arrow
-        ((copy_label_To_Asttypes_arg_label x0),
-          (copy_core_type x1),
-          (copy_core_type x2))
+        (label,
+         copy_core_type (extract_predef_option label x1),
+         copy_core_type x2)
   | From.Parsetree.Ptyp_tuple x0 ->
       To.Parsetree.Ptyp_tuple
         (List.map copy_core_type x0)
@@ -576,7 +587,7 @@ and copy_class_expr_desc :
         (copy_class_structure x0)
   | From.Parsetree.Pcl_fun (x0,x1,x2,x3) ->
       To.Parsetree.Pcl_fun
-        ((copy_label_To_Asttypes_arg_label x0),
+        ((copy_arg_label x0),
           (copy_option copy_expression x1),
           (copy_pattern x2),
           (copy_class_expr x3))
@@ -586,7 +597,7 @@ and copy_class_expr_desc :
           (List.map
              (fun x  ->
                 let (x0,x1) = x  in
-                ((copy_label_To_Asttypes_arg_label x0),
+                ((copy_arg_label x0),
                   (copy_expression x1))) x1))
   | From.Parsetree.Pcl_let (x0,x1,x2) ->
       To.Parsetree.Pcl_let
@@ -944,10 +955,11 @@ and copy_class_type_desc :
       To.Parsetree.Pcty_signature
         (copy_class_signature x0)
   | From.Parsetree.Pcty_arrow (x0,x1,x2) ->
+      let label = copy_arg_label x0 in
       To.Parsetree.Pcty_arrow
-        ((copy_label_To_Asttypes_arg_label x0),
-          (copy_core_type x1),
-          (copy_class_type x2))
+        (label,
+         copy_core_type (extract_predef_option label x1),
+         copy_class_type x2)
   | From.Parsetree.Pcty_extension x0 ->
       To.Parsetree.Pcty_extension
         (copy_extension x0)
@@ -1403,7 +1415,7 @@ and copy_label :
   fun x ->
     x
 
-and copy_label_To_Asttypes_arg_label :
+and copy_arg_label :
   From.Asttypes.label -> To.Asttypes.arg_label =
   fun x ->
     if x <> "" then

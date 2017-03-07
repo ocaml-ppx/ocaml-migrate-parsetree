@@ -18,6 +18,17 @@ module Def = Migrate_parsetree_def
 module From = Ast_403
 module To = Ast_402
 
+let inject_predef_option label d =
+  let open To in
+  let open Parsetree in
+  match label with
+  | From.Asttypes.Optional _ ->
+    let loc = {d.ptyp_loc with Location.loc_ghost = true} in
+    let txt = Longident.Ldot (Longident.Lident "*predef*", "option") in
+    let ident = {Location. txt; loc} in
+    { ptyp_desc = Ptyp_constr(ident,[d]); ptyp_loc = loc; ptyp_attributes = []}
+  | _ -> d
+
 let from_loc {From.Location. txt = _; loc} = loc
 
 let migration_error location feature =
@@ -362,7 +373,7 @@ and copy_core_type_desc :
   | From.Parsetree.Ptyp_arrow (x0,x1,x2) ->
       To.Parsetree.Ptyp_arrow
         ((copy_arg_label x0),
-          (copy_core_type x1),
+          inject_predef_option x0 (copy_core_type x1),
           (copy_core_type x2))
   | From.Parsetree.Ptyp_tuple x0 ->
       To.Parsetree.Ptyp_tuple
@@ -954,7 +965,7 @@ and copy_class_type_desc :
   | From.Parsetree.Pcty_arrow (x0,x1,x2) ->
       To.Parsetree.Pcty_arrow
         ((copy_arg_label x0),
-          (copy_core_type x1),
+          inject_predef_option x0 (copy_core_type x1),
           (copy_class_type x2))
   | From.Parsetree.Pcty_extension x0 ->
       To.Parsetree.Pcty_extension
