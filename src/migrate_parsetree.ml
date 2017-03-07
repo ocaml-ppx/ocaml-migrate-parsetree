@@ -51,6 +51,9 @@ module OCaml_current = Versions.OCaml_current
    migrating from one to the other. *)
 module Convert = Versions.Convert
 
+(* Entrypoints for registering rewriters and making a ppx binary *)
+module Driver = Migrate_parsetree_driver
+
 (* Aliases for compiler-libs modules that might be shadowed *)
 module Compiler_libs = struct
   module Location = Location

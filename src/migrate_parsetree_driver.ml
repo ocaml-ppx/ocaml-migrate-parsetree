@@ -1,5 +1,5 @@
-open Migrate_parsetree.Versions
-module Ast_io = Migrate_parsetree.Ast_io
+open Migrate_parsetree_versions
+module Ast_io = Migrate_parsetree_ast_io
 
 (** {1 State a rewriter can access} *)
 
@@ -79,16 +79,16 @@ let add_rewriter
 let register ~name ?(args=[]) version rewriter =
   (* Validate name *)
   if name = "" then
-    invalid_arg "Migrate_driver.register: name is empty";
+    invalid_arg "Migrate_parsetree_driver.register: name is empty";
   if Hashtbl.mem uniq_rewriter name then
-    invalid_arg ("Migrate_driver.register: rewriter " ^ name ^ " has already been registered")
+    invalid_arg ("Migrate_parsetree_driver.register: rewriter " ^ name ^ " has already been registered")
   else Hashtbl.add uniq_rewriter name ();
   (* Validate arguments *)
   List.iter (fun (arg_name, _, _) ->
       match Hashtbl.find uniq_arg arg_name with
       | other_rewriter ->
           invalid_arg (Printf.sprintf
-                         "Migrate_driver.register: argument %s is used by %s and %s" arg_name name other_rewriter)
+                         "Migrate_parsetree_driver.register: argument %s is used by %s and %s" arg_name name other_rewriter)
       | exception Not_found ->
           Hashtbl.add uniq_arg arg_name name
     ) args;

@@ -44,16 +44,16 @@ MIGRATE_OBJECTS= \
 	src/migrate_parsetree_405_404.cmo \
 	src/migrate_parsetree_versions.cmo \
 	src/migrate_parsetree_ast_io.cmo \
+	src/migrate_parsetree_driver.cmo \
 	src/migrate_parsetree.cmo
 
-DRIVER_OBJECTS= \
-	src/migrate_driver.cmo src/migrate_driver_main.cmo
+DRIVER_OBJECTS=src/migrate_parsetree_driver_main.cmo
 
 OBJECTS=$(MIGRATE_OBJECTS) $(DRIVER_OBJECTS)
 
 .PHONY: all
-all: migrate_parsetree.cma migrate_parsetree.cmxa $(DRIVER_OBJECTS) \
-	$(DRIVER_OBJECTS:.cmo=.cmx)
+all: migrate_parsetree.cma migrate_parsetree.cmxa \
+	$(DRIVER_OBJECTS) $(DRIVER_OBJECTS:.cmo=.cmx)
 
 ifeq ($(NATDYNLINK),true)
 all: migrate_parsetree.cmxs

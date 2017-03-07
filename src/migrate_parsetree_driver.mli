@@ -1,4 +1,4 @@
-open Migrate_parsetree.Versions
+open Migrate_parsetree_versions
 
 (** {1 State a rewriter can access} *)
 

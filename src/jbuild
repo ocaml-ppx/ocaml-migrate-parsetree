@@ -31,21 +31,14 @@ let () =
   (public_name ocaml-migrate-parsetree)
   (libraries (compiler-libs.common %s))
   (flags (:standard %s))
-  (modules (:standard \ migrate_driver migrate_driver_main))
+  (modules (:standard \ migrate_parsetree_driver_main))
   (preprocess (action (run ${path:../pp.sh} %s ${<})))))
 
 (library
- ((name migrate_driver)
-  (public_name ocaml-migrate-parsetree.driver)
-  (modules (migrate_driver))
-  (libraries (migrate_parsetree))
-  (flags (:standard %s))))
-
-(library
- ((name migrate_driver_main)
+ ((name migrate_parsetree_driver_main)
   (public_name ocaml-migrate-parsetree.driver-main)
-  (modules (migrate_driver_main))
+  (modules (migrate_parsetree_driver_main))
   (library_flags (-linkall))
-  (libraries (migrate_driver))))
+  (libraries (migrate_parsetree))))
 |}
     result_lib open_result ast_version open_result

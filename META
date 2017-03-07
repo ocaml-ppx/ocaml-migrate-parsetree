@@ -6,18 +6,10 @@ plugin(byte) = "migrate_parsetree.cma"
 plugin(native) = "migrate_parsetree.cmxs"
 requires = "compiler-libs.common"
 
-package "driver" (
-  description = "An API to register PPX rewriters too (replacing Ast_mapper.register)"
-  version = "0.1"
-  archive(byte) = "migrate_driver.cmo"
-  archive(native) = "migrate_driver.cmx"
-  requires = "ocaml-migrate-parsetree"
-)
-
 package "driver-main" (
   description = "An entry point for the driver. Must be linked last"
   version = "0.1"
   archive(byte) = "migrate_driver_main.cmo"
   archive(native) = "migrate_driver_main.cmx"
-  requires = "ocaml-migrate-parsetree.driver"
+  requires = "ocaml-migrate-parsetree"
 )
