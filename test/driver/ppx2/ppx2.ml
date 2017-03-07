@@ -13,7 +13,7 @@ let get_plop cookies ~loc =
     let open Ast_helper in
     Exp.constant ~loc (Const.string "unset")
 
-let rewriter _config cookies _args =
+let rewriter _config cookies =
   let super = Ast_mapper.default_mapper in
   let expr self e =
     match e.pexp_desc with

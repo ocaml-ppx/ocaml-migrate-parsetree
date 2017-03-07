@@ -4,7 +4,7 @@ open Migrate_parsetree
 open OCaml_403.Ast
 open Parsetree
 
-let rewriter _config _cookies _args =
+let rewriter _config _cookies =
   let super = Ast_mapper.default_mapper in
   let expr self e =
     match e.pexp_desc with
