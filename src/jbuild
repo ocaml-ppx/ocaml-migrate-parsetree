@@ -42,4 +42,4 @@ let () =
   (library_flags (-linkall))
   (libraries (migrate_parsetree))))
 |}
-    result_lib open_result ast_version open_result
+    result_lib open_result ast_version
