@@ -25,7 +25,7 @@ val set_cookie
 
 (** {1 Registering rewriters} *)
 
-type 'types rewriter = config -> cookies -> string list -> 'types get_mapper
+type 'types rewriter = config -> cookies -> 'types get_mapper
 
 val register
   :  name:string -> ?args:(Arg.key * Arg.spec * Arg.doc) list

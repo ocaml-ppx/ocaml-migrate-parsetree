@@ -48,7 +48,7 @@ let initial_state () : config * cookies =
 
 (** {1 Registering rewriters} *)
 
-type 'types rewriter = config -> cookies -> string list -> 'types get_mapper
+type 'types rewriter = config -> cookies -> 'types get_mapper
 
 type rewriter_group =
     Rewriters : 'types ocaml_version * 'types rewriter list -> rewriter_group
@@ -107,65 +107,75 @@ type ('types, 'version, 'tree) is_structure =
 
 let rec rewrite_signature
   : type types version tree.
-    config -> cookies -> string list ->
-    (types, version, tree) is_signature -> version -> tree -> rewriter_group list -> Parsetree.signature
+    config -> cookies ->
+    (types, version, tree) is_signature -> version -> tree ->
+    rewriter_group list -> Parsetree.signature
   = fun (type types) (type version) (type tree)
-    config cookies args
+    config cookies
     (Signature : (types, version, tree) is_signature)
     (version : version)
     (tree : tree)
     -> function
       | [] -> (migrate version (module OCaml_current)).copy_signature tree
       | Rewriters (version', rewriters) :: rest ->
-          let tree = (migrate version version').copy_signature tree in
-          let tree =
-            List.fold_right (fun rewriter tree ->
-                let (module Version) = version' in
-                Version.Ast.map_signature (rewriter config cookies args) tree)
-              rewriters tree
+          let rewrite rewriter tree =
+            let (module Version) = version' in
+            Version.Ast.map_signature (rewriter config cookies) tree
           in
-          rewrite_signature config cookies args Signature version' tree rest
+          let tree = (migrate version version').copy_signature tree in
+          let tree = List.fold_right rewrite rewriters tree in
+          rewrite_signature config cookies Signature version' tree rest
 
 let rec rewrite_structure
   : type types version tree.
-    config -> cookies -> string list ->
-    (types, version, tree) is_structure -> version -> tree -> rewriter_group list -> Parsetree.structure
+    config -> cookies ->
+    (types, version, tree) is_structure -> version -> tree ->
+    rewriter_group list -> Parsetree.structure
   = fun (type types) (type version) (type tree)
-    config cookies args
+    config cookies
     (Structure : (types, version, tree) is_structure)
     (version : version)
     (tree : tree)
     -> function
       | [] -> (migrate version (module OCaml_current)).copy_structure tree
       | Rewriters (version', rewriters) :: rest ->
-          let tree = (migrate version version').copy_structure tree in
-          let tree =
-            List.fold_right (fun rewriter tree ->
-                let (module Version) = version' in
-                Version.Ast.map_structure (rewriter config cookies args) tree)
-              rewriters tree
+          let rewriter rewriter tree =
+            let (module Version) = version' in
+            Version.Ast.map_structure (rewriter config cookies) tree
           in
-          rewrite_structure config cookies args Structure version' tree rest
+          let tree = (migrate version version').copy_structure tree in
+          let tree = List.fold_right rewriter rewriters tree in
+          rewrite_structure config cookies Structure version' tree rest
 
 let run_as_ast_mapper args =
   let spec = List.rev !registered_args in
   let args = Array.of_list ("" :: args) in
-  let anons = ref [] in
-  Arg.parse_argv args spec (fun anon -> anons := anon :: !anons) "usage";
-  let anons = List.rev !anons in
-  OCaml_current.Ast.make_top_mapper
-    ~signature:(fun sg ->
-        let config, cookies = initial_state () in
-        let sg = rewrite_signature config cookies anons Signature (module OCaml_current) sg !registered_rewriters in
-        apply_cookies cookies;
-        sg
-      )
-    ~structure:(fun str ->
-        let config, cookies = initial_state () in
-        let str = rewrite_structure config cookies anons Structure (module OCaml_current) str !registered_rewriters in
-        apply_cookies cookies;
-        str
-      )
+  let me = Filename.basename Sys.executable_name in
+  let usage = Printf.sprintf "%s [options] [<files>]" me in
+  match
+    Arg.parse_argv args spec
+      (fun arg -> raise (Arg.Bad (Printf.sprintf "invalid argument %S" arg)))
+      usage
+  with
+  | exception (Arg.Help msg) ->
+      prerr_endline msg;
+      exit 1
+  | () ->
+      OCaml_current.Ast.make_top_mapper
+        ~signature:(fun sg ->
+            let config, cookies = initial_state () in
+            let sg = rewrite_signature config cookies
+                Signature (module OCaml_current) sg !registered_rewriters in
+            apply_cookies cookies;
+            sg
+          )
+        ~structure:(fun str ->
+            let config, cookies = initial_state () in
+            let str = rewrite_structure config cookies
+                Structure (module OCaml_current) str !registered_rewriters in
+            apply_cookies cookies;
+            str
+          )
 
 let protectx x ~finally ~f =
   match f x with
@@ -267,7 +277,7 @@ let process_file ~config ~output ~dump_ast file =
     | Intf sg ->
       let sg = Ast_mapper.drop_ppx_context_sig ~restore:true sg in
       let sg =
-        rewrite_signature config cookies [] Signature
+        rewrite_signature config cookies Signature
           (module OCaml_current) sg !registered_rewriters
       in
       apply_cookies cookies;
@@ -275,7 +285,7 @@ let process_file ~config ~output ~dump_ast file =
     | Impl st ->
       let st = Ast_mapper.drop_ppx_context_str ~restore:true st in
       let st =
-        rewrite_structure config cookies [] Structure
+        rewrite_structure config cookies Structure
           (module OCaml_current) st !registered_rewriters
       in
       apply_cookies cookies;
