@@ -149,9 +149,12 @@ let rec rewrite_structure
 
 let run_as_ast_mapper args =
   let spec = List.rev !registered_args in
-  let args = Array.of_list ("" :: args) in
-  let me = Filename.basename Sys.executable_name in
-  let usage = Printf.sprintf "%s [options] [<files>]" me in
+  let args, usage =
+    let me = Filename.basename Sys.executable_name in
+    let args = match args with "--as-ppx" :: args -> args | args -> args in
+    (Array.of_list (me :: args),
+     Printf.sprintf "%s [options] [<files>]" me)
+  in
   match
     Arg.parse_argv args spec
       (fun arg -> raise (Arg.Bad (Printf.sprintf "invalid argument %S" arg)))
