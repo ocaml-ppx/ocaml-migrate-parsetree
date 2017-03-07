@@ -1,4 +1,4 @@
 (library
  ((name ppx1)
   (kind ppx_rewriter)
-  (libraries (ocaml-migrate-parsetree.driver))))
+  (libraries (ocaml-migrate-parsetree))))

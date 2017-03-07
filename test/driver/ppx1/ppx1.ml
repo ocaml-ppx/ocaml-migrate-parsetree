@@ -15,6 +15,6 @@ let rewriter _config _cookies =
   { super with expr }
 
 let () =
-  Migrate_driver.register ~name:"ppx1"
+  Driver.register ~name:"ppx1"
     (module OCaml_403)
     rewriter

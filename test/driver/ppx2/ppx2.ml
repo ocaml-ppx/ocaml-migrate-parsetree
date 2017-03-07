@@ -7,7 +7,7 @@ open Parsetree
 let cmd_line_arg = ref "unset"
 
 let get_plop cookies ~loc =
-  match Migrate_driver.get_cookie cookies "plop" (module OCaml_403) with
+  match Driver.get_cookie cookies "plop" (module OCaml_403) with
   | Some e -> e
   | None ->
     let open Ast_helper in
@@ -26,7 +26,7 @@ let rewriter _config cookies =
   { super with expr }
 
 let () =
-  Migrate_driver.register ~name:"ppx2"
+  Driver.register ~name:"ppx2"
     ~args:[("-message", Arg.Set_string cmd_line_arg, "MSG Set [%cmd_line_arg] to MSG")]
     (module OCaml_403)
     rewriter
