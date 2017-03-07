@@ -153,7 +153,7 @@ let run_as_ast_mapper args =
     let me = Filename.basename Sys.executable_name in
     let args = match args with "--as-ppx" :: args -> args | args -> args in
     (Array.of_list (me :: args),
-     Printf.sprintf "%s [options] [<files>]" me)
+     Printf.sprintf "%s [options] <input ast file> <output ast file>" me)
   in
   match
     Arg.parse_argv args spec
@@ -374,7 +374,18 @@ let run_as_standalone_driver () =
     exit 1
 
 let run_as_ppx_rewriter () =
-  match Ast_mapper.run_main run_as_ast_mapper with
+  let a = Sys.argv in
+  let n = Array.length a in
+  if n <= 2 then begin
+    let me = Filename.basename Sys.executable_name in
+    Arg.usage (List.rev !registered_args)
+      (Printf.sprintf "%s [options] <input ast file> <output ast file>" me);
+    exit 2
+  end;
+  match
+    Ast_mapper.apply ~source:a.(n - 2) ~target:a.(n - 1)
+      (run_as_ast_mapper (Array.to_list (Array.sub a 1 (n - 3))))
+  with
   | () -> exit 0
   | exception (Arg.Bad help) ->
       prerr_endline help;
