@@ -168,20 +168,6 @@ module type OCaml_version = sig
   val migration_info : types migration_info
 end
 
-(** {1 Concrete frontend instances} *)
-
-module OCaml_402 : OCaml_version with module Ast = Ast_402
-module OCaml_403 : OCaml_version with module Ast = Ast_403
-module OCaml_404 : OCaml_version with module Ast = Ast_404
-module OCaml_405 : OCaml_version with module Ast = Ast_405
-
-(* An alias to the current compiler version *)
-module OCaml_current = OCaml_OCAML_VERSION
-
-val all_versions : (module OCaml_version) list
-
-(** {1 Migrating between different versions} *)
-
 (** Representing an ocaml version in type language *)
 type 'types ocaml_version =
   (module OCaml_version
@@ -208,6 +194,30 @@ type 'types ocaml_version =
      and type Ast.Ast_mapper.mapper = 'types get_mapper
      (*$*)
   )
+
+(** {1 Concrete frontend instances} *)
+
+(*$foreach_version (fun suffix _ ->
+     printf "module OCaml_%s : OCaml_version with module Ast = Ast_%s\n"
+       suffix suffix;
+     printf "val ocaml_%s : OCaml_%s.types ocaml_version\n" suffix suffix;
+  )*)
+module OCaml_402 : OCaml_version with module Ast = Ast_402
+val ocaml_402 : OCaml_402.types ocaml_version
+module OCaml_403 : OCaml_version with module Ast = Ast_403
+val ocaml_403 : OCaml_403.types ocaml_version
+module OCaml_404 : OCaml_version with module Ast = Ast_404
+val ocaml_404 : OCaml_404.types ocaml_version
+module OCaml_405 : OCaml_version with module Ast = Ast_405
+val ocaml_405 : OCaml_405.types ocaml_version
+(*$*)
+
+(* An alias to the current compiler version *)
+module OCaml_current = OCaml_OCAML_VERSION
+
+val all_versions : (module OCaml_version) list
+
+(** {1 Migrating between different versions} *)
 
 type ('a, 'b) type_comparison =
   | Lt : ('a, 'b) type_comparison
