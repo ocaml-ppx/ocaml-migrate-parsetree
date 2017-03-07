@@ -374,8 +374,14 @@ let run_as_standalone_driver () =
     exit 1
 
 let run_as_ppx_rewriter () =
-  Ast_mapper.run_main run_as_ast_mapper;
-  exit 0
+  match Ast_mapper.run_main run_as_ast_mapper with
+  | () -> exit 0
+  | exception (Arg.Bad help) ->
+      prerr_endline help;
+      exit 1
+  | exception exn ->
+      Location.report_exception Format.err_formatter exn;
+      exit 1
 
 let run_main () =
   if Array.length Sys.argv >= 2 && Sys.argv.(1) = "--as-ppx" then
