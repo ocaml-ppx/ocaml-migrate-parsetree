@@ -33,7 +33,7 @@ let () =
   (libraries (compiler-libs.common %s))
   (flags (:standard %s))
   (modules (:standard \ migrate_parsetree_driver_main))
-  (preprocess (action (run ${path:../pp.sh} %s ${<})))))
+  (preprocess (action (run ${exe:../tools/pp.exe} %s ${<})))))
 
 (library
  ((name migrate_parsetree_driver_main)
