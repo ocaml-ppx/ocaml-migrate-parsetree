@@ -1,1 +1,1 @@
-let () = Migrate_parsetree_driver.run_main ()
+let () = Migrate_parsetree.Driver.run_main ()
