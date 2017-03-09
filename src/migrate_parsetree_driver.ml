@@ -57,6 +57,7 @@ let uniq_rewriter = Hashtbl.create 7
 let registered_rewriters = ref []
 
 let uniq_arg = Hashtbl.create 7
+let registered_args_reset = ref []
 let registered_args = ref []
 
 type ('types, 'version, 'rewriter) is_rewriter =
@@ -76,7 +77,7 @@ let add_rewriter
   in
   add_rewriter
 
-let register ~name ?(args=[]) version rewriter =
+let register ~name ?reset_args ?(args=[]) version rewriter =
   (* Validate name *)
   if name = "" then
     invalid_arg "Migrate_parsetree_driver.register: name is empty";
@@ -93,6 +94,10 @@ let register ~name ?(args=[]) version rewriter =
           Hashtbl.add uniq_arg arg_name name
     ) args;
   (* Register *)
+  begin match reset_args with
+  | None -> ()
+  | Some f -> registered_args_reset := f :: !registered_args_reset
+  end;
   registered_args := List.rev_append args !registered_args;
   registered_rewriters :=
     add_rewriter Is_rewriter version rewriter !registered_rewriters

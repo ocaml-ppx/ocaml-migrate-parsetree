@@ -28,7 +28,8 @@ val set_cookie
 type 'types rewriter = config -> cookies -> 'types get_mapper
 
 val register
-  :  name:string -> ?args:(Arg.key * Arg.spec * Arg.doc) list
+  :  name:string
+  -> ?reset_args:(unit -> unit) -> ?args:(Arg.key * Arg.spec * Arg.doc) list
   -> 'types ocaml_version -> 'types rewriter
   -> unit
 
