@@ -12,7 +12,7 @@ build: [
   ["jbuilder" "build" "--only-packages" "ocaml-migrate-parsetree-ocamlbuild" "--root" "." "-j" jobs "@install"]
 ]
 depends: [
-  "result"
   "jbuilder" {build}
+  "ocaml-migrate-parsetree"
 ]
 available: ocaml-version >= "4.02.0"
