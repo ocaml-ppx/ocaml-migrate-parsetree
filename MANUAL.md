@@ -1,4 +1,30 @@
-# ocaml-migrate-parsetree
+Title:  Guide to OCaml Migrate Parsetree
+Author: Frédéric Bour, @let-def
+Date:   March 9, 2017
+
+
+**Table of Contents** 
+
+- [Manipulating Parsetree](#manipulating-parsetree)
+  - [Talking about different versions of the compiler](#talking-about-different-versions-of-the-compiler)
+  - [Migrating between compiler versions](#migrating-between-compiler-versions)
+  - [(Un)marshalling AST](#unmarshalling-ast)
+- [The driver](#the-driver)
+  - [The legacy way](#the-legacy-way)
+  - [New registration interface](#new-registration-interface)
+  - [A minimal driver](#a-minimal-driver)
+  - [Custom and standalone drivers](#custom-and-standalone-drivers)
+  - [Custom drivers with OCamlbuild](#custom-drivers-with-ocamlbuild)
+- [ppx_tools_versioned](#ppx_tools_versioned)
+    - [ppx_metaquots](#ppx_metaquots)
+- [Findlib specification](#findlib-specification)
+    - [Standalone *"--as-ppx"* rewriters in META](#standalone---as-ppx-rewriters-in-meta)
+    - [Using arguments in META ppxopt](#using-arguments-in-meta-ppxopt)
+- [Troubleshooting](#troubleshooting)
+  - [Accessing shadowed compiler libs module](#accessing-shadowed-compiler-libs-module)
+  - [Using functions from compiler-libs results in (unfriendly) type errors](#using-functions-from-compiler-libs-results-in-unfriendly-type-errors)
+  - [Features not supported in targeted version](#features-not-supported-in-targeted-version)
+    - [What kind of guarantees to expect in practice?](#what-kind-of-guarantees-to-expect-in-practice)
 
 This library is designed to make PPX rewriters portable across compiler versions.
 
@@ -6,7 +32,7 @@ It works by versioning the definitions of OCaml AST. This includes `Parsetree`, 
 
 *Note:* `Docstrings` and `Ast_mapper` contain some global state which was removed during versioning. This affect registration of rewriters when using `Ast_mapper` as a driver. See the [driver section](#the-driver) for reliable solutions.
 
-## Manipulating Parsetree
+# Manipulating Parsetree
 
 Most of the work happens by shadowing. If your PPX rewriter was written against OCaml 4.04 AST, just `open Ast_404` (alternatively, you can pass `-open Ast_404` when building the file).
 
@@ -14,7 +40,7 @@ This will introduce the versioned modules in scope. When compiled with other sup
 
 While this is enough to manipulate the AST from within your code, you can no longer have expectations on the version of `compiler-libs`. The rest of the `Migrate_parsetree` module provide tools to deal with that.
 
-### Talking about different versions of the compiler
+## Talking about different versions of the compiler
 
 The module `Migrate_parsetree.Versions` provides a way of abstracting compiler versions and getting functions to migrate from one version to another.
 
@@ -30,7 +56,7 @@ The `ocaml_current` and `OCaml_current` definitions are specials in that they re
 
 Functions and functors that operate across compiler versions will take these as argument.
 
-### Migrating between compiler versions
+## Migrating between compiler versions
 
 When migrating between two known compiler versions, the modules `Migrate_parsetree.Migrate_40x_40y` contain functions to transform values between two consecutive versions.
 
@@ -42,7 +68,7 @@ The `migrate_functions` record is a list of functions for converting each type.
 
 The function `Versions.migrate` takes two OCaml versions and return a migration record between the two. The functor `Convert` does the same at the module level.
 
-### (Un)marshalling AST
+## (Un)marshalling AST
 
 The `Ast_io` module implements AST marshalling and unmarshalling abstracted over OCaml versions.
 
@@ -50,13 +76,13 @@ It can read and write binary implementation and interface files from different c
 
 (FIXME: marshalling format is not guaranteed to be stable accross versions)
 
-## The driver
+# The driver
 
 So far, all tools presented were for working with parsetrees. This is helpful to implement a mapper object, but it is not enough to get to a PPX binary.
 
 Drivers fulfill this last step: going from one or more AST mappers to a concrete binary that will do the rewriting.
 
-### The legacy way
+## The legacy way
 
 Traditionally, mappers had to be registered in `Ast_mapper`; either with `Ast_mapper.register` or `Ast_mapper.run_main`.
 
@@ -79,7 +105,7 @@ This method might be convenient for quickly migrating existing rewriters, but we
 
 *ocaml-migrate-parsetree* offer a new, forward looking, interface.
 
-### New registration interface
+## New registration interface
 
 In the new interface, the state that can be accessed by a PPX rewriter is made more explicit.
 - *Compiler configuration* via `Driver.config`; it snapshots the few compiler settings that are guaranteed to be set by compiler API.
@@ -117,7 +143,7 @@ let () =
     Versions.ocaml_404 my_rewriter
 ```
 
-### A minimal driver
+## A minimal driver
 
 The code above gets the rewriter registered, but this won't produce a runnable binary.  One or more rewriter can be registered, the final step will be to run them.
 
@@ -129,7 +155,7 @@ The order is chosen to minimize the number of rewriting that happens:
 - rewriters are sorted by versions, lower version first
 - rewriters targeting the same version are applied in the registration order.
 
-### Custom and standalone drivers
+## Custom and standalone drivers
 
 Using `Driver.run_main` as entrypoint offers a way to make custom and standalone rewriters.
 
@@ -147,10 +173,10 @@ ocamlfind ocamlopt -linkpkg -package rewriter1,rewriter2,... \
   -package ocaml-migrate-parsetree.driver-main -o myrewriter
 ```
 
-### Custom drivers with OCamlbuild
+## Custom drivers with OCamlbuild
 
 
-## ppx_tools_versioned
+# ppx_tools_versioned
 
 Some rewriters make use of the *ppx_tools* package that offer conveniences for manipulating parsetrees.  As *ppx_tools* itself uses compiler-libs, using it directly defeats the purpose of *ocaml-migrate-parsetree*.
 
@@ -190,7 +216,7 @@ class my_mapper =
 end
 ```
 
-#### ppx_metaquots
+### ppx_metaquots
 
 The *metaquot* rewriter allows quoting of the OCaml AST. The version provided by *ppx_tools* will quote the Parsetree from *compiler-libs*.
 
@@ -198,11 +224,11 @@ The versioned ones are accessed by using *ppx_tools_versioned.metaquot_40x* pack
 
 For instance, *ppx_tools_versioned.metaquot_404* will quote `Ast_404.Parsetree`.
 
-## Findlib specification
+# Findlib specification
 
 Some precautions have to be taken when writing *META* files for *ocaml-migrate-parsetree* driven PPXs. The ppx and ppxopt directives are affected.
 
-#### Standalone *"--as-ppx"* rewriters in META
+## Standalone *"--as-ppx"* rewriters in META
 
 If your rewriter is produced as standalone rewriter, then you have to pass the "--as-ppx" argument first:
 ```diff
@@ -216,7 +242,7 @@ As long as the PPX command line begins with `./`, findlib will expand the path t
 /home/me/.opam/.../my_lib/./my_ppx --as-ppx
 ```
 
-#### Using arguments in META ppxopt
+## Using arguments in META ppxopt
 
 Since rewriters use the `Arg` module to specify command-line arguments,  anonymous arguments are no longer allowed.
 
@@ -233,13 +259,13 @@ As you can see, arguments are separated by commas. Commas ensure that filename e
 /home/me/.opam/.../my_lib/./my_ppx ... -foo /home/me/.opam/.../my_lib/./bar
 ```
 
-## Troubleshooting
+# Troubleshooting
 
-### Accessing shadowed compiler libs module
+## Accessing shadowed compiler libs module
 
 `Migrate_parsetree` defines a `Compiler_libs` module that reexports all modules that could have been shadowed by `Ast_40x` modules.
 
-### Using functions from compiler-libs results in (unfriendly) type errors
+## Using functions from compiler-libs results in (unfriendly) type errors
 
 Remember that because of abstraction, most values manipulated from within the rewriter have types that are unrelated to compiler-libs definitions.
 
@@ -256,13 +282,13 @@ let print_core_type fmt typ =
 
 As for the error message, it contains all information needed to be polymorphic over a whole version of compiler parsetree. Pick what is relevant to your use case :-).
 
-### Features not supported in targeted version
+## Features not supported in targeted version
 
 When converting to an earlier version, some features might not be supported. In this case, the migration library will raise an exception. You can find the definition of these cases in `Migrate_parsetree.Def`.
 
 A reasonable error message is provided by default, otherwise you should catch `Migration_error` exception after any call to a migration function  (either a call to a function from `Migrate_40x_40y` or to a field of `migrate_functions` record). Only backward migrations are partials.
 
-#### What kind of guarantees to expect in practice?
+### What kind of guarantees to expect in practice?
 
 The fact that migrations are partial functions can seem too restrictive.
 In practice, a problem only happens when an OCaml construction is used that didn't exist in the version the PPX rewriter was implemented with.
