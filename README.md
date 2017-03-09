@@ -26,7 +26,7 @@ module Ast_402, Ast_403, Ast_404, Ast_405 : sig
   module Outcometree
 
   (* Other modules that are useful for implementing PPX.
-  
+
      Docstrings and Ast_mapper only contain general definitions
      In particular, the internal state used by compiler-libs has been
      removed.
@@ -68,7 +68,100 @@ The `Convert` functor takes two versions of OCaml and produce conversion
 functions.
 
 Finally, the `Migrate_parsetree_ast_io` provides an easy interface for
-marshalling/unmarshalling. 
+marshalling/unmarshalling.
+
+## Migrate_parsetree.Driver
+
+The `Migrate_parsetree.Driver` provides an API for ppx rewriters to
+register OCaml AST rewriters. Ppx rewriters using this API can be used
+as standalone rewriter executable or as part of a _driver_ including
+several rewriters.
+
+Using a single driver for several rewritings has the advantage that it
+is faster. Especially when using many ppx rewriters, it can speed up
+compilation a lot.
+
+If using [Jbuilder](https://github.com/janestreet/jbuilder), you can
+consult the Jbuilder manual to see how to define and use ppx
+rewriters. Jbuilder automatically creates drivers based on
+ocaml-migrate-parsetree on demand.
+
+The rest of this section describes how to do things manually or with
+[ocamlbuild](https://github.com/ocaml/ocamlbuild).
+
+## Building a custom driver using ocamlfind
+
+To build a custom driver using ocamlfind, simply link all the ppx
+rewriter libraries together with the
+`ocaml-migrate-parsetree.driver-main` package at the end:
+
+    ocamlfind ocamlopt -predicates ppx_driver -o ppx -linkpkg \
+      -package ppx_sexp_conv -package ppx_bin_prot \
+      -package ocaml-migrate-parsetree.driver-main
+
+Normally, ocaml-migrate-parsetree based rewriters should be build with
+the approriate `-linkall` option on individual libraries. If one is
+missing this option, the rewriter might not get linked in. If this is
+the case, a workaround is to pass `-linkall` when linking the custom
+driver.
+
+The resulting `ppx` program can be used as follow:
+
+- `./ppx file.ml` to print the transformed code
+- `ocamlc -pp './ppx --dump-ast' ...` to use it as a pre-processor
+- `ocamlc -ppx './ppx --as-ppx' ...` to use it as a `-ppx` rewriter
+
+### Using the ocaml-migrate-parsetree driver with ocamlbuild
+
+The ocaml-migrate-parsetree-ocamlbuild package provides an ocamlbuild
+plugin to help building and using custom drivers on demand.
+
+#### Setup
+
+To use it you need to first tell ocamlbuild to use the plugin in
+`myocamlbuild.ml`. If you are using oasis, add this to your `_oasis`
+file:
+
+```
+AlphaFeatures:         ocamlbuild_more_args
+XOCamlbuildPluginTags: package(ocaml-migrate-parsetree-ocamlbuild)
+```
+
+If you are calling ocamlbuild directly, you need to call it this way:
+
+```
+$ ocamlbuild -plugin-tag "package(ocaml-migrate-parsetree-ocamlbuild)" ...
+```
+
+Once you have done that, you need to enable it in your myocamlbuild.ml:
+
+```ocaml
+let () =
+  Ocamlbuild_plugin.dispatch (fun hook ->
+    Ocaml_migrate_parsetree_ocamlbuild.dispatch hook;
+    <other dispatch functions>
+  )
+```
+
+#### Usage
+
+The plugin provides a new parametric tag: `omp-driver`. The tag takes
+as argument a `+` separated list of rewriters (as findlib package
+names) followed by any command line arguments.
+
+For instance to use `ppx_sexp_conv` and `ppx_bin_prot` put this in
+your tags file:
+
+```
+<**/*>: predicate(custom_ppx)
+<src/*.{ml,mli}>: omp-driver(ppx_sexp_conv+ppx_bin_prot)
+```
+
+The first line is to instruct ocamlfind not to automatically add
+implicit `-ppx` argument. Without this, you might still get individual
+`-ppx` for both `ppx_sexp_conv` and `ppx_bin_prot` in addition to the
+main driver that already contains them both, meaning your code would
+be transformed more than it should...
 
 # Development
 
@@ -93,7 +186,7 @@ Snapshot the ast in file "asts/ast\_NEW.ml".
 * Define the modules `Location` and `Longident` as aliases to corresponding
   modules from compiler-libs.
 * Copy `Asttypes`, `Parsetree`, `Outcometree`, `Docstrings`, `Ast_helper` and
-  `Ast_mapper` from the upstream files in `parsing/` directory.  
+  `Ast_mapper` from the upstream files in `parsing/` directory.
 * Global state and definitions referencing external values should be removed
   from `Docstrings` and `Ast_mapper`. Take a look at existing snapshots.
 * Create a `Config` module containing `ast_impl_magic_number`
