@@ -5,11 +5,11 @@ Date:   March 9, 2017
 
 **Table of Contents** 
 
-- [Manipulating Parsetree](#manipulating-parsetree)
+- [Manipulating parsetree](#manipulating-parsetree)
   - [Talking about different versions of the compiler](#talking-about-different-versions-of-the-compiler)
   - [Migrating between compiler versions](#migrating-between-compiler-versions)
   - [(Un)marshalling AST](#unmarshalling-ast)
-- [The driver](#the-driver)
+- [Drivers](#drivers)
   - [The legacy way](#the-legacy-way)
   - [New registration interface](#new-registration-interface)
   - [A minimal driver](#a-minimal-driver)
@@ -30,9 +30,9 @@ This library is designed to make PPX rewriters portable across compiler versions
 
 It works by versioning the definitions of OCaml AST. This includes `Parsetree`, `Asttypes`, `Outcometree`, `Ast_helper` and most of `Docstrings` and `Ast_mapper`.
 
-*Note:* `Docstrings` and `Ast_mapper` contain some global state which was removed during versioning. This affect registration of rewriters when using `Ast_mapper` as a driver. See the [driver section](#the-driver) for reliable solutions.
+*Note:* `Docstrings` and `Ast_mapper` contain some global state which was removed during versioning. This affect registration of rewriters when using `Ast_mapper` as a driver. See the [driver section](#drivers) for reliable solutions.
 
-# Manipulating Parsetree
+# Manipulating parsetree
 
 Most of the work happens by shadowing. If your PPX rewriter was written against OCaml 4.04 AST, just `open Ast_404` (alternatively, you can pass `-open Ast_404` when building the file).
 
@@ -76,7 +76,7 @@ It can read and write binary implementation and interface files from different c
 
 (FIXME: marshalling format is not guaranteed to be stable accross versions)
 
-# The driver
+# Driver
 
 So far, all tools presented were for working with parsetrees. This is helpful to implement a mapper object, but it is not enough to get to a PPX binary.
 
