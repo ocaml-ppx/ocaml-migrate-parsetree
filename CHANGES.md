@@ -1,3 +1,8 @@
+v0.4 2017-03-10 Mâcon
+---------------------
+
+API cleanup and extension. Added driver. Switch to jbuilder.
+
 v0.3 2017-02-16 Paris
 ----------------------
 
