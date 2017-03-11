@@ -1,3 +1,8 @@
+v0.5 2017-03-11 Mâcon
+---------------------
+
+Specify ocamlfind dependency in opam file (@yunxing).
+
 v0.4 2017-03-10 Mâcon
 ---------------------
 
