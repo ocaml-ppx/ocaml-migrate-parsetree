@@ -51,7 +51,7 @@ let initial_state () : config * cookies =
 type 'types rewriter = config -> cookies -> 'types get_mapper
 
 type rewriter_group =
-    Rewriters : 'types ocaml_version * 'types rewriter list -> rewriter_group
+    Rewriters : 'types ocaml_version * (string * 'types rewriter) list -> rewriter_group
 
 let uniq_rewriter = Hashtbl.create 7
 let registered_rewriters = ref []
@@ -66,13 +66,13 @@ type ('types, 'version, 'rewriter) is_rewriter =
 let add_rewriter
     (type types) (type version) (type rewriter)
     (Is_rewriter : (types, version, rewriter) is_rewriter)
-    (version : version) (rewriter : rewriter) =
+    (version : version) name (rewriter : rewriter) =
   let rec add_rewriter = function
-  | [] -> [Rewriters (version, [rewriter])]
+  | [] -> [Rewriters (version, [name, rewriter])]
   | (Rewriters (version', rewriters) as x) :: xs ->
       match compare_ocaml_version version version' with
-      | Eq -> Rewriters (version', rewriter :: rewriters) :: xs
-      | Lt -> Rewriters (version, [rewriter]) :: x :: xs
+      | Eq -> Rewriters (version', (name, rewriter) :: rewriters) :: xs
+      | Lt -> Rewriters (version, [name, rewriter]) :: x :: xs
       | Gt -> x :: add_rewriter xs
   in
   add_rewriter
@@ -100,7 +100,7 @@ let register ~name ?reset_args ?(args=[]) version rewriter =
   end;
   registered_args := List.rev_append args !registered_args;
   registered_rewriters :=
-    add_rewriter Is_rewriter version rewriter !registered_rewriters
+    add_rewriter Is_rewriter version name rewriter !registered_rewriters
 
 (** {1 Accessing or running registered rewriters} *)
 
@@ -123,7 +123,7 @@ let rec rewrite_signature
     -> function
       | [] -> (migrate version (module OCaml_current)).copy_signature tree
       | Rewriters (version', rewriters) :: rest ->
-          let rewrite rewriter tree =
+          let rewrite (_name, rewriter) tree =
             let (module Version) = version' in
             Version.Ast.map_signature (rewriter config cookies) tree
           in
@@ -144,7 +144,7 @@ let rec rewrite_structure
     -> function
       | [] -> (migrate version (module OCaml_current)).copy_structure tree
       | Rewriters (version', rewriters) :: rest ->
-          let rewriter rewriter tree =
+          let rewriter (_name, rewriter) tree =
             let (module Version) = version' in
             Version.Ast.map_structure (rewriter config cookies) tree
           in
