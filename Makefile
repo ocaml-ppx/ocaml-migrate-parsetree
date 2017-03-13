@@ -18,7 +18,9 @@ uninstall:
 	jbuilder uninstall $(INSTALL_ARGS)
 
 .PHONY: reinstall
-reinstall: uninstall reinstall
+reinstall:
+	$(MAKE) uninstall
+	$(MAKE) install
 
 .PHONY: test
 test:
