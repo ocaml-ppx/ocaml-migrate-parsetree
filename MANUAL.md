@@ -3,7 +3,7 @@ Author: Frédéric Bour, @let-def
 Date:   March 9, 2017
 
 
-**Table of Contents** 
+**Table of Contents**
 
 - [Manipulating parsetree](#manipulating-parsetree)
   - [Talking about different versions of the compiler](#talking-about-different-versions-of-the-compiler)
@@ -405,4 +405,4 @@ This cannot occur when a new version of the compiler is released: existing code 
 
 In the future, we might allow rewriting of unsupported features into extensions or attributes for rewriters that opt-in. Rewriting would succeed as long as all extensions disappeared when reaching the compiler (for instance, an OCaml 4.04 file using inline records could be rewritten by a rewriter targeting 4.02; however, a 4.02 files couldn't be rewritten by a 4.04 PPX that introduces inline records).
 
-Please voice your concerns if you have any, so that this use case is better understood.4.02 
+Please voice your concerns if you have any, so that this use case is better understood.4.02
