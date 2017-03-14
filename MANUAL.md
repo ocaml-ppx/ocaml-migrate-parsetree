@@ -331,6 +331,42 @@ As you can see, arguments are separated by commas. Commas ensure that filename e
 /home/me/.opam/.../my_lib/./my_ppx ... -foo /home/me/.opam/.../my_lib/./bar
 ```
 
+## Conventions for distributing a linkable ppx rewriter
+
+The common case is to run ppx binaries on-demand: a findlib package describing a ppx rewriter will essentially add a new `-ppx my_binary` argument to the compiler invocation.
+
+It is also possible to link and run a dedicated binary that will apply rewriters consecutively. The convention is to provide a package that uses *ocaml-migrate-parsetree* and which only effects is to register a rewriter using `Driver.register`, thus not doing any rewriting.
+
+The build system of a project using a bunch of rewriters will first build a custom rewriter that links all the necessary packages to produce a first binary.  This binary is then used as the only ppx rewriter for the main source files of this project.
+
+The convention to distinguish when a ppx package is used as a rewriter and when it is used a library is to use findlib predicates (see [META](http://projects.camlcity.org/projects/dl/findlib-1.7.1/doc/ref-html/r759.html) documentation, see also `ocamlfind(1)` man page):
+
+- `custom_ppx`: we are building a custom ppx driver, no rewriting should be done now (in other words, don't pass `-ppx ...` argument)
+- `omp_driver`: we are using *ocaml-migrate-parsetree* driver, registration should be done using `Driver.register`
+
+### Linking example
+
+```shell
+$ ocamlfind opt -o my_driver -linkpkg -predicates custom_ppx,omp_driver -package ppx_tools_versioned.metaquot_402 -package ocaml-migrate-parsetree.driver-main
+```
+
+The predicates change the behavior of `ppx_tools_versioned.metaquot_402` package. Linking `ocaml-migrate-parsetree.driver-main` lasts executes all the rewriters that were registered.
+
+### Package example
+
+META
+```
+version = "1.0"
+description = "dummy ppx"
+requires = "ocaml-migrate-parsetree"
+ppx(-custom_ppx) = "./ppx_dummy --as-ppx"
+archive(byte,omp_driver) = "ppx_dummy.cma"
+archive(native,omp_driver) = "ppx_dummy.cmxa"
+```
+
+Rewrite only when `custom_ppx` is not defined.
+Link *ppx_dummy* objects when `omp_driver` is defined.
+
 # Troubleshooting
 
 ## Accessing shadowed compiler libs module
