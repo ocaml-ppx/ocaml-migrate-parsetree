@@ -175,6 +175,78 @@ ocamlfind ocamlopt -linkpkg -package rewriter1,rewriter2,... \
 
 ## Custom drivers with OCamlbuild
 
+To build a custom driver using ocamlfind, simply link all the ppx
+rewriter libraries together with the
+`ocaml-migrate-parsetree.driver-main` package at the end:
+
+    ocamlfind ocamlopt -predicates ppx_driver -o ppx -linkpkg \
+      -package ppx_sexp_conv -package ppx_bin_prot \
+      -package ocaml-migrate-parsetree.driver-main
+
+Normally, ocaml-migrate-parsetree based rewriters should be build with
+the approriate `-linkall` option on individual libraries. If one is
+missing this option, the rewriter might not get linked in. If this is
+the case, a workaround is to pass `-linkall` when linking the custom
+driver.
+
+The resulting `ppx` program can be used as follow:
+
+- `./ppx file.ml` to print the transformed code
+- `ocamlc -pp './ppx --dump-ast' ...` to use it as a pre-processor
+- `ocamlc -ppx './ppx --as-ppx' ...` to use it as a `-ppx` rewriter
+
+### Using the ocaml-migrate-parsetree driver with ocamlbuild
+
+The ocaml-migrate-parsetree-ocamlbuild package provides an ocamlbuild
+plugin to help building and using custom drivers on demand.
+
+#### Setup
+
+To use it you need to first tell ocamlbuild to use the plugin in
+`myocamlbuild.ml`. If you are using oasis, add this to your `_oasis`
+file:
+
+```
+AlphaFeatures:         ocamlbuild_more_args
+XOCamlbuildPluginTags: package(ocaml-migrate-parsetree-ocamlbuild)
+```
+
+If you are calling ocamlbuild directly, you need to call it this way:
+
+```
+$ ocamlbuild -plugin-tag "package(ocaml-migrate-parsetree-ocamlbuild)" ...
+```
+
+Once you have done that, you need to enable it in your myocamlbuild.ml:
+
+```ocaml
+let () =
+  Ocamlbuild_plugin.dispatch (fun hook ->
+    Ocaml_migrate_parsetree_ocamlbuild.dispatch hook;
+    <other dispatch functions>
+  )
+```
+
+#### Usage
+
+The plugin provides a new parametric tag: `omp-driver`. The tag takes
+as argument a `+` separated list of rewriters (as findlib package
+names) followed by any command line arguments.
+
+For instance to use `ppx_sexp_conv` and `ppx_bin_prot` put this in
+your tags file:
+
+```
+<**/*>: predicate(custom_ppx)
+<src/*.{ml,mli}>: omp-driver(ppx_sexp_conv+ppx_bin_prot)
+```
+
+The first line is to instruct ocamlfind not to automatically add
+implicit `-ppx` argument. Without this, you might still get individual
+`-ppx` for both `ppx_sexp_conv` and `ppx_bin_prot` in addition to the
+main driver that already contains them both, meaning your code would
+be transformed more than it should...
+
 
 # ppx_tools_versioned
 
