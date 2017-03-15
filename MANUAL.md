@@ -336,11 +336,11 @@ As you can see, arguments are separated by commas. Commas ensure that filename e
 
 The common case is to run ppx binaries on-demand: a findlib package describing a ppx rewriter will essentially add a new `-ppx my_binary` argument to the compiler invocation.
 
-It is also possible to link and run a dedicated binary that will apply rewriters consecutively. The convention is to provide a package that uses *ocaml-migrate-parsetree* and which only effects is to register a rewriter using `Driver.register`, thus not doing any rewriting.
+It is also possible to link and run a dedicated binary that will apply many rewriters consecutively. A package following that convention will use *ocaml-migrate-parsetree* to register a rewriter using `Driver.register`, but not do any actual rewriting (no `-ppx ...`).
 
-The build system of a project using a bunch of rewriters will first build a custom rewriter that links all the necessary packages to produce a first binary.  This binary is then used as the only ppx rewriter for the main source files of this project.
+The build system of a project making use of this feature will first build a custom rewriter that links all the necessary packages to produce a first binary.  This binary is then used as the only ppx rewriter for the main source files of this project.
 
-The convention to distinguish when a ppx package is used as a rewriter and when it is used a library is to use findlib predicates (see [META](http://projects.camlcity.org/projects/dl/findlib-1.7.1/doc/ref-html/r759.html) documentation, see also `ocamlfind(1)` man page):
+The convention to distinguish when a ppx package is used as a rewriter and when it is used a library is to use two findlib predicates (see [META](http://projects.camlcity.org/projects/dl/findlib-1.7.1/doc/ref-html/r759.html) documentation and also `ocamlfind(1)` man page):
 
 - `custom_ppx`: we are building a custom ppx driver, no rewriting should be done now (in other words, don't pass `-ppx ...` argument)
 - `omp_driver`: we are using *ocaml-migrate-parsetree* driver, registration should be done using `Driver.register`
