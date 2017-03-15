@@ -20,6 +20,7 @@ Date:   March 9, 2017
 - [Findlib specification](#findlib-specification)
     - [Standalone *"--as-ppx"* rewriters in META](#standalone---as-ppx-rewriters-in-meta)
     - [Using arguments in META ppxopt](#using-arguments-in-meta-ppxopt)
+    - [Conventions for distributing a linkable ppx rewriter](#conventions-for-distributing-a-linkable-ppx-rewriter)
 - [Troubleshooting](#troubleshooting)
   - [Accessing shadowed compiler libs module](#accessing-shadowed-compiler-libs-module)
   - [Using functions from compiler-libs results in (unfriendly) type errors](#using-functions-from-compiler-libs-results-in-unfriendly-type-errors)
