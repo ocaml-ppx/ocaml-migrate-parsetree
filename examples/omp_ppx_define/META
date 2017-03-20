@@ -1,0 +1,8 @@
+description = "ocaml-migrate-parsetree example: insert ocaml expressions from commandline"
+version = "1.0"
+requires(custom_ppx) = "ocaml-migrate-parsetree"
+ppx(-custom_ppx) = "./ppx_define --as-ppx"
+archive(byte,omp_driver) = "ppx_define.cmo"
+archive(native,omp_driver) = "ppx_define.cmx"
+plugin(byte,omp_driver) = "ppx_define.cma"
+plugin(native,omp_driver) = "ppx_define.cmxs"
