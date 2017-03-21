@@ -343,12 +343,12 @@ The build system of a project making use of this feature will first build a cust
 The convention to distinguish when a ppx package is used as a rewriter and when it is used a library is to use two findlib predicates (see [META](http://projects.camlcity.org/projects/dl/findlib-1.7.1/doc/ref-html/r759.html) documentation and also `ocamlfind(1)` man page):
 
 - `custom_ppx`: we are building a custom ppx driver, no rewriting should be done now (in other words, don't pass `-ppx ...` argument)
-- `omp_driver`: we are using *ocaml-migrate-parsetree* driver, registration should be done using `Driver.register`
+- `ppx_driver`: we are making our own driver, registration should be done using `Driver.register`
 
 ### Linking example
 
 ```shell
-$ ocamlfind opt -o my_driver -linkpkg -predicates custom_ppx,omp_driver -package ppx_tools_versioned.metaquot_402 -package ocaml-migrate-parsetree.driver-main
+$ ocamlfind opt -o my_driver -linkpkg -predicates custom_ppx,ppx_driver -package ppx_tools_versioned.metaquot_402 -package ocaml-migrate-parsetree.driver-main
 ```
 
 The predicates change the behavior of `ppx_tools_versioned.metaquot_402` package. Linking `ocaml-migrate-parsetree.driver-main` lasts executes all the rewriters that were registered.
@@ -361,12 +361,12 @@ version = "1.0"
 description = "dummy ppx"
 requires = "ocaml-migrate-parsetree"
 ppx(-custom_ppx) = "./ppx_dummy --as-ppx"
-archive(byte,omp_driver) = "ppx_dummy.cma"
-archive(native,omp_driver) = "ppx_dummy.cmxa"
+archive(byte,ppx_driver) = "ppx_dummy.cma"
+archive(native,ppx_driver) = "ppx_dummy.cmxa"
 ```
 
 Rewrite only when `custom_ppx` is not defined.
-Link *ppx_dummy* objects when `omp_driver` is defined.
+Link *ppx_dummy* objects when `ppx_driver` is defined.
 
 # Troubleshooting
 
