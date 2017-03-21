@@ -1,3 +1,10 @@
+v0.7 2017-03-21 Mâcon
+---------------------
+
+Fix findlib predicates: 
+- replace `omp_driver` by `ppx_driver`
+- replace `-custom_ppx` by `-custom_ppx,-ppx_driver`
+
 v0.6 2017-03-21 Mâcon
 ---------------------
 
