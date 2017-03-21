@@ -360,7 +360,7 @@ META
 version = "1.0"
 description = "dummy ppx"
 requires = "ocaml-migrate-parsetree"
-ppx(-custom_ppx) = "./ppx_dummy --as-ppx"
+ppx(-custom_ppx,-ppx_driver) = "./ppx_dummy --as-ppx"
 archive(byte,ppx_driver) = "ppx_dummy.cma"
 archive(native,ppx_driver) = "ppx_dummy.cmxa"
 ```
