@@ -13,6 +13,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Result (* for 4.02 *)
+
 type ast =
   | Impl : (module Migrate_parsetree_versions.OCaml_version with
              type Ast.Parsetree.structure = 'concrete) * 'concrete -> ast
