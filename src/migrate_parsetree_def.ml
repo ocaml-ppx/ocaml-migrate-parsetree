@@ -58,7 +58,7 @@ let missing_feature_minimal_version = function
 let migration_error_message x =
   let feature = missing_feature_description x in
   let version = missing_feature_minimal_version x in
-  feature ^ " are not supported before OCaml " ^ version
+  feature ^ " are not supported before " ^ version
 
 let () =
   let location_prefix l =
