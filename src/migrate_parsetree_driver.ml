@@ -11,9 +11,20 @@ type config = {
   for_package : string option;
 }
 
+let make_config ~tool_name ?(include_dirs=[]) ?(load_path=[]) ?(debug=false)
+      ?for_package () =
+  { tool_name
+  ; include_dirs
+  ; load_path
+  ; debug
+  ; for_package
+  }
+
 type cookie = Cookie : 'types ocaml_version * 'types get_expression -> cookie
 
 type cookies = (string, cookie) Hashtbl.t
+
+let create_cookies () = Hashtbl.create 3
 
 let get_cookie table name version =
   match
@@ -37,14 +48,14 @@ let apply_cookies table =
         ((migrate version (module OCaml_current)).copy_expression expr)
     ) table
 
-let initial_state () : config * cookies =
+let initial_state () =
   {
     tool_name = Ast_mapper.tool_name ();
     include_dirs = !Clflags.include_dirs;
     load_path = !Config.load_path;
     debug = !Clflags.debug;
     for_package = !Clflags.for_package
-  }, Hashtbl.create 3
+  }
 
 (** {1 Registering rewriters} *)
 
@@ -110,18 +121,34 @@ type ('types, 'version, 'tree) is_signature =
 type ('types, 'version, 'tree) is_structure =
     Structure : ('types, 'types ocaml_version, 'types get_structure) is_structure
 
+type some_structure =
+  | Str : (module Migrate_parsetree_versions.OCaml_version with
+            type Ast.Parsetree.structure = 'concrete) * 'concrete -> some_structure
+
+type some_signature =
+  | Sig : (module Migrate_parsetree_versions.OCaml_version with
+            type Ast.Parsetree.signature = 'concrete) * 'concrete -> some_signature
+
+let migrate_some_structure dst (Str ((module Version), st)) =
+  (migrate (module Version) dst).copy_structure st
+
+let migrate_some_signature dst (Sig ((module Version), sg)) =
+  (migrate (module Version) dst).copy_signature sg
+
 let rec rewrite_signature
   : type types version tree.
     config -> cookies ->
     (types, version, tree) is_signature -> version -> tree ->
-    rewriter_group list -> Parsetree.signature
+    rewriter_group list -> some_signature
   = fun (type types) (type version) (type tree)
     config cookies
     (Signature : (types, version, tree) is_signature)
     (version : version)
     (tree : tree)
     -> function
-      | [] -> (migrate version (module OCaml_current)).copy_signature tree
+      | [] ->
+        let (module Version) = version in
+        Sig ((module Version), tree)
       | Rewriters (version', rewriters) :: rest ->
           let rewrite (_name, rewriter) tree =
             let (module Version) = version' in
@@ -131,18 +158,26 @@ let rec rewrite_signature
           let tree = List.fold_right rewrite rewriters tree in
           rewrite_signature config cookies Signature version' tree rest
 
+let rewrite_signature config version sg =
+  let cookies = create_cookies () in
+  let sg = rewrite_signature config cookies Signature version sg !registered_rewriters in
+  apply_cookies cookies;
+  sg
+
 let rec rewrite_structure
   : type types version tree.
     config -> cookies ->
     (types, version, tree) is_structure -> version -> tree ->
-    rewriter_group list -> Parsetree.structure
+    rewriter_group list -> some_structure
   = fun (type types) (type version) (type tree)
     config cookies
     (Structure : (types, version, tree) is_structure)
     (version : version)
     (tree : tree)
     -> function
-      | [] -> (migrate version (module OCaml_current)).copy_structure tree
+      | [] ->
+        let (module Version) = version in
+        Str ((module Version), tree)
       | Rewriters (version', rewriters) :: rest ->
           let rewriter (_name, rewriter) tree =
             let (module Version) = version' in
@@ -151,6 +186,12 @@ let rec rewrite_structure
           let tree = (migrate version version').copy_structure tree in
           let tree = List.fold_right rewriter rewriters tree in
           rewrite_structure config cookies Structure version' tree rest
+
+let rewrite_structure config version st =
+  let cookies = create_cookies () in
+  let st = rewrite_structure config cookies Structure version st !registered_rewriters in
+  apply_cookies cookies;
+  st
 
 let run_as_ast_mapper args =
   let spec = List.rev !registered_args in
@@ -172,18 +213,14 @@ let run_as_ast_mapper args =
   | () ->
       OCaml_current.Ast.make_top_mapper
         ~signature:(fun sg ->
-            let config, cookies = initial_state () in
-            let sg = rewrite_signature config cookies
-                Signature (module OCaml_current) sg !registered_rewriters in
-            apply_cookies cookies;
-            sg
+            let config = initial_state () in
+            rewrite_signature config (module OCaml_current) sg
+            |> migrate_some_signature (module OCaml_current)
           )
         ~structure:(fun str ->
-            let config, cookies = initial_state () in
-            let str = rewrite_structure config cookies
-                Structure (module OCaml_current) str !registered_rewriters in
-            apply_cookies cookies;
-            str
+            let config = initial_state () in
+            rewrite_structure config (module OCaml_current) str
+            |> migrate_some_structure (module OCaml_current)
           )
 
 let protectx x ~finally ~f =
@@ -279,25 +316,22 @@ let with_output output ~f =
   | Some fn -> with_file_out fn ~f
 
 let process_file ~config ~output ~dump_ast file =
-  let cookies = Hashtbl.create 3 in
   let fn, ast = load_file file in
   let ast =
     match ast with
     | Intf sg ->
       let sg = Ast_mapper.drop_ppx_context_sig ~restore:true sg in
       let sg =
-        rewrite_signature config cookies Signature
-          (module OCaml_current) sg !registered_rewriters
+        rewrite_signature config (module OCaml_current) sg
+        |> migrate_some_signature (module OCaml_current)
       in
-      apply_cookies cookies;
       Intf (sg, Ast_mapper.add_ppx_context_sig ~tool_name:config.tool_name sg)
     | Impl st ->
       let st = Ast_mapper.drop_ppx_context_str ~restore:true st in
       let st =
-        rewrite_structure config cookies Structure
-          (module OCaml_current) st !registered_rewriters
+        rewrite_structure config (module OCaml_current) st
+        |> migrate_some_structure (module OCaml_current)
       in
-      apply_cookies cookies;
       Impl (st, Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st)
   in
   with_output output ~f:(fun oc ->
