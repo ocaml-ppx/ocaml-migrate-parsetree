@@ -160,6 +160,7 @@ let run_as_ast_mapper args =
     (Array.of_list (me :: args),
      Printf.sprintf "%s [options] <input ast file> <output ast file>" me)
   in
+  List.iter (fun f -> f ()) !registered_args_reset;
   match
     Arg.parse_argv args spec
       (fun arg -> raise (Arg.Bad (Printf.sprintf "invalid argument %S" arg)))
@@ -361,6 +362,7 @@ let run_as_standalone_driver () =
   let me = Filename.basename Sys.executable_name in
   let usage = Printf.sprintf "%s [options] [<files>]" me in
   try
+    List.iter (fun f -> f ()) !registered_args_reset;
     Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
     let output = !output in
     let dump_ast = !dump_ast in
