@@ -2,12 +2,17 @@ open Migrate_parsetree_versions
 
 (** {1 State a rewriter can access} *)
 
+type extra = ..
+
 type config = {
   tool_name       : string;
   include_dirs    : string list;
   load_path       : string list;
   debug           : bool;
   for_package     : string option;
+  (** Additional parameters that can be passed by a caller of
+      [rewrite_{signature,strucutre}] to a specific register rewriter. *)
+  extras          : extra list;
 }
 
 val make_config
@@ -16,6 +21,7 @@ val make_config
   -> ?load_path:string list
   -> ?debug:bool
   -> ?for_package:string
+  -> ?extras:extra list
   -> unit
   -> config
 

@@ -3,21 +3,25 @@ module Ast_io = Migrate_parsetree_ast_io
 
 (** {1 State a rewriter can access} *)
 
+type extra = ..
+
 type config = {
   tool_name: string;
   include_dirs : string list;
   load_path : string list;
   debug : bool;
   for_package : string option;
+  extras : extra list;
 }
 
 let make_config ~tool_name ?(include_dirs=[]) ?(load_path=[]) ?(debug=false)
-      ?for_package () =
+      ?for_package ?(extras=[]) () =
   { tool_name
   ; include_dirs
   ; load_path
   ; debug
   ; for_package
+  ; extras
   }
 
 type cookie = Cookie : 'types ocaml_version * 'types get_expression -> cookie
@@ -54,7 +58,8 @@ let initial_state () =
     include_dirs = !Clflags.include_dirs;
     load_path = !Config.load_path;
     debug = !Clflags.debug;
-    for_package = !Clflags.for_package
+    for_package = !Clflags.for_package;
+    extras = [];
   }
 
 (** {1 Registering rewriters} *)
@@ -407,6 +412,7 @@ let run_as_standalone_driver () =
       ; load_path    = []
       ; debug        = false
       ; for_package  = None
+      ; extras       = []
       }
     in
     List.iter (process_file ~config ~output ~dump_ast) (List.rev !files)
