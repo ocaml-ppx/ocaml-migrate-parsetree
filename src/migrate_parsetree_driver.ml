@@ -320,22 +320,36 @@ let with_output output ~f =
   | None -> f stdout
   | Some fn -> with_file_out fn ~f
 
-let process_file ~config ~output ~dump_ast file =
+let process_file ~config ~output ~dump_ast ~embed_errors file =
   let fn, ast = load_file file in
   let ast =
     match ast with
     | Intf sg ->
       let sg = Ast_mapper.drop_ppx_context_sig ~restore:true sg in
       let sg =
-        rewrite_signature config (module OCaml_current) sg
-        |> migrate_some_signature (module OCaml_current)
+        try
+          rewrite_signature config (module OCaml_current) sg
+          |> migrate_some_signature (module OCaml_current)
+        with exn when embed_errors ->
+        match Migrate_parsetree_compiler_functions.error_of_exn exn with
+        | None -> raise exn
+        | Some error ->
+          [ Ast_helper.Sig.extension ~loc:Location.none
+              (Ast_mapper.extension_of_error error) ]
       in
       Intf (sg, Ast_mapper.add_ppx_context_sig ~tool_name:config.tool_name sg)
     | Impl st ->
       let st = Ast_mapper.drop_ppx_context_str ~restore:true st in
       let st =
-        rewrite_structure config (module OCaml_current) st
-        |> migrate_some_structure (module OCaml_current)
+        try
+          rewrite_structure config (module OCaml_current) st
+          |> migrate_some_structure (module OCaml_current)
+        with exn when embed_errors ->
+        match Migrate_parsetree_compiler_functions.error_of_exn exn with
+        | None -> raise exn
+        | Some error ->
+          [ Ast_helper.Str.extension ~loc:Location.none
+              (Ast_mapper.extension_of_error error) ]
       in
       Impl (st, Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st)
   in
@@ -359,6 +373,7 @@ let run_as_standalone_driver () =
   let output = ref None in
   let dump_ast = ref false in
   let files = ref [] in
+  let embed_errors = ref false in
   let set_cookie s =
     match String.index s '=' with
     | exception _ ->
@@ -383,8 +398,14 @@ let run_as_standalone_driver () =
     let as_ppx () =
       raise (Arg.Bad "--as-ppx must be passed as first argument")
     in
+    let as_pp () =
+      dump_ast := true;
+      embed_errors := true
+    in
     [ "--as-ppx", Arg.Unit as_ppx,
       " Act as a -ppx rewriter"
+    ; "--as-pp", Arg.Unit as_pp,
+      " Shorthand for: --dump-ast --embed-errors"
     ; "--dump-ast", Arg.Set dump_ast,
       " Output a binary AST instead of source code"
     ; "-o", Arg.String (fun o -> output := Some o),
@@ -395,6 +416,8 @@ let run_as_standalone_driver () =
       "FILE Treat FILE as a .ml file"
     ; "--cookie", Arg.String set_cookie,
       "NAME=EXPR Set the cookie NAME to EXPR"
+    ; "--embed-errors", Arg.Set embed_errors,
+      " Embed error reported by rewriters into the AST"
     ]
   in
   let spec = Arg.align (spec @ List.rev !registered_args) in
@@ -405,6 +428,7 @@ let run_as_standalone_driver () =
     Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
     let output = !output in
     let dump_ast = !dump_ast in
+    let embed_errors = !embed_errors in
     let config =
       (* TODO: we could add -I, -L and -g options to populate these fields. *)
       { tool_name    = "migrate_driver"
@@ -415,7 +439,7 @@ let run_as_standalone_driver () =
       ; extras       = []
       }
     in
-    List.iter (process_file ~config ~output ~dump_ast) (List.rev !files)
+    List.iter (process_file ~config ~output ~dump_ast ~embed_errors) (List.rev !files)
   with exn ->
     Location.report_exception Format.err_formatter exn;
     exit 1

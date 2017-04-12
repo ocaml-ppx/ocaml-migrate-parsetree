@@ -193,7 +193,7 @@ driver.
 The resulting `ppx` program can be used as follow:
 
 - `./ppx file.ml` to print the transformed code
-- `ocamlc -pp './ppx --dump-ast' ...` to use it as a pre-processor
+- `ocamlc -pp './ppx --as-pp ...` to use it as a pre-processor
 - `ocamlc -ppx './ppx --as-ppx' ...` to use it as a `-ppx` rewriter
 
 ### Using the ocaml-migrate-parsetree driver with ocamlbuild
