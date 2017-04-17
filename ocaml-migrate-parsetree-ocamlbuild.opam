@@ -9,10 +9,10 @@ bug-reports: "https://github.com/let-def/ocaml-migrate-parsetree/issues"
 dev-repo: "git://github.com/let-def/ocaml-migrate-parsetree.git"
 tags: [ "syntax" "org:ocamllabs" ]
 build: [
-  ["jbuilder" "build" "--only-packages" "ocaml-migrate-parsetree-ocamlbuild" "--root" "." "-j" jobs "@install"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta7"}
   "ocaml-migrate-parsetree"
 ]
 available: ocaml-version >= "4.02.0"
