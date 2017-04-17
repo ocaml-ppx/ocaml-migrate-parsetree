@@ -1,3 +1,18 @@
+v1.0 2017-04-17 Paris
+---------------------
+
+Driver: add --as-pp and --embed-errors flags.
+
+    --embed-errors causes the driver to embed exceptions raised by
+    rewriters as extension points in the Ast
+    
+    --as-pp is a shorthand for: --dump-ast --embed-errors
+
+Expose more primitives for embedding the driver.
+
+Fix bug where `reset_args` functions where not being called.
+Fix "OCaml OCaml" in error messages (contributed by Adrien Guatto). 
+
 v0.7 2017-03-21 Mâcon
 ---------------------
 
