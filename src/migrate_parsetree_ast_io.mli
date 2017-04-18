@@ -35,12 +35,12 @@ type read_error =
 (** Load a marshalled AST from a channel
 
     Any exception raised during unmarshalling (see [Marshal]) can escape.  *)
-val from_channel : in_channel -> (filename * ast, read_error) result
+val from_channel : in_channel -> (filename * ast, read_error) Result.result
 
 (** Load a marshalled AST from a byte string.
 
     See [from_channel] description for exception that can be raised. *)
-val from_bytes : bytes -> int -> (filename * ast, read_error) result
+val from_bytes : bytes -> int -> (filename * ast, read_error) Result.result
 
 (** Marshal an AST to a channel *)
 val to_channel : out_channel -> filename -> ast -> unit
