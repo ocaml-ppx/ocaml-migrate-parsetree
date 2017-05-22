@@ -11,7 +11,7 @@ type config = {
   debug           : bool;
   for_package     : string option;
   (** Additional parameters that can be passed by a caller of
-      [rewrite_{signature,strucutre}] to a specific register rewriter. *)
+      [rewrite_{signature,structure}] to a specific register rewriter. *)
   extras          : extra list;
 }
 
