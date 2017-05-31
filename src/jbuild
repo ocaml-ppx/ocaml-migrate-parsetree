@@ -11,7 +11,8 @@ let () =
     | (4, 02) -> "402"
     | (4, 03) -> "403"
     | (4, 04) -> "404"
-    | (4, (05|06)) -> "405"
+    | (4, 05) -> "405"
+    | (4, 06) -> "406"
     | _ ->
       Printf.eprintf "Unkown OCaml version %s\n" J.ocaml_version;
       exit 1

@@ -216,5 +216,4 @@ At any time, you can expand boilerplate code by running `make cinaps`.
 Update build system:
 - in [Makefile](Makefile), add "src/ast\_NEW.ml" to `OCAML_ASTS` and migration modules to `OBJECTS`
 - make sure `make cinaps` reach a fixed point :)
-- Update dependencies with `make depend`
 - `make` should succeed

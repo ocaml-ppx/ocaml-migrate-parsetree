@@ -1,5 +1,3 @@
-src/ast_*.ml
-
 *.annot
 *.cmo
 *.cma

@@ -668,6 +668,13 @@ module OCaml_405 = struct
   let string_version = "4.05"
 end
 let ocaml_405 : OCaml_405.types ocaml_version = (module OCaml_405)
+module OCaml_406 = struct
+  module Ast = Ast_406
+  include Make_witness(Ast_406)
+  let version = 406
+  let string_version = "4.06"
+end
+let ocaml_406 : OCaml_406.types ocaml_version = (module OCaml_406)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
@@ -677,6 +684,7 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_403 : OCaml_version);
   (module OCaml_404 : OCaml_version);
   (module OCaml_405 : OCaml_version);
+  (module OCaml_406 : OCaml_version);
   (*$*)
 ]
 
@@ -691,6 +699,8 @@ include Register_migration(OCaml_403)(OCaml_404)
     (Migrate_parsetree_403_404)(Migrate_parsetree_404_403)
 include Register_migration(OCaml_404)(OCaml_405)
     (Migrate_parsetree_404_405)(Migrate_parsetree_405_404)
+include Register_migration(OCaml_405)(OCaml_406)
+    (Migrate_parsetree_405_406)(Migrate_parsetree_406_405)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION
