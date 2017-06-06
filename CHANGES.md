@@ -1,3 +1,8 @@
+v1.0.1 2017-06-06 Paris
+-----------------------
+
+Add support for trunk version (as of today...).
+
 v1.0 2017-04-17 Paris
 ---------------------
 
