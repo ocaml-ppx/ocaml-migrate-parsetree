@@ -1,46 +1,13 @@
-(* -*- tuareg -*- *)
-
-module J = Jbuild_plugin.V1
-
-let () =
-  let ocaml_version =
-    Scanf.sscanf J.ocaml_version "%u.%u" (fun a b -> (a, b))
-  in
-  let ast_version =
-    match ocaml_version with
-    | (4, 02) -> "402"
-    | (4, 03) -> "403"
-    | (4, 04) -> "404"
-    | (4, 05) -> "405"
-    | (4, 06) -> "406"
-    | _ ->
-      Printf.eprintf "Unkown OCaml version %s\n" J.ocaml_version;
-      exit 1
-  in
-  let need_result = ocaml_version < (4, 03) in
-  let result_lib, open_result =
-    if need_result then
-      ("result", "-open Result")
-    else
-      ("", "")
-  in
-  let compiler_functions =
-    if ocaml_version < (4, 06) then
-      "lt_406.ml"
-    else
-      "ge_406.ml"
-  in
-  Printf.ksprintf J.send {|
 (jbuild_version 1)
 
 (library
  ((name migrate_parsetree)
   (public_name ocaml-migrate-parsetree)
   (wrapped false)
-  (libraries (compiler-libs.common %s))
-  (flags (:standard %s))
+  (libraries (compiler-libs.common result))
+  (flags (:standard -open Result))
   (modules (:standard \ migrate_parsetree_driver_main))
-  (preprocess (action (run ${exe:../tools/pp.exe} %s ${<})))))
+  (preprocess (action (run ${exe:../tools/pp.exe} ${read:ast-version} ${<})))))
 
 (library
  ((name migrate_parsetree_driver_main)
@@ -50,10 +17,10 @@ let () =
   (libraries (migrate_parsetree))))
 
 (rule
- ((targets (migrate_parsetree_compiler_functions.ml))
-  (deps    (compiler-functions/%s))
-  (action  (copy# ${<} ${@}))))
-|}
-    result_lib open_result ast_version
-    compiler_functions
+ (copy#
+  compiler-functions/${read:compiler-functions-file}
+  migrate_parsetree_compiler_functions.ml))
 
+(rule
+ ((targets (ast-version compiler-functions-file))
+  (action  (run ${OCAML} ${path:config/gen.ml} ${ocaml_version}))))
