@@ -52,7 +52,7 @@ let () =
 (rule
  ((targets (migrate_parsetree_compiler_functions.ml))
   (deps    (compiler-functions/%s))
-  (action  (copy-and-add-line-directive ${<} ${@}))))
+  (action  (copy# ${<} ${@}))))
 |}
     result_lib open_result ast_version
     compiler_functions
