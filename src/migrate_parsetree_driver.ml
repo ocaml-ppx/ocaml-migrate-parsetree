@@ -373,7 +373,10 @@ let run_as_standalone_driver () =
   let output = ref None in
   let dump_ast = ref false in
   let files = ref [] in
+  let include_dirs = ref [] in
+  let load_path = ref [] in
   let embed_errors = ref false in
+  let debug = ref false in
   let set_cookie s =
     match String.index s '=' with
     | exception _ ->
@@ -418,6 +421,12 @@ let run_as_standalone_driver () =
       "NAME=EXPR Set the cookie NAME to EXPR"
     ; "--embed-errors", Arg.Set embed_errors,
       " Embed error reported by rewriters into the AST"
+    ; "-I", Arg.String (fun p -> include_dirs := p :: !include_dirs),
+      "DIR Add DIR to the list of include directories"
+    ; "-L", Arg.String (fun p -> load_path := p :: !load_path),
+      "DIR Add DIR to the load path"
+    ; "-g", Arg.Set debug,
+      " Use debug mode"
     ]
   in
   let spec = Arg.align (spec @ List.rev !registered_args) in
@@ -430,11 +439,10 @@ let run_as_standalone_driver () =
     let dump_ast = !dump_ast in
     let embed_errors = !embed_errors in
     let config =
-      (* TODO: we could add -I, -L and -g options to populate these fields. *)
       { tool_name    = "migrate_driver"
-      ; include_dirs = []
-      ; load_path    = []
-      ; debug        = false
+      ; include_dirs = !include_dirs
+      ; load_path    = !load_path
+      ; debug        = !debug
       ; for_package  = None
       ; extras       = []
       }
