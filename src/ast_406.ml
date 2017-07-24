@@ -566,6 +566,9 @@ module Parsetree = struct
            *)
     | Pcty_extension of extension
           (* [%id] *)
+    | Pcty_open of override_flag * Longident.t loc * class_type
+          (* let open M in CT *)
+
 
   and class_signature (*IF_CURRENT = Parsetree.class_signature *) =
       {
@@ -656,6 +659,9 @@ module Parsetree = struct
           (* (CE : CT) *)
     | Pcl_extension of extension
           (* [%id] *)
+    | Pcl_open of override_flag * Longident.t loc * class_expr
+          (* let open M in CE *)
+
 
   and class_structure (*IF_CURRENT = Parsetree.class_structure *) =
       {
@@ -1432,6 +1438,8 @@ module Ast_helper : sig
       val arrow: ?loc:loc -> ?attrs:attrs -> arg_label -> core_type ->
         class_type -> class_type
       val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type
+      val open_: ?loc:loc -> ?attrs:attrs -> override_flag -> lid -> class_type
+        -> class_type
     end
 
   (** Class type fields *)
@@ -1470,6 +1478,8 @@ module Ast_helper : sig
       val constraint_: ?loc:loc -> ?attrs:attrs -> class_expr -> class_type ->
         class_expr
       val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr
+      val open_: ?loc:loc -> ?attrs:attrs -> override_flag -> lid -> class_expr
+        -> class_expr
     end
 
   (** Class fields *)
@@ -1791,6 +1801,7 @@ end = struct
     let let_ ?loc ?attrs a b c = mk ?loc ?attrs (Pcl_let (a, b, c))
     let constraint_ ?loc ?attrs a b = mk ?loc ?attrs (Pcl_constraint (a, b))
     let extension ?loc ?attrs a = mk ?loc ?attrs (Pcl_extension a)
+    let open_ ?loc ?attrs a b c = mk ?loc ?attrs (Pcl_open (a, b, c))
   end
 
   module Cty = struct
@@ -1806,6 +1817,7 @@ end = struct
     let signature ?loc ?attrs a = mk ?loc ?attrs (Pcty_signature a)
     let arrow ?loc ?attrs a b c = mk ?loc ?attrs (Pcty_arrow (a, b, c))
     let extension ?loc ?attrs a = mk ?loc ?attrs (Pcty_extension a)
+    let open_ ?loc ?attrs a b c = mk ?loc ?attrs (Pcty_open (a, b, c))
   end
 
   module Ctf = struct
@@ -2347,6 +2359,9 @@ end = struct
       | Pcty_arrow (lab, t, ct) ->
           arrow ~loc ~attrs lab (sub.typ sub t) (sub.class_type sub ct)
       | Pcty_extension x -> extension ~loc ~attrs (sub.extension sub x)
+      | Pcty_open (ovf, lid, ct) ->
+         open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_type sub ct)
+
 
     let map_field sub {pctf_desc = desc; pctf_loc = loc; pctf_attributes = attrs}
       =
@@ -2607,6 +2622,9 @@ end = struct
       | Pcl_constraint (ce, ct) ->
           constraint_ ~loc ~attrs (sub.class_expr sub ce) (sub.class_type sub ct)
       | Pcl_extension x -> extension ~loc ~attrs (sub.extension sub x)
+      | Pcl_open (ovf, lid, ce) ->
+         open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_expr sub ce)
+
 
     let map_kind sub = function
       | Cfk_concrete (o, e) -> Cfk_concrete (o, sub.expr sub e)

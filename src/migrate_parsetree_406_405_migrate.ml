@@ -14,8 +14,12 @@
 (*                                                                        *)
 (**************************************************************************)
 
+module Def = Migrate_parsetree_def
 module From = Ast_406
 module To = Ast_405
+
+let migration_error location feature =
+  raise (Def.Migration_error (feature, location))
 
 let rec copy_expression :
   From.Parsetree.expression -> To.Parsetree.expression =
@@ -534,6 +538,8 @@ and copy_class_expr_desc :
           (copy_class_type x1))
   | From.Parsetree.Pcl_extension x0 ->
       To.Parsetree.Pcl_extension (copy_extension x0)
+  | From.Parsetree.Pcl_open (_, loc, _) ->
+      migration_error loc.From.Location.loc Def.Pcl_open
 
 and copy_class_structure :
   From.Parsetree.class_structure -> To.Parsetree.class_structure =
@@ -831,6 +837,8 @@ and copy_class_type_desc :
           (copy_class_type x2))
   | From.Parsetree.Pcty_extension x0 ->
       To.Parsetree.Pcty_extension (copy_extension x0)
+  | From.Parsetree.Pcty_open (_, loc, _) ->
+      migration_error loc.From.Location.loc Def.Pcty_open
 
 and copy_class_signature :
   From.Parsetree.class_signature -> To.Parsetree.class_signature =

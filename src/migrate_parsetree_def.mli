@@ -22,6 +22,8 @@ type missing_feature =
   | Pcstr_record
   | Pconst_integer
   | Pconst_float
+  | Pcl_open
+  | Pcty_open
 
 (** Exception thrown by migration functions when a feature is not supported. *)
 exception Migration_error of missing_feature * Location.t
