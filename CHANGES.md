@@ -1,3 +1,9 @@
+v1.0.2 2017-07-28 Paris
+-----------------------
+
+Synchronize with 4.06 AST with trunk.
+Accept --cookie arguments also when run in --as-ppx mode.
+
 v1.0.1 2017-06-06 Paris
 -----------------------
 
