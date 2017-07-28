@@ -76,6 +76,31 @@ let uniq_arg = Hashtbl.create 7
 let registered_args_reset = ref []
 let registered_args = ref []
 
+let () =
+  let set_cookie s =
+    match String.index s '=' with
+    | exception _ ->
+      raise (Arg.Bad "invalid cookie, must be of the form \"<name>=<expr>\"")
+    | i ->
+      let name = String.sub s 0 i in
+      let value = String.sub s (i + 1) (String.length s - i - 1) in
+      let input_name = "<command-line>" in
+      Location.input_name := input_name;
+      let lexbuf = Lexing.from_string value in
+      lexbuf.Lexing.lex_curr_p <-
+        { Lexing.
+          pos_fname = input_name
+        ; pos_lnum  = 1
+        ; pos_bol   = 0
+        ; pos_cnum  = 0
+        };
+      let expr = Parse.expression lexbuf in
+      Ast_mapper.set_cookie name expr
+  in
+  registered_args :=
+    ("--cookie", Arg.String set_cookie,
+     "NAME=EXPR Set the cookie NAME to EXPR") :: !registered_args
+
 type ('types, 'version, 'rewriter) is_rewriter =
   | Is_rewriter : ('types, 'types ocaml_version, 'types rewriter) is_rewriter
 
@@ -374,26 +399,6 @@ let run_as_standalone_driver () =
   let dump_ast = ref false in
   let files = ref [] in
   let embed_errors = ref false in
-  let set_cookie s =
-    match String.index s '=' with
-    | exception _ ->
-      raise (Arg.Bad "invalid cookie, must be of the form \"<name>=<expr>\"")
-    | i ->
-      let name = String.sub s 0 i in
-      let value = String.sub s (i + 1) (String.length s - i - 1) in
-      let input_name = "<command-line>" in
-      Location.input_name := input_name;
-      let lexbuf = Lexing.from_string value in
-      lexbuf.Lexing.lex_curr_p <-
-        { Lexing.
-          pos_fname = input_name
-        ; pos_lnum  = 1
-        ; pos_bol   = 0
-        ; pos_cnum  = 0
-        };
-      let expr = Parse.expression lexbuf in
-      Ast_mapper.set_cookie name expr
-  in
   let spec =
     let as_ppx () =
       raise (Arg.Bad "--as-ppx must be passed as first argument")
@@ -414,8 +419,6 @@ let run_as_standalone_driver () =
       "FILE Treat FILE as a .mli file"
     ; "--impl", Arg.String (fun fn -> files := Impl fn :: !files),
       "FILE Treat FILE as a .ml file"
-    ; "--cookie", Arg.String set_cookie,
-      "NAME=EXPR Set the cookie NAME to EXPR"
     ; "--embed-errors", Arg.Set embed_errors,
       " Embed error reported by rewriters into the AST"
     ]
