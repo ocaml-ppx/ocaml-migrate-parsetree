@@ -223,7 +223,7 @@ Once you have done that, you need to enable it in your myocamlbuild.ml:
 ```ocaml
 let () =
   Ocamlbuild_plugin.dispatch (fun hook ->
-    Ocaml_migrate_parsetree_ocamlbuild.dispatch hook;
+    Migrate_parsetree_ocamlbuild.dispatch hook;
     <other dispatch functions>
   )
 ```
