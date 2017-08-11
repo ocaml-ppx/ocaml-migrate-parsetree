@@ -1,3 +1,8 @@
+v1.0.3 2017-08-11 Paris
+-----------------------
+
+Add a shallow identity mapper (suggested by Anton Bachin, @aantron).
+
 v1.0.2 2017-07-28 Paris
 -----------------------
 
