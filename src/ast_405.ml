@@ -2934,6 +2934,52 @@ end
 let map_signature mapper = mapper.Ast_mapper.signature mapper
 let map_structure mapper = mapper.Ast_mapper.structure mapper
 
+let shallow_identity =
+  let id _ x = x in
+  {
+    Ast_mapper.
+    structure               = id;
+    structure_item          = id;
+    module_expr             = id;
+    signature               = id;
+    signature_item          = id;
+    module_type             = id;
+    with_constraint         = id;
+    class_declaration       = id;
+    class_expr              = id;
+    class_field             = id;
+    class_structure         = id;
+    class_type              = id;
+    class_type_field        = id;
+    class_signature         = id;
+    class_type_declaration  = id;
+    class_description       = id;
+    type_declaration        = id;
+    type_kind               = id;
+    typ                     = id;
+    type_extension          = id;
+    extension_constructor   = id;
+    value_description       = id;
+    pat                     = id;
+    expr                    = id;
+    module_declaration      = id;
+    module_type_declaration = id;
+    module_binding          = id;
+    open_description        = id;
+    include_description     = id;
+    include_declaration     = id;
+    value_binding           = id;
+    constructor_declaration = id;
+    label_declaration       = id;
+    cases                   = id;
+    case                    = id;
+    location                = id;
+    extension               = id;
+    attribute               = id;
+    attributes              = id;
+    payload                 = id;
+  }
+
 let failing_mapper =
   let fail _ _ =
     invalid_arg "failing_mapper: this mapper function should never get called"

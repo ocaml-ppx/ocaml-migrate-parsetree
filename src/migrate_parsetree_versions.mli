@@ -55,6 +55,7 @@ module type Ast = sig
     val ast_impl_magic_number : string
     val ast_intf_magic_number : string
   end
+  val shallow_identity : Ast_mapper.mapper
   val map_signature : Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
   val map_structure : Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
   val make_top_mapper
