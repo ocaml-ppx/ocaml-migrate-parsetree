@@ -3015,7 +3015,7 @@ let shallow_identity =
 
 let failing_mapper =
   let fail _ _ =
-    invalid_arg "failing_mappeidhis mapper function should never get called"
+    invalid_arg "failing_mapper: this mapper function should never get called"
   in
   {
     Ast_mapper.
