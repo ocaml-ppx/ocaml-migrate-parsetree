@@ -158,7 +158,7 @@ module Parsetree = struct
              T tconstr
              (T1, ..., Tn) tconstr
            *)
-    | Ptyp_object of (string loc * attributes * core_type) list * closed_flag
+    | Ptyp_object of object_field list * closed_flag
           (* < l1:T1; ...; ln:Tn >     (flag = Closed)
              < l1:T1; ...; ln:Tn; .. > (flag = Open)
            *)
@@ -207,7 +207,7 @@ module Parsetree = struct
          *)
 
   and row_field (*IF_CURRENT = Parsetree.row_field *) =
-    | Rtag of label * attributes * bool * core_type list
+    | Rtag of label loc * attributes * bool * core_type list
           (* [`A]                   ( true,  [] )
              [`A of T]              ( false, [T] )
              [`A of T1 & .. & Tn]   ( false, [T1;...Tn] )
@@ -222,6 +222,10 @@ module Parsetree = struct
           *)
     | Rinherit of core_type
           (* [ T ] *)
+
+  and object_field (*IF_CURRENT = Parsetree.object_field *) =
+    | Otag of label loc * attributes * core_type
+    | Oinherit of core_type
 
   (* Patterns *)
 
@@ -1145,9 +1149,8 @@ module Ast_helper : sig
                  -> core_type
       val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
       val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
-      val object_: ?loc:loc -> ?attrs:attrs ->
-                    (str * attributes * core_type) list -> closed_flag ->
-                    core_type
+      val object_: ?loc:loc -> ?attrs:attrs -> object_field list -> closed_flag
+                 -> core_type
       val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
       val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
       val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
@@ -1603,7 +1606,10 @@ end = struct
               Ptyp_constr(longident, List.map loop lst)
           | Ptyp_object (lst, o) ->
               Ptyp_object
-                (List.map (fun (s, attrs, t) -> (s, attrs, loop t)) lst, o)
+                (List.map (function
+                   | Otag(s, attrs, t) -> Otag(s, attrs, loop t)
+                   | Oinherit t -> Oinherit (loop t))
+                   lst, o)
           | Ptyp_class (longident, lst) ->
               Ptyp_class (longident, List.map loop lst)
           | Ptyp_alias(core_type, string) ->
@@ -2269,8 +2275,10 @@ end = struct
       | Ptyp_constr (lid, tl) ->
           constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
       | Ptyp_object (l, o) ->
-          let f (s, a, t) =
-            (map_loc sub s, sub.attributes sub a, sub.typ sub t) in
+        let f = function
+          | Otag (s, a, t) ->
+            Otag (map_loc sub s, sub.attributes sub a, sub.typ sub t)
+          | Oinherit t -> Oinherit (sub.typ sub t) in
           object_ ~loc ~attrs (List.map f l) o
       | Ptyp_class (lid, tl) ->
           class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)

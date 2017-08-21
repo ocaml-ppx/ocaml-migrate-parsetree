@@ -34,6 +34,8 @@ type missing_feature =
     (** 4.06 -> 4.05: let open M in <class-expression> *)
   | Pcty_open
     (** 4.06 -> 4.05: let open M in <class-type> *)
+  | Oinherit
+    (** 4.06 -> 4.05: type t = < m : int; u > *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -48,6 +50,7 @@ let missing_feature_description = function
   | Pconst_float      -> "custom float literals"
   | Pcl_open          -> "module open in class expression"
   | Pcty_open         -> "module open in class type"
+  | Oinherit          -> "inheritance in object type"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -61,6 +64,7 @@ let missing_feature_minimal_version = function
   | Pconst_float      -> "OCaml 4.03"
   | Pcl_open          -> "OCaml 4.06"
   | Pcty_open         -> "OCaml 4.06"
+  | Oinherit          -> "OCaml 4.06"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =
