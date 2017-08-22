@@ -1,3 +1,8 @@
+v1.0.4 2017-08-22 Paris
+-----------------------
+
+Resynchronize with trunk. Contributed by Xavier Clerc, @xclerc.
+
 v1.0.3 2017-08-11 Paris
 -----------------------
 
