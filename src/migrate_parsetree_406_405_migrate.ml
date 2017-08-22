@@ -333,10 +333,12 @@ and copy_core_type_desc :
   | From.Parsetree.Ptyp_object (x0,x1) ->
       To.Parsetree.Ptyp_object
         ((List.map
-            (fun x  ->
-               let (x0,x1,x2) = x  in
+            (function
+              | From.Parsetree.Otag (x0,x1,x2) ->
                (copy_loc (fun x  -> x) x0, (copy_attributes x1),
-                 (copy_core_type x2))) x0),
+                (copy_core_type x2))
+              | From.Parsetree.Oinherit _ ->
+                migration_error Location.none Def.Oinherit) x0),
           (copy_closed_flag x1))
   | From.Parsetree.Ptyp_class (x0,x1) ->
       To.Parsetree.Ptyp_class
@@ -374,7 +376,7 @@ and copy_row_field :
   function
   | From.Parsetree.Rtag (x0,x1,x2,x3) ->
       To.Parsetree.Rtag
-        ((copy_label x0),
+        ((copy_label x0.txt),
           (copy_attributes x1), (copy_bool x2),
           (List.map copy_core_type x3))
   | From.Parsetree.Rinherit x0 ->

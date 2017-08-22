@@ -17,16 +17,17 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Ast ported on Wed May 31 10:28:52 BST 2017
+(* Ast ported on Mon Aug 21 18:16:29 CEST 2017
    OCaml trunk was:
-     commit 3186c9cd3d8e21ba7fdcb757ad736a1ac5b54ebc
-     Merge: 39518272d 0f642e6ac
-     Author: Gabriel Scherer <gabriel.scherer@gmail.com>
-     Date:   Wed May 31 01:12:09 2017 -0400
+     commit 3ea80c98ceb8bcf845e618ccf9b5512ecfee3853
+     Merge: 14f142b18 e61e8740a
+     Author: Florian Angeletti <octa@polychoron.fr>
+     Date:   Mon Aug 21 12:42:37 2017 +0200
 
-         Merge pull request #1184 from gasche/use-dash-in-travis
+         Merge pull request #1299 from gasche/cleanup-changes
 
-         Use dash instead of bash on the Travis CI machines. *)
+         minor Changes cleanup
+*)
 
 module Location = Location
 module Longident = Longident
@@ -146,7 +147,7 @@ module Parsetree = struct
     | Ptyp_arrow of arg_label * core_type * core_type
           (* T1 -> T2       Simple
              ~l:T1 -> T2    Labelled
-             ?l:T1 -> T2    Otional
+             ?l:T1 -> T2    Optional
            *)
     | Ptyp_tuple of core_type list
           (* T1 * ... * Tn
@@ -158,7 +159,7 @@ module Parsetree = struct
              T tconstr
              (T1, ..., Tn) tconstr
            *)
-    | Ptyp_object of (string loc * attributes * core_type) list * closed_flag
+    | Ptyp_object of object_field list * closed_flag
           (* < l1:T1; ...; ln:Tn >     (flag = Closed)
              < l1:T1; ...; ln:Tn; .. > (flag = Open)
            *)
@@ -207,7 +208,7 @@ module Parsetree = struct
          *)
 
   and row_field (*IF_CURRENT = Parsetree.row_field *) =
-    | Rtag of label * attributes * bool * core_type list
+    | Rtag of label loc * attributes * bool * core_type list
           (* [`A]                   ( true,  [] )
              [`A of T]              ( false, [T] )
              [`A of T1 & .. & Tn]   ( false, [T1;...Tn] )
@@ -222,6 +223,10 @@ module Parsetree = struct
           *)
     | Rinherit of core_type
           (* [ T ] *)
+
+  and object_field (*IF_CURRENT = Parsetree.object_field *) =
+    | Otag of label loc * attributes * core_type
+    | Oinherit of core_type
 
   (* Patterns *)
 
@@ -375,13 +380,13 @@ module Parsetree = struct
           (* (E :> T)        (None, T)
              (E : T0 :> T)   (Some T0, T)
            *)
-    | Pexp_send of expression * string loc
+    | Pexp_send of expression * label loc
           (*  E # m *)
     | Pexp_new of Longident.t loc
           (* new M.c *)
-    | Pexp_setinstvar of string loc * expression
+    | Pexp_setinstvar of label loc * expression
           (* x <- 2 *)
-    | Pexp_override of (string loc * expression) list
+    | Pexp_override of (label loc * expression) list
           (* {< x1 = E1; ...; Xn = En >} *)
     | Pexp_letmodule of string loc * module_expr * expression
           (* let module M = ME in E *)
@@ -589,9 +594,9 @@ module Parsetree = struct
   and class_type_field_desc (*IF_CURRENT = Parsetree.class_type_field_desc *) =
     | Pctf_inherit of class_type
           (* inherit CT *)
-    | Pctf_val of (string loc * mutable_flag * virtual_flag * core_type)
+    | Pctf_val of (label loc * mutable_flag * virtual_flag * core_type)
           (* val x: T *)
-    | Pctf_method  of (string loc * private_flag * virtual_flag * core_type)
+    | Pctf_method  of (label loc * private_flag * virtual_flag * core_type)
           (* method x: T
 
              Note: T can be a Ptyp_poly.
@@ -658,9 +663,9 @@ module Parsetree = struct
     | Pcl_constraint of class_expr * class_type
           (* (CE : CT) *)
     | Pcl_extension of extension
-          (* [%id] *)
+    (* [%id] *)
     | Pcl_open of override_flag * Longident.t loc * class_expr
-          (* let open M in CE *)
+    (* let open M in CE *)
 
 
   and class_structure (*IF_CURRENT = Parsetree.class_structure *) =
@@ -686,11 +691,11 @@ module Parsetree = struct
              inherit! CE
              inherit! CE as x
            *)
-    | Pcf_val of (string loc * mutable_flag * class_field_kind)
+    | Pcf_val of (label loc * mutable_flag * class_field_kind)
           (* val x = E
              val virtual x: T
            *)
-    | Pcf_method of (string loc * private_flag * class_field_kind)
+    | Pcf_method of (label loc * private_flag * class_field_kind)
           (* method x = E            (E can be a Pexp_poly)
              method virtual x: T     (T can be a Ptyp_poly)
            *)
@@ -1145,9 +1150,8 @@ module Ast_helper : sig
                  -> core_type
       val tuple: ?loc:loc -> ?attrs:attrs -> core_type list -> core_type
       val constr: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
-      val object_: ?loc:loc -> ?attrs:attrs ->
-                    (str * attributes * core_type) list -> closed_flag ->
-                    core_type
+      val object_: ?loc:loc -> ?attrs:attrs -> object_field list
+                     -> closed_flag -> core_type
       val class_: ?loc:loc -> ?attrs:attrs -> lid -> core_type list -> core_type
       val alias: ?loc:loc -> ?attrs:attrs -> core_type -> string -> core_type
       val variant: ?loc:loc -> ?attrs:attrs -> row_field list -> closed_flag
@@ -1439,7 +1443,7 @@ module Ast_helper : sig
         class_type -> class_type
       val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_type
       val open_: ?loc:loc -> ?attrs:attrs -> override_flag -> lid -> class_type
-        -> class_type
+                 -> class_type
     end
 
   (** Class type fields *)
@@ -1479,7 +1483,7 @@ module Ast_helper : sig
         class_expr
       val extension: ?loc:loc -> ?attrs:attrs -> extension -> class_expr
       val open_: ?loc:loc -> ?attrs:attrs -> override_flag -> lid -> class_expr
-        -> class_expr
+                 -> class_expr
     end
 
   (** Class fields *)
@@ -1602,8 +1606,7 @@ end = struct
           | Ptyp_constr(longident, lst) ->
               Ptyp_constr(longident, List.map loop lst)
           | Ptyp_object (lst, o) ->
-              Ptyp_object
-                (List.map (fun (s, attrs, t) -> (s, attrs, loop t)) lst, o)
+              Ptyp_object (List.map loop_object_field lst, o)
           | Ptyp_class (longident, lst) ->
               Ptyp_class (longident, List.map loop lst)
           | Ptyp_alias(core_type, string) ->
@@ -1628,6 +1631,12 @@ end = struct
               Rtag(label,attrs,flag,List.map loop lst)
           | Rinherit t ->
               Rinherit (loop t)
+      and loop_object_field =
+        function
+          | Otag(label, attrs, t) ->
+              Otag(label, attrs, loop t)
+          | Oinherit t ->
+              Oinherit (loop t)
       in
       loop t
 
@@ -1999,7 +2008,7 @@ end = struct
        pcd_res = res;
        pcd_loc = loc;
        pcd_attributes = add_info_attrs info attrs;
-       }
+      }
 
     let field ?(loc = !default_loc) ?(attrs = []) ?(info = empty_info)
           ?(mut = Immutable) name typ =
@@ -2253,8 +2262,14 @@ end = struct
 
     let row_field sub = function
       | Rtag (l, attrs, b, tl) ->
-          Rtag (l, sub.attributes sub attrs, b, List.map (sub.typ sub) tl)
+          Rtag (map_loc sub l, sub.attributes sub attrs,
+                b, List.map (sub.typ sub) tl)
       | Rinherit t -> Rinherit (sub.typ sub t)
+
+    let object_field sub = function
+      | Otag (l, attrs, t) ->
+          Otag (map_loc sub l, sub.attributes sub attrs, sub.typ sub t)
+      | Oinherit t -> Oinherit (sub.typ sub t)
 
     let map sub {ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs} =
       let open Typ in
@@ -2269,9 +2284,7 @@ end = struct
       | Ptyp_constr (lid, tl) ->
           constr ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
       | Ptyp_object (l, o) ->
-          let f (s, a, t) =
-            (map_loc sub s, sub.attributes sub a, sub.typ sub t) in
-          object_ ~loc ~attrs (List.map f l) o
+          object_ ~loc ~attrs (List.map (object_field sub) l) o
       | Ptyp_class (lid, tl) ->
           class_ ~loc ~attrs (map_loc sub lid) (List.map (sub.typ sub) tl)
       | Ptyp_alias (t, s) -> alias ~loc ~attrs (sub.typ sub t) s
@@ -2360,8 +2373,7 @@ end = struct
           arrow ~loc ~attrs lab (sub.typ sub t) (sub.class_type sub ct)
       | Pcty_extension x -> extension ~loc ~attrs (sub.extension sub x)
       | Pcty_open (ovf, lid, ct) ->
-         open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_type sub ct)
-
+          open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_type sub ct)
 
     let map_field sub {pctf_desc = desc; pctf_loc = loc; pctf_attributes = attrs}
       =
@@ -2623,8 +2635,7 @@ end = struct
           constraint_ ~loc ~attrs (sub.class_expr sub ce) (sub.class_type sub ct)
       | Pcl_extension x -> extension ~loc ~attrs (sub.extension sub x)
       | Pcl_open (ovf, lid, ce) ->
-         open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_expr sub ce)
-
+          open_ ~loc ~attrs ovf (map_loc sub lid) (sub.class_expr sub ce)
 
     let map_kind sub = function
       | Cfk_concrete (o, e) -> Cfk_concrete (o, sub.expr sub e)
