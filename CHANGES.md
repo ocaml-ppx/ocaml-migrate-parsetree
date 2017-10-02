@@ -1,4 +1,4 @@
-v1.0.5 ... Paris
+v1.0.5 2017-10-02 Paris
 -----------------------
 
 Resynchronize with trunk.

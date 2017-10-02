@@ -77,6 +77,12 @@ It can read and write binary implementation and interface files from different c
 
 (FIXME: marshalling format is not guaranteed to be stable accross versions)
 
+## Parsing source file
+
+The `Parse` module implements an interface similar to the one from compiler-libs, but parsing functions take an OCaml version as first argument.
+
+It uses the distributed OCaml parser (current version) then migrate the resulting AST to the requested version. Beware, these parsing functions can alse raise `Migration_error` exceptions.
+
 # Driver
 
 So far, all tools presented were for working with parsetrees. This is helpful to implement a mapper object, but it is not enough to get to a PPX binary.
