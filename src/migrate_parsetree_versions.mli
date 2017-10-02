@@ -118,7 +118,7 @@ type 'a get_mapper = 'x constraint 'a _types = < mapper : 'x; .. >
 
 (** A version of the OCaml frontend packs the ast with type witnesses
     so that equalities can be recovered dynamically. *)
-type _ witnesses = private ..
+type _ witnesses (*IF_VERSION 406 = private ..*)
 
 (** [migration_info] is an opaque type that is used to generate migration
     functions. *)
