@@ -51,6 +51,9 @@ module OCaml_current = Versions.OCaml_current
    migrating from one to the other. *)
 module Convert = Versions.Convert
 
+(* A [Parse] module that migrate ASTs to the desired version of an AST *)
+module Parse = Migrate_parsetree_parse
+
 (* Entrypoints for registering rewriters and making a ppx binary *)
 module Driver = Migrate_parsetree_driver
 

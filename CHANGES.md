@@ -1,3 +1,9 @@
+v1.0.5 ... Paris
+-----------------------
+
+Resynchronize with trunk.
+Add a migrating version of Parse module.
+
 v1.0.4 2017-08-22 Paris
 -----------------------
 
