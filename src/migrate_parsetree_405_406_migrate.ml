@@ -719,10 +719,11 @@ and copy_with_constraint :
           (copy_loc copy_longident x1))
   | From.Parsetree.Pwith_typesubst x0 ->
       To.Parsetree.Pwith_typesubst
-        (copy_type_declaration x0)
+        (copy_loc Longident.parse x0.From.Parsetree.ptype_name,
+         copy_type_declaration x0)
   | From.Parsetree.Pwith_modsubst (x0,x1) ->
       To.Parsetree.Pwith_modsubst
-        ((copy_loc (fun x  -> x) x0),
+        ((copy_loc Longident.parse x0),
           (copy_loc copy_longident x1))
 
 and copy_signature :

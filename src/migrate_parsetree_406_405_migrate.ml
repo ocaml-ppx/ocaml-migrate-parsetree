@@ -724,12 +724,12 @@ and copy_with_constraint :
       To.Parsetree.Pwith_module
         ((copy_loc copy_longident x0),
           (copy_loc copy_longident x1))
-  | From.Parsetree.Pwith_typesubst x0 ->
+  | From.Parsetree.Pwith_typesubst (_, x0) ->
       To.Parsetree.Pwith_typesubst
         (copy_type_declaration x0)
   | From.Parsetree.Pwith_modsubst (x0,x1) ->
       To.Parsetree.Pwith_modsubst
-        ((copy_loc (fun x  -> x) x0),
+        ((copy_loc (fun x -> String.concat "." (Longident.flatten x)) x0),
           (copy_loc copy_longident x1))
 
 and copy_signature :

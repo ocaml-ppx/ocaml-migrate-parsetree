@@ -17,16 +17,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Ast ported on Mon Aug 21 18:16:29 CEST 2017
+(* Ast ported on Mon Oct  2 11:25:57 CEST 2017
    OCaml trunk was:
-     commit 3ea80c98ceb8bcf845e618ccf9b5512ecfee3853
-     Merge: 14f142b18 e61e8740a
-     Author: Florian Angeletti <octa@polychoron.fr>
-     Date:   Mon Aug 21 12:42:37 2017 +0200
+     commit 65940a2c6be43c42f75c6c6b255974f7e6de03ca (HEAD -> 4.06, origin/4.06)
+     Author: Christophe Raffalli <christophe@raffalli.eu>
+     Date:   Sun Oct 1 18:27:07 2017 +0200
 
-         Merge pull request #1299 from gasche/cleanup-changes
-
-         minor Changes cleanup
+         fixed position of last optional last semicolumn in sequence (#1387)
 *)
 
 module Location = Location
@@ -484,7 +481,7 @@ module Parsetree = struct
        pld_mutable: mutable_flag;
        pld_type: core_type;
        pld_loc: Location.t;
-       pld_attributes: attributes; (* l [@id1] [@id2] : T *)
+       pld_attributes: attributes; (* l : T [@id1] [@id2] *)
       }
 
   (*  { ...; l: T; ... }            (mutable=Immutable)
@@ -499,7 +496,7 @@ module Parsetree = struct
        pcd_args: constructor_arguments;
        pcd_res: core_type option;
        pcd_loc: Location.t;
-       pcd_attributes: attributes; (* C [@id1] [@id2] of ... *)
+       pcd_attributes: attributes; (* C of ... [@id1] [@id2] *)
       }
 
   and constructor_arguments (*IF_CURRENT = Parsetree.constructor_arguments *) =
@@ -532,7 +529,7 @@ module Parsetree = struct
        pext_name: string loc;
        pext_kind : extension_constructor_kind;
        pext_loc : Location.t;
-       pext_attributes: attributes; (* C [@id1] [@id2] of ... *)
+       pext_attributes: attributes; (* C of ... [@id1] [@id2] *)
       }
 
   and extension_constructor_kind (*IF_CURRENT = Parsetree.extension_constructor_kind *) =
@@ -834,10 +831,10 @@ module Parsetree = struct
              the name of the type_declaration. *)
     | Pwith_module of Longident.t loc * Longident.t loc
           (* with module X.Y = Z *)
-    | Pwith_typesubst of type_declaration
-          (* with type t := ... *)
-    | Pwith_modsubst of string loc * Longident.t loc
-          (* with module X := Z *)
+    | Pwith_typesubst of Longident.t loc * type_declaration
+          (* with type X.t := ..., same format as [Pwith_type] *)
+    | Pwith_modsubst of Longident.t loc * Longident.t loc
+          (* with module X.Y := Z *)
 
   (* Value expressions for the module language *)
 
@@ -2423,7 +2420,8 @@ end = struct
           Pwith_type (map_loc sub lid, sub.type_declaration sub d)
       | Pwith_module (lid, lid2) ->
           Pwith_module (map_loc sub lid, map_loc sub lid2)
-      | Pwith_typesubst d -> Pwith_typesubst (sub.type_declaration sub d)
+      | Pwith_typesubst (lid, d) ->
+          Pwith_typesubst (map_loc sub lid, sub.type_declaration sub d)
       | Pwith_modsubst (s, lid) ->
           Pwith_modsubst (map_loc sub s, map_loc sub lid)
 
