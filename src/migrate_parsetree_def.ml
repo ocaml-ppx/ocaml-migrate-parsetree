@@ -36,6 +36,10 @@ type missing_feature =
     (** 4.06 -> 4.05: let open M in <class-type> *)
   | Oinherit
     (** 4.06 -> 4.05: type t = < m : int; u > *)
+  | Pwith_typesubst_longident
+    (** 4.06 -> 4.05: T with type X.t := ... *)
+  | Pwith_modsubst_longident
+    (** 4.06 -> 4.05: T with module X.Y := ... *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -51,6 +55,8 @@ let missing_feature_description = function
   | Pcl_open          -> "module open in class expression"
   | Pcty_open         -> "module open in class type"
   | Oinherit          -> "inheritance in object type"
+  | Pwith_typesubst_longident -> "type substitution inside a submodule"
+  | Pwith_modsubst_longident  -> "module substitution inside a submodule"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -65,6 +71,8 @@ let missing_feature_minimal_version = function
   | Pcl_open          -> "OCaml 4.06"
   | Pcty_open         -> "OCaml 4.06"
   | Oinherit          -> "OCaml 4.06"
+  | Pwith_typesubst_longident -> "OCaml 4.06"
+  | Pwith_modsubst_longident  -> "OCaml 4.06"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =

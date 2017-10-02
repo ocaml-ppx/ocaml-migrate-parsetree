@@ -25,6 +25,8 @@ type missing_feature =
   | Pcl_open
   | Pcty_open
   | Oinherit
+  | Pwith_typesubst_longident
+  | Pwith_modsubst_longident
 
 (** Exception thrown by migration functions when a feature is not supported. *)
 exception Migration_error of missing_feature * Location.t

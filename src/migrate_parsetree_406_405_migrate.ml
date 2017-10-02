@@ -724,13 +724,16 @@ and copy_with_constraint :
       To.Parsetree.Pwith_module
         ((copy_loc copy_longident x0),
           (copy_loc copy_longident x1))
-  | From.Parsetree.Pwith_typesubst (_, x0) ->
+  | From.Parsetree.Pwith_typesubst ({ txt = Longident.Lident _; _ }, x0) ->
       To.Parsetree.Pwith_typesubst
         (copy_type_declaration x0)
-  | From.Parsetree.Pwith_modsubst (x0,x1) ->
+  | From.Parsetree.Pwith_modsubst ({ txt = Longident.Lident x0; loc },x1) ->
       To.Parsetree.Pwith_modsubst
-        ((copy_loc (fun x -> String.concat "." (Longident.flatten x)) x0),
-          (copy_loc copy_longident x1))
+        ({ txt = x0; loc }, (copy_loc copy_longident x1))
+  | From.Parsetree.Pwith_typesubst ({ loc; _ }, x0) ->
+      migration_error loc Pwith_typesubst_longident
+  | From.Parsetree.Pwith_modsubst ({ loc; _ },x1) ->
+      migration_error loc Pwith_modsubst_longident
 
 and copy_signature :
   From.Parsetree.signature -> To.Parsetree.signature =
