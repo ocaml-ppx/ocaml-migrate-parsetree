@@ -1,3 +1,8 @@
+v1.0.6 2017-10-11 Paris
+-----------------------
+
+Fix generation of `Migrate_parsetree` module.
+
 v1.0.5 2017-10-02 Paris
 -----------------------
 
