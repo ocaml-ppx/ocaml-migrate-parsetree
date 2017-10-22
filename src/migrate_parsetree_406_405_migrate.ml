@@ -730,9 +730,9 @@ and copy_with_constraint :
   | From.Parsetree.Pwith_modsubst ({ txt = Longident.Lident x0; loc },x1) ->
       To.Parsetree.Pwith_modsubst
         ({ txt = x0; loc }, (copy_loc copy_longident x1))
-  | From.Parsetree.Pwith_typesubst ({ loc; _ }, x0) ->
+  | From.Parsetree.Pwith_typesubst ({ loc; _ }, _x0) ->
       migration_error loc Pwith_typesubst_longident
-  | From.Parsetree.Pwith_modsubst ({ loc; _ },x1) ->
+  | From.Parsetree.Pwith_modsubst ({ loc; _ },_x1) ->
       migration_error loc Pwith_modsubst_longident
 
 and copy_signature :
