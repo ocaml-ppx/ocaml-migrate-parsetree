@@ -1,3 +1,10 @@
+v1.0.7 2017-10-31 Paris
+-----------------------
+
+Contributed by @hhugo:
+- update Magic Number for 4.06
+- fix some compilation warnings
+
 v1.0.6 2017-10-11 Paris
 -----------------------
 
