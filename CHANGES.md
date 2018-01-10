@@ -1,3 +1,9 @@
+Next
+----
+
+Add a `--null` argument to suppress the output. This is used to write
+linters.
+
 v1.0.7 2017-10-31 Paris
 -----------------------
 
