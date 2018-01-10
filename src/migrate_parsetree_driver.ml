@@ -345,7 +345,12 @@ let with_output output ~f =
   | None -> f stdout
   | Some fn -> with_file_out fn ~f
 
-let process_file ~config ~output ~dump_ast ~embed_errors file =
+type output_mode =
+  | Pretty_print
+  | Dump_ast
+  | Null
+
+let process_file ~config ~output ~output_mode ~embed_errors file =
   let fn, ast = load_file file in
   let ast =
     match ast with
@@ -378,48 +383,78 @@ let process_file ~config ~output ~dump_ast ~embed_errors file =
       in
       Impl (st, Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st)
   in
-  with_output output ~f:(fun oc ->
-    if dump_ast then begin
+  match output_mode with
+  | Dump_ast ->
+    with_output output ~f:(fun oc ->
       let ast =
         match ast with
         | Intf (_, sg) -> Ast_io.Intf ((module OCaml_current), sg)
         | Impl (_, st) -> Ast_io.Impl ((module OCaml_current), st)
       in
-      Ast_io.to_channel oc fn ast
-    end else begin
+      Ast_io.to_channel oc fn ast)
+  | Pretty_print ->
+    with_output output ~f:(fun oc ->
       let ppf = Format.formatter_of_out_channel oc in
       (match ast with
        | Intf (sg, _) -> Pprintast.signature ppf sg
        | Impl (st, _) -> Pprintast.structure ppf st);
-      Format.pp_print_newline ppf ()
-    end)
+      Format.pp_print_newline ppf ())
+  | Null ->
+    ()
 
 let run_as_standalone_driver () =
   let output = ref None in
-  let dump_ast = ref false in
+  let output_mode = ref Pretty_print in
+  let output_mode_arg = ref "" in
   let files = ref [] in
   let embed_errors = ref false in
+  let embed_errors_arg = ref "" in
   let spec =
-    let as_ppx () =
-      raise (Arg.Bad "--as-ppx must be passed as first argument")
+    let fail fmt = Printf.ksprintf (fun s -> raise (Arg.Bad s)) fmt in
+    let incompatible a b = fail "%s and %s are incompatible" a b in
+    let as_ppx () = fail "--as-ppx must be passed as first argument" in
+    let set_embed_errors arg =
+      if !output_mode = Null then incompatible !output_mode_arg arg;
+      embed_errors := true;
+      embed_errors_arg := arg
+    in
+    let set_output_mode arg mode =
+      match !output_mode, mode with
+      | Pretty_print, _ ->
+        if mode = Null && !embed_errors then
+          incompatible !embed_errors_arg arg;
+        if mode = Null && !output <> None then
+          incompatible "-o" arg;
+        output_mode := mode;
+        output_mode_arg := arg
+      | _, Pretty_print -> assert false
+      | Dump_ast, Dump_ast | Null, Null -> ()
+      | _ -> incompatible !output_mode_arg arg
+    in
+    let set_output fn =
+      if !output_mode = Null then incompatible !output_mode_arg "-o";
+      output := Some fn
     in
     let as_pp () =
-      dump_ast := true;
-      embed_errors := true
+      let arg = "--as-pp" in
+      set_output_mode arg Dump_ast;
+      set_embed_errors arg
     in
     [ "--as-ppx", Arg.Unit as_ppx,
       " Act as a -ppx rewriter"
     ; "--as-pp", Arg.Unit as_pp,
       " Shorthand for: --dump-ast --embed-errors"
-    ; "--dump-ast", Arg.Set dump_ast,
+    ; "--dump-ast", Arg.Unit (fun () -> set_output_mode "--dump-ast" Dump_ast),
       " Output a binary AST instead of source code"
-    ; "-o", Arg.String (fun o -> output := Some o),
+    ; "--null", Arg.Unit (fun () -> set_output_mode "--null" Null),
+      " Output nothing, just report errors"
+    ; "-o", Arg.String set_output,
       "FILE Output to this file instead of the standard output"
     ; "--intf", Arg.String (fun fn -> files := Intf fn :: !files),
       "FILE Treat FILE as a .mli file"
     ; "--impl", Arg.String (fun fn -> files := Impl fn :: !files),
       "FILE Treat FILE as a .ml file"
-    ; "--embed-errors", Arg.Set embed_errors,
+    ; "--embed-errors", Arg.Unit (fun () -> set_embed_errors "--embed-errors"),
       " Embed error reported by rewriters into the AST"
     ]
   in
@@ -430,7 +465,7 @@ let run_as_standalone_driver () =
     List.iter (fun f -> f ()) !registered_args_reset;
     Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
     let output = !output in
-    let dump_ast = !dump_ast in
+    let output_mode = !output_mode in
     let embed_errors = !embed_errors in
     let config =
       (* TODO: we could add -I, -L and -g options to populate these fields. *)
@@ -442,7 +477,8 @@ let run_as_standalone_driver () =
       ; extras       = []
       }
     in
-    List.iter (process_file ~config ~output ~dump_ast ~embed_errors) (List.rev !files)
+    List.iter (process_file ~config ~output ~output_mode ~embed_errors)
+      (List.rev !files)
   with exn ->
     Location.report_exception Format.err_formatter exn;
     exit 1

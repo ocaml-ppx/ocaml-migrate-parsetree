@@ -1,5 +1,5 @@
-(executables
- ((names (foo))
+(executable
+ ((name foo)
   (preprocess (pps (ppx1 ppx2
                     (-message "Hello, world!")
                     (--cookie "plop=\"Chocolate\""))))))
