@@ -48,6 +48,12 @@ val register
   -> 'types ocaml_version -> 'types rewriter
   -> unit
 
+(** Return the list of command line arguments registered by rewriters *)
+val registered_args : unit -> (Arg.key * Arg.spec * Arg.doc) list
+
+(** Call all the registered [reset_args] callbacks *)
+val reset_args : unit -> unit
+
 (** {1 Running registered rewriters} *)
 
 val run_as_ast_mapper : string list -> Ast_mapper.mapper

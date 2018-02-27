@@ -143,6 +143,9 @@ let register ~name ?reset_args ?(args=[]) version rewriter =
   registered_rewriters :=
     add_rewriter Is_rewriter version name rewriter !registered_rewriters
 
+let registered_args () = List.rev !registered_args
+let reset_args () = List.iter (fun f -> f ()) !registered_args_reset
+
 (** {1 Accessing or running registered rewriters} *)
 
 type ('types, 'version, 'tree) is_signature =
@@ -224,14 +227,14 @@ let rewrite_structure config version st =
   st
 
 let run_as_ast_mapper args =
-  let spec = List.rev !registered_args in
+  let spec = registered_args () in
   let args, usage =
     let me = Filename.basename Sys.executable_name in
     let args = match args with "--as-ppx" :: args -> args | args -> args in
     (Array.of_list (me :: args),
      Printf.sprintf "%s [options] <input ast file> <output ast file>" me)
   in
-  List.iter (fun f -> f ()) !registered_args_reset;
+  reset_args ();
   match
     Arg.parse_argv args spec
       (fun arg -> raise (Arg.Bad (Printf.sprintf "invalid argument %S" arg)))
@@ -458,11 +461,11 @@ let run_as_standalone_driver () =
       " Embed error reported by rewriters into the AST"
     ]
   in
-  let spec = Arg.align (spec @ List.rev !registered_args) in
+  let spec = Arg.align (spec @ registered_args ()) in
   let me = Filename.basename Sys.executable_name in
   let usage = Printf.sprintf "%s [options] [<files>]" me in
   try
-    List.iter (fun f -> f ()) !registered_args_reset;
+    reset_args ();
     Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
     let output = !output in
     let output_mode = !output_mode in
@@ -488,7 +491,7 @@ let run_as_ppx_rewriter () =
   let n = Array.length a in
   if n <= 2 then begin
     let me = Filename.basename Sys.executable_name in
-    Arg.usage (List.rev !registered_args)
+    Arg.usage (registered_args ())
       (Printf.sprintf "%s [options] <input ast file> <output ast file>" me);
     exit 2
   end;
