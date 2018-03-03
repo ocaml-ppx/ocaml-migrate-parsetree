@@ -7,7 +7,11 @@
   (libraries (compiler-libs.common result))
   (flags (:standard -open Result))
   (modules (:standard \ migrate_parsetree_driver_main))
-  (preprocess (action (run ${exe:../tools/pp.exe} ${read:ast-version} ${<})))))
+  (preprocess (action (run ${exe:../tools/pp.exe} ${read:ast-version} ${<})))
+  (ppx.driver
+   ((main       Migrate_parsetree.Driver.run_main)
+    (flags      (--dump-ast))
+    (lint_flags (--null))))))
 
 (library
  ((name migrate_parsetree_driver_main)
