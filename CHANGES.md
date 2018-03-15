@@ -1,8 +1,8 @@
-Next
-----
+v1.0.8 2018-03-15 London
+------------------------
 
-- Add a `--null` argument to suppress the output. This is used to write
-  linters
+- Add a `--null` argument to suppress the output. This is used to
+  write linters
 - Use the new generic ppx driver support of jbuilder
 
 v1.0.7 2017-10-31 Paris
