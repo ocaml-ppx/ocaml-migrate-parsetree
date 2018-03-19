@@ -38,6 +38,11 @@ val set_cookie
   -> 'types ocaml_version -> 'types get_expression
   -> unit
 
+val set_global_cookie
+  :  string
+  -> 'types ocaml_version -> 'types get_expression
+  -> unit
+
 (** {1 Registering rewriters} *)
 
 type 'types rewriter = config -> cookies -> 'types get_mapper
