@@ -1,3 +1,9 @@
+next
+----
+
+- Fix an issue where cookies set from the command line sometimes
+  disappeared
+
 v1.0.8 2018-03-15 London
 ------------------------
 

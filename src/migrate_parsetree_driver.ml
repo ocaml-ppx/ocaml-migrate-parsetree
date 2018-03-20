@@ -30,14 +30,19 @@ type cookies = (string, cookie) Hashtbl.t
 
 let create_cookies () = Hashtbl.create 3
 
+let global_cookie_table = create_cookies ()
+
 let get_cookie table name version =
   match
     match Hashtbl.find table name with
     | result -> Some result
     | exception Not_found ->
         match Ast_mapper.get_cookie name with
-        | None -> None
         | Some expr -> Some (Cookie ((module OCaml_current), expr))
+        | None ->
+            match Hashtbl.find global_cookie_table name with
+            | result -> Some result
+            | exception Not_found -> None
   with
   | None -> None
   | Some (Cookie (version', expr)) ->
@@ -45,6 +50,9 @@ let get_cookie table name version =
 
 let set_cookie table name version expr =
   Hashtbl.replace table name (Cookie (version, expr))
+
+let set_global_cookie name version expr =
+  set_cookie global_cookie_table name version expr
 
 let apply_cookies table =
   Hashtbl.iter (fun name (Cookie (version, expr)) ->
@@ -95,7 +103,7 @@ let () =
         ; pos_cnum  = 0
         };
       let expr = Parse.expression lexbuf in
-      Ast_mapper.set_cookie name expr
+      set_global_cookie name (module OCaml_current) expr
   in
   registered_args :=
     ("--cookie", Arg.String set_cookie,
