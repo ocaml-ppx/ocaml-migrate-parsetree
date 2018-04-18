@@ -10,7 +10,7 @@ to the next and/or previous version.
 ## Asts
 
 ```ocaml
-module Ast_402, Ast_403, Ast_404, Ast_405, Ast_406 : sig
+module Ast_402, Ast_403, Ast_404, Ast_405, Ast_406, Ast_407 : sig
 
   (* These two modules didn't change between compiler versions.
      Just share the ones from compiler-libs. *)

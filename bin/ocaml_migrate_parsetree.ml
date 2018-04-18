@@ -31,6 +31,8 @@ let () =
      "<filename> Produce an ast valid for OCaml 4.05 in <filename>");
     ("-to-ocaml406", Arg.String (add Migrate_parsetree.OCaml_406),
      "<filename> Produce an ast valid for OCaml 4.06 in <filename>");
+    ("-to-ocaml407", Arg.String (add Migrate_parsetree.OCaml_407),
+     "<filename> Produce an ast valid for OCaml 4.07 in <filename>");
     (*$*)
   ] in
   Arg.parse arg_spec set_input usage_msg;
