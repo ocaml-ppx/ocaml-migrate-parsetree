@@ -341,15 +341,11 @@ let load_file file =
         ; pos_cnum  = 0
         };
       Location.input_name := fn;
-      if Filename.check_suffix fn ".ml" then
+      match file with
+      | Impl fn ->
         (fn, Impl (Parse.implementation lexbuf))
-      else if Filename.check_suffix fn ".mli" then
-        (fn, Intf (Parse.interface lexbuf))
-      else
-        (* TODO: add support for -intf and -impl *)
-        Location.raise_errorf ~loc:(Location.in_file fn)
-          "I can't decide whether %s is an implementation or interface file"
-          fn)
+      | Intf fn ->
+        (fn, Intf (Parse.interface lexbuf)))
 
 let with_output output ~f =
   match output with
