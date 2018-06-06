@@ -1,5 +1,5 @@
-next
-----
+v1.0.11 2018-06-06 London
+-------------------------
 
 - Fix handling of `--impl/--intf`. Before the driver would crash if
   the file extension was neither `.ml` nor `.mli`
