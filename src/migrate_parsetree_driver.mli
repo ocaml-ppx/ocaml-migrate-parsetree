@@ -47,9 +47,21 @@ val set_global_cookie
 
 type 'types rewriter = config -> cookies -> 'types get_mapper
 
+(** Register a ppx rewriter. [position] is a integer that indicates
+    when the ppx rewriter should be applied. It is guaranteed that if
+    two ppx rewriters [a] and [b] have different position numbers, then
+    the one with the lowest number will be applied first. The rewriting
+    order of ppx rewriters with the same position number is not
+    specified. The default position is [0].
+
+    Note that more different position numbers means more AST
+    conversions and slower rewriting, so think twice before setting
+    [position] to a non-zero number.
+*)
 val register
   :  name:string
   -> ?reset_args:(unit -> unit) -> ?args:(Arg.key * Arg.spec * Arg.doc) list
+  -> ?position:int
   -> 'types ocaml_version -> 'types rewriter
   -> unit
 

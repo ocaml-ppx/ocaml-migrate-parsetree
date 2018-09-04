@@ -78,7 +78,16 @@ type rewriter_group =
     Rewriters : 'types ocaml_version * (string * 'types rewriter) list -> rewriter_group
 
 let uniq_rewriter = Hashtbl.create 7
-let registered_rewriters = ref []
+module Pos_map = Map.Make(struct
+    type t = int
+    let compare : int -> int -> t = compare
+  end)
+let registered_rewriters = ref Pos_map.empty
+
+let all_rewriters () =
+  Pos_map.bindings !registered_rewriters
+  |> List.map (fun (_, r) -> !r)
+  |> List.concat
 
 let uniq_arg = Hashtbl.create 7
 let registered_args_reset = ref []
@@ -126,7 +135,7 @@ let add_rewriter
   in
   add_rewriter
 
-let register ~name ?reset_args ?(args=[]) version rewriter =
+let register ~name ?reset_args ?(args=[]) ?(position=0) version rewriter =
   (* Validate name *)
   if name = "" then
     invalid_arg "Migrate_parsetree_driver.register: name is empty";
@@ -148,8 +157,15 @@ let register ~name ?reset_args ?(args=[]) version rewriter =
   | Some f -> registered_args_reset := f :: !registered_args_reset
   end;
   registered_args := List.rev_append args !registered_args;
-  registered_rewriters :=
-    add_rewriter Is_rewriter version name rewriter !registered_rewriters
+  let r =
+    try
+      Pos_map.find position !registered_rewriters
+    with Not_found ->
+      let r = ref [] in
+      registered_rewriters := Pos_map.add position r !registered_rewriters;
+      r
+  in
+  r := add_rewriter Is_rewriter version name rewriter !r
 
 let registered_args () = List.rev !registered_args
 let reset_args () = List.iter (fun f -> f ()) !registered_args_reset
@@ -201,7 +217,10 @@ let rec rewrite_signature
 
 let rewrite_signature config version sg =
   let cookies = create_cookies () in
-  let sg = rewrite_signature config cookies Signature version sg !registered_rewriters in
+  let sg =
+    rewrite_signature config cookies Signature version sg
+      (all_rewriters ())
+  in
   apply_cookies cookies;
   sg
 
@@ -230,7 +249,10 @@ let rec rewrite_structure
 
 let rewrite_structure config version st =
   let cookies = create_cookies () in
-  let st = rewrite_structure config cookies Structure version st !registered_rewriters in
+  let st =
+    rewrite_structure config cookies Structure version st
+      (all_rewriters ())
+  in
   apply_cookies cookies;
   st
 
