@@ -1,5 +1,5 @@
-next
-----
+v1.1.0 2018-09-05 London
+------------------------
 
 - Allow ppx rewriters to specify when they should be applied
 
