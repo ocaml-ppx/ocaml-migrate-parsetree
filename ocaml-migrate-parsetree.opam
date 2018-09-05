@@ -7,7 +7,8 @@ authors: [
 license: "LGPL-2.1"
 homepage: "https://github.com/ocaml-ppx/ocaml-migrate-parsetree"
 bug-reports: "https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues"
-dev-repo: "git://github.com/ocaml-ppx/ocaml-migrate-parsetree.git"
+dev-repo: "https://github.com/ocaml-ppx/ocaml-migrate-parsetree.git"
+doc: "https://ocaml-ppx.github.io/ocaml-migrate-parsetree/"
 tags: [ "syntax" "org:ocamllabs" ]
 build: [
   ["jbuilder" "build" "-p" name "-j" jobs]
