@@ -1,3 +1,8 @@
+next
+----
+
+- Remove unused ocamlfind dependency in the opam file
+
 v1.1.0 2018-09-05 London
 ------------------------
 
