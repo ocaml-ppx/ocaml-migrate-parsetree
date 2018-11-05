@@ -15,6 +15,7 @@ build: [
 ]
 depends: [
   "result"
+  "ppx_derivers"
   "dune" {build}
 ]
 available: ocaml-version >= "4.02.0"
