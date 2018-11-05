@@ -434,10 +434,20 @@ let process_file ~config ~output ~output_mode ~embed_errors file =
     ()
 
 let print_transformations () =
+  let print_group name = function
+    | [] -> ()
+    | names ->
+        Printf.printf "%s:\n" name;
+        List.iter (Printf.printf "%s\n") names
+  in
   all_rewriters ()
-  |> List.iter (fun r ->
-      rewriter_group_names r
-      |> List.iter (Printf.printf "%s\n"))
+  |> List.map rewriter_group_names
+  |> List.concat
+  |> print_group "Registered Transformations";
+  Ppx_derivers.derivers ()
+  |> List.map (fun (x, _) -> x)
+  |> print_group "Registered Derivers"
+
 
 let run_as_standalone_driver () =
   let request_print_transformations = ref false in

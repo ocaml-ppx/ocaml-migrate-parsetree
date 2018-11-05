@@ -4,7 +4,7 @@
  ((name migrate_parsetree)
   (public_name ocaml-migrate-parsetree)
   (wrapped false)
-  (libraries (compiler-libs.common result))
+  (libraries (compiler-libs.common result ppx_derivers))
   (flags (:standard -open Result))
   (modules (:standard \ migrate_parsetree_driver_main))
   (preprocess (action (run ${exe:../tools/pp.exe} ${read:ast-version} ${<})))
