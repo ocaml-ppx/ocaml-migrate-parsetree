@@ -77,6 +77,8 @@ type 'types rewriter = config -> cookies -> 'types get_mapper
 type rewriter_group =
     Rewriters : 'types ocaml_version * (string * 'types rewriter) list -> rewriter_group
 
+let rewriter_group_names (Rewriters (_, l)) = List.map fst l
+
 let uniq_rewriter = Hashtbl.create 7
 module Pos_map = Map.Make(struct
     type t = int
@@ -431,7 +433,14 @@ let process_file ~config ~output ~output_mode ~embed_errors file =
   | Null ->
     ()
 
+let print_transformations () =
+  all_rewriters ()
+  |> List.iter (fun r ->
+      rewriter_group_names r
+      |> List.iter (Printf.printf "%s\n"))
+
 let run_as_standalone_driver () =
+  let request_print_transformations = ref false in
   let output = ref None in
   let output_mode = ref Pretty_print in
   let output_mode_arg = ref "" in
@@ -485,6 +494,8 @@ let run_as_standalone_driver () =
       "FILE Treat FILE as a .ml file"
     ; "--embed-errors", Arg.Unit (fun () -> set_embed_errors "--embed-errors"),
       " Embed error reported by rewriters into the AST"
+    ; "--print-transformations", Arg.Set request_print_transformations,
+      " Print registered transformations in their order of executions"
     ]
   in
   let spec = Arg.align (spec @ registered_args ()) in
@@ -493,6 +504,10 @@ let run_as_standalone_driver () =
   try
     reset_args ();
     Arg.parse spec (fun anon -> files := guess_file_kind anon :: !files) usage;
+    if !request_print_transformations then begin
+      print_transformations ();
+      exit 0
+    end;
     let output = !output in
     let output_mode = !output_mode in
     let embed_errors = !embed_errors in
