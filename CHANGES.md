@@ -3,6 +3,9 @@ next
 
 - Remove unused ocamlfind dependency in the opam file
 
+- Fix Windows compatibility by setting the output to binary mode when
+  writing a binary ast (#57, @bryphe)
+
 v1.1.0 2018-09-05 London
 ------------------------
 
