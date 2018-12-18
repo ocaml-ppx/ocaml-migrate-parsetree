@@ -15,11 +15,11 @@ depends: [
   "jbuilder" {build & >= "1.0+beta7"}
   "ocaml-migrate-parsetree"
   "ocamlbuild"
-  "ocaml-version" {>= "4.02.0"}
+  "ocaml" {>= "4.02.0"}
 ]
 synopsis: "Ocamlbuild plugin for ocaml-migrate-parsetree"
 description: """
-This package provides an ocamlbiuld plugin that can be used to produce
-optimized on-demand staticlly linked ppx drivers, like what Dune does
+This package provides an ocamlbuild plugin that can be used to produce
+optimized on-demand statically linked ppx drivers, as Dune does
 by default.
 """
