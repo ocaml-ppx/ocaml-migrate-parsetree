@@ -88,7 +88,6 @@ let decompose_ast = function
 
 let to_channel oc (filename : filename) x =
   let magic_number, payload = decompose_ast x in
-  set_binary_mode_out oc true;
   output_string oc magic_number;
   output_value oc filename;
   output_value oc payload
