@@ -28,7 +28,7 @@ test:
 
 .PHONY: all-supported-ocaml-versions
 all-supported-ocaml-versions:
-	dune runtest --workspace jbuild-workspace.dev
+	dune runtest --workspace dune-workspace.dev
 
 .PHONY: cinaps
 cinaps:
