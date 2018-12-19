@@ -12,6 +12,7 @@
 (*   special exception on linking described in the file LICENSE.          *)
 (*                                                                        *)
 (**************************************************************************)
+open Result
 
 (** A marshalled ast packs the ast with the corresponding version of the
     frontend *)
