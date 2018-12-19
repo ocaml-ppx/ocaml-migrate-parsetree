@@ -1,0 +1,3 @@
+(executables
+ (names ocaml_migrate_parsetree)
+ (libraries migrate_parsetree))

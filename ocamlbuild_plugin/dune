@@ -1,0 +1,5 @@
+(library
+ (name        migrate_parsetree_ocamlbuild)
+ (public_name ocaml-migrate-parsetree-ocamlbuild)
+ (synopsis    "ocamlbuild plugin for automatically generating ppx dirvers")
+ (libraries   ocamlbuild))
