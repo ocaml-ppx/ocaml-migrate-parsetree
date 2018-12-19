@@ -7,15 +7,15 @@ INSTALL_ARGS := $(if $(PREFIX),--prefix $(PREFIX),)
 
 .PHONY: all
 all:
-	jbuilder build @install
+	dune build @install
 
 .PHONY: install
 install:
-	jbuilder install $(INSTALL_ARGS)
+	dune install $(INSTALL_ARGS)
 
 .PHONY: uninstall
 uninstall:
-	jbuilder uninstall $(INSTALL_ARGS)
+	dune uninstall $(INSTALL_ARGS)
 
 .PHONY: reinstall
 reinstall:
@@ -24,11 +24,11 @@ reinstall:
 
 .PHONY: test
 test:
-	jbuilder runtest
+	dune runtest
 
 .PHONY: all-supported-ocaml-versions
 all-supported-ocaml-versions:
-	jbuilder runtest --workspace jbuild-workspace.dev
+	dune runtest --workspace jbuild-workspace.dev
 
 .PHONY: cinaps
 cinaps:
