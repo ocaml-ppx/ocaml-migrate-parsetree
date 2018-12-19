@@ -10,7 +10,7 @@ env:
     - PINS="ocaml-migrate-parsetree:."
     - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
   matrix:
-    - DISTRO=debian-testing OCAML_VERSION=4.02
+    - DISTRO=debian-testing OCAML_VERSION=4.02.3
     - DISTRO=debian-stable OCAML_VERSION=4.03
     - DISTRO=debian-unstable OCAML_VERSION=4.04
     - DISTRO=ubuntu-16.04 OCAML_VERSION=4.05
