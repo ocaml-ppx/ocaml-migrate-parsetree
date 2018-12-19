@@ -1,10 +1,15 @@
-next
-----
+v1.2.0 2018-12-19 London
+------------------------
 
-- Remove unused ocamlfind dependency in the opam file
+- Remove unused ocamlfind dependency in the opam file (#53, @diml)
+
+- Add `--print-transformations` to list registered transformations
+  (#55, @rgrinberg)
 
 - Fix Windows compatibility by setting the output to binary mode when
-  writing a binary ast (#57, @bryphe)
+  writing a binary ast (#57, #59, @bryphe and @dra27)
+
+- Switch to dune and opam 2.0 (#58, #60, @diml)
 
 v1.1.0 2018-09-05 London
 ------------------------
