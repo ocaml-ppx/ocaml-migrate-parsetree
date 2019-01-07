@@ -6,6 +6,9 @@ next
 - Fix Windows compatibility by setting the output to binary mode when
   writing a binary ast (#57, @bryphe)
 
+- Get rid of the ocamlbuild plugin. Nobody is using it in opam and it
+  is more work to maintain
+
 v1.1.0 2018-09-05 London
 ------------------------
 
