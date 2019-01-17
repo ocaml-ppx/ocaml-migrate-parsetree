@@ -3,7 +3,7 @@ Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
 
-Supported versions are 4.02, 4.03, 4.04, 4.05 and 4.06.
+Supported versions are 4.02, 4.03, 4.04, 4.05, 4.06 and 4.07.
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
 
@@ -118,13 +118,10 @@ The library is distributed under LGPL 2.1 and is copyright INRIA.
 ## Adding a new OCaml version
 
 We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
-Try `opam install cinaps`.  If it is not available, you might need to pin the
-package:
-`opam pin add jbuilder --dev-repo`
-`opam pin add cinaps https://github.com/janestreet/cinaps.git`
+You can install it via opam: `opam install cinaps`.
 
 Add the new version in
-[src/cinaps.ml](https://github.com/let-def/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
+[src/cinaps.ml](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
 `supported_versions`.
 
 Snapshot the ast in file "asts/ast\_NEW.ml".
@@ -140,7 +137,7 @@ Snapshot the ast in file "asts/ast\_NEW.ml".
 
 Add migration functions:
 - Manually compile the ast (`ocamlc -c ast_NEW.ml`)
-- Using `gencopy` from [ppx\_tools](https://github.com/alainfrisch/ppx_tools), generate copy code to and from previous version (assuming it is 404):
+- Using `gencopy` from [ppx\_tools](https://github.com/ocaml-ppx/ppx_tools), generate copy code to and from previous version (assuming it is 404):
 ```
 gencopy -I . -map Ast_404:Ast_NEW Ast_404.Parsetree.expression Ast_404.Parsetree.toplevel_phrase Ast_404.Outcometree.out_phrase > migrate_parsetree_404_NEW_migrate.ml
 gencopy -I . -map Ast_NEW:Ast_404 Ast_NEW.Parsetree.expression Ast_NEW.Parsetree.toplevel_phrase Ast_NEW.Outcometree.out_phrase > migrate_parsetree_NEW_404_migrate.ml
