@@ -121,7 +121,7 @@ We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
 You can install it via opam: `opam install cinaps`.
 
 Add the new version in
-[src/cinaps.ml](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
+[src/cinaps_helpers](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
 `supported_versions`.
 
 Snapshot the ast in file "asts/ast\_NEW.ml".
@@ -136,7 +136,7 @@ Snapshot the ast in file "asts/ast\_NEW.ml".
 * Call `tools/add_special_comments.native` on the file
 
 Add migration functions:
-- Manually compile the ast (`ocamlc -c ast_NEW.ml`)
+- Manually compile the ast (`ocamlc -c ast_NEW.ml -I +compiler-libs`)
 - Using `gencopy` from [ppx\_tools](https://github.com/ocaml-ppx/ppx_tools), generate copy code to and from previous version (assuming it is 404):
 ```
 gencopy -I . -map Ast_404:Ast_NEW Ast_404.Parsetree.expression Ast_404.Parsetree.toplevel_phrase Ast_404.Outcometree.out_phrase > migrate_parsetree_404_NEW_migrate.ml
