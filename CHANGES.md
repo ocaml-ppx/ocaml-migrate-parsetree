@@ -9,6 +9,9 @@ next
 - Get rid of the ocamlbuild plugin. Nobody is using it in opam and it
   is more work to maintain
 
+- Set `Location.input_name` to the original filename when reading a
+  binary AST (#66, @diml)
+
 v1.1.0 2018-09-05 London
 ------------------------
 
