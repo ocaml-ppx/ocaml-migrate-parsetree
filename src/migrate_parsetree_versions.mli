@@ -215,6 +215,8 @@ module OCaml_406 : OCaml_version with module Ast = Ast_406
 val ocaml_406 : OCaml_406.types ocaml_version
 module OCaml_407 : OCaml_version with module Ast = Ast_407
 val ocaml_407 : OCaml_407.types ocaml_version
+module OCaml_408 : OCaml_version with module Ast = Ast_408
+val ocaml_408 : OCaml_408.types ocaml_version
 (*$*)
 
 (* An alias to the current compiler version *)
