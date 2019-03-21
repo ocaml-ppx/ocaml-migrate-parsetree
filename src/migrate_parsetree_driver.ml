@@ -337,11 +337,13 @@ let load_file file =
     match Ast_io.from_channel ic with
     | Ok (fn, Ast_io.Intf ((module V), sg)) ->
       check_kind fn ~expected:file ~got:(Intf ());
+      Location.input_name := fn;
       (* We need to convert to the current version in order to interpret the cookies using
          [Ast_mapper.drop_ppx_context_*] from the compiler *)
       (fn, Intf ((migrate (module V) (module OCaml_current)).copy_signature sg))
     | Ok (fn, Ast_io.Impl ((module V), st)) ->
       check_kind fn ~expected:file ~got:(Impl ());
+      Location.input_name := fn;
       (fn, Impl ((migrate (module V) (module OCaml_current)).copy_structure st))
     | Error (Ast_io.Unknown_version _) ->
       Location.raise_errorf ~loc:(Location.in_file fn)
