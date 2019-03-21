@@ -1,4 +1,32 @@
-(* XXX header *)
+(**************************************************************************)
+(*                                                                        *)
+(*                         OCaml Migrate Parsetree                        *)
+(*                                                                        *)
+(*                         Frédéric Bour, Facebook                        *)
+(*            Jérémie Dimino and Leo White, Jane Street Europe            *)
+(*            Xavier Leroy, projet Cristal, INRIA Rocquencourt            *)
+(*                         Alain Frisch, LexiFi                           *)
+(*       Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt         *)
+(*                                                                        *)
+(*   Copyright 2018 Institut National de Recherche en Informatique et     *)
+(*     en Automatique (INRIA).                                            *)
+(*                                                                        *)
+(*   All rights reserved.  This file is distributed under the terms of    *)
+(*   the GNU Lesser General Public License version 2.1, with the          *)
+(*   special exception on linking described in the file LICENSE.          *)
+(*                                                                        *)
+(**************************************************************************)
+
+(* Ast ported on Thu Mar 21 09:50:42 GMT 2019
+   OCaml was:
+   commit 55c9ba466362f303eb4d5ed511f6fda142879137 (HEAD -> 4.08, origin/4.08)
+     Author: Nicolás Ojeda Bär <n.oje.bar@gmail.com>
+     Date:   Tue Mar 19 08:11:02 2019 +0100
+
+         Merge pull request #8521 from nojb/fix_unix_tests_408
+
+         Actually run all lib-unix tests [4.08]
+*)
 
 module Int = struct
   let to_string = string_of_int
@@ -763,7 +791,7 @@ module Parsetree = struct
     | Pctf_extension of extension
     (* [%%id] *)
 
-  and 'a class_infos (*IF_CURRENT = Parsetree.class_infos *) =
+  and 'a class_infos (*IF_CURRENT = 'a Parsetree.class_infos *) =
     {
       pci_virt: virtual_flag;
       pci_params: (core_type * variance) list;
@@ -969,7 +997,7 @@ module Parsetree = struct
      S       (abstract module type declaration, pmtd_type = None)
   *)
 
-  and 'a open_infos (*IF_CURRENT = Parsetree.open_infos *) =
+  and 'a open_infos (*IF_CURRENT = 'a Parsetree.open_infos *) =
     {
       popen_expr: 'a;
       popen_override: override_flag;
@@ -990,7 +1018,7 @@ module Parsetree = struct
      open M(N).O
      open struct ... end *)
 
-  and 'a include_infos (*IF_CURRENT = Parsetree.include_infos *) =
+  and 'a include_infos (*IF_CURRENT = 'a Parsetree.include_infos *) =
     {
       pincl_mod: 'a;
       pincl_loc: Location.t;
@@ -2249,7 +2277,7 @@ end = struct
     let mk ?(loc = !default_loc) ?(attrs = []) d =
       {ptyp_desc = d;
        ptyp_loc = loc;
-       ptyp_loc_stack = []; (* XXXC *)
+       ptyp_loc_stack = [];
        ptyp_attributes = attrs}
 
     let attr d a = {d with ptyp_attributes = d.ptyp_attributes @ [a]}
@@ -2950,11 +2978,6 @@ module Ast_mapper : sig
 
   val map_opt: ('a -> 'b) -> 'a option -> 'b option
 
-  val extension_of_error: Location.error -> extension
-  (** Encode an error into an 'ocaml.error' extension node which can be
-      inserted in a generated Parsetree.  The compiler will be
-      responsible for reporting the error. *)
-
   val attribute_of_warning: Location.t -> string -> attribute
   (** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
       inserted in a generated Parsetree.  The compiler will be
@@ -3086,7 +3109,7 @@ end = struct
       in
       Of.mk ~loc ~attrs desc
 
-    let map sub {ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs; ptyp_loc_stack = _XXXC } =
+    let map sub {ptyp_desc = desc; ptyp_loc = loc; ptyp_attributes = attrs; ptyp_loc_stack = _ } =
       let open Typ in
       let loc = sub.location sub loc in
       let attrs = sub.attributes sub attrs in
@@ -3331,7 +3354,7 @@ end = struct
   module E = struct
     (* Value expressions for the core language *)
 
-    let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs; pexp_loc_stack = _XXXC } =
+    let map sub {pexp_loc = loc; pexp_desc = desc; pexp_attributes = attrs; pexp_loc_stack = _ } =
       let open Exp in
       let loc = sub.location sub loc in
       let attrs = sub.attributes sub attrs in
@@ -3423,7 +3446,7 @@ end = struct
   module P = struct
     (* Patterns *)
 
-    let map sub {ppat_desc = desc; ppat_loc = loc; ppat_attributes = attrs; ppat_loc_stack = _XXXC } =
+    let map sub {ppat_desc = desc; ppat_loc = loc; ppat_attributes = attrs; ppat_loc_stack = _ } =
       let open Pat in
       let loc = sub.location sub loc in
       let attrs = sub.attributes sub attrs in
@@ -3693,19 +3716,6 @@ end = struct
         );
     }
 
-  let extension_of_error _ = assert false (* XXXC
-  let extension_of_error {kind; main; sub} =
-    if kind <> Location.Report_error then
-      raise (Invalid_argument "extension_of_error: expected kind Report_error");
-    let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
-    let extension_of_sub sub =
-      { loc = sub.loc; txt = "ocaml.error" },
-      PStr ([Str.eval (Exp.constant (Pconst_string (str_of_pp sub.txt, None)))])
-    in
-    { loc = main.loc; txt = "ocaml.error" },
-    PStr (Str.eval (Exp.constant (Pconst_string (str_of_pp main.txt, None))) ::
-          List.map (fun msg -> Str.extension (extension_of_sub msg)) sub) *)
-
   let attribute_of_warning loc s =
     Attr.mk
       {loc; txt = "ocaml.ppwarning" }
@@ -3780,7 +3790,7 @@ end = struct
           lid "recursive_types", make_bool !Clflags.recursive_types;
           lid "principal", make_bool !Clflags.principal;
           lid "transparent_modules", make_bool !Clflags.transparent_modules;
-          lid "unboxed_types", make_bool !Clflags.unboxed_types;
+          lid "unboxed_types", make_bool (Migrate_parsetree_compiler_functions.get_unboxed_types ());
           lid "unsafe_string", make_bool !Clflags.unsafe_string;
           get_cookies ()
         ]
@@ -3859,7 +3869,7 @@ end = struct
         | "transparent_modules" ->
           Clflags.transparent_modules := get_bool payload
         | "unboxed_types" ->
-          Clflags.unboxed_types := get_bool payload
+          Migrate_parsetree_compiler_functions.set_unboxed_types (get_bool payload)
         | "unsafe_string" ->
           Clflags.unsafe_string := get_bool payload
         | "cookies" ->
@@ -3884,14 +3894,6 @@ end = struct
 
   let ppx_context = PpxContext.make
 
-  let extension_of_exn _exn = assert false (* XXX
-    match error_of_exn exn with
-    | Some (`Ok error) -> extension_of_error error
-    | Some `Already_displayed ->
-      { loc = Location.none; txt = "ocaml.error" }, PStr []
-    | None -> raise exn *)
-
-
   let apply_lazy ~source ~target mapper =
     let implem ast =
       let fields, ast =
@@ -3903,12 +3905,12 @@ end = struct
       in
       PpxContext.restore fields;
       let ast =
-        try
+        (*XXXtry*)
           let mapper = mapper () in
           mapper.structure mapper ast
-        with exn ->
+        (*with exn ->
           [{pstr_desc = Pstr_extension (extension_of_exn exn, []);
-            pstr_loc  = Location.none}]
+            pstr_loc  = Location.none}]*)
       in
       let fields = PpxContext.update_cookies fields in
       Str.attribute (PpxContext.mk fields) :: ast
@@ -3924,12 +3926,12 @@ end = struct
       in
       PpxContext.restore fields;
       let ast =
-        try
+        (*XXXtry*)
           let mapper = mapper () in
           mapper.signature mapper ast
-        with exn ->
+        (*with exn ->
           [{psig_desc = Psig_extension (extension_of_exn exn, []);
-            psig_loc  = Location.none}]
+            psig_loc  = Location.none}]*)
       in
       let fields = PpxContext.update_cookies fields in
       Sig.attribute (PpxContext.mk fields) :: ast

@@ -78,6 +78,11 @@ let copy_mapper = fun
      with_constraint;
      payload;
      (*$*)
+     (* The following ones were introduced in 4.08. *)
+     binding_op = _;
+     module_substitution = _;
+     open_declaration = _;
+     type_exception = _;
    } as mapper) ->
   let module R = Migrate_parsetree_407_408_migrate in
   {

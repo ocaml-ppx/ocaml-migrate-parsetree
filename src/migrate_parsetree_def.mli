@@ -31,6 +31,7 @@ type missing_feature =
   | Pexp_letop
   | Psig_typesubst
   | Psig_modsubst
+  | Otyp_module
 
 (** Exception thrown by migration functions when a feature is not supported. *)
 exception Migration_error of missing_feature * Location.t

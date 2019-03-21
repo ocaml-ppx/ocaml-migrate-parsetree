@@ -48,6 +48,8 @@ type missing_feature =
     (** 4.08 -> 4.07: type t := ... *)
   | Psig_modsubst
     (** 4.08 -> 4.07: module M := ... *)
+  | Otyp_module
+    (** 4.08 -> 4.07: M(N) *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -69,6 +71,7 @@ let missing_feature_description = function
   | Pexp_letop -> "let operators"
   | Psig_typesubst -> "type substitution in signatures"
   | Psig_modsubst -> "module substitution in signatures"
+  | Otyp_module -> "complex outcome module"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -89,6 +92,7 @@ let missing_feature_minimal_version = function
   | Pexp_letop -> "OCaml 4.08"
   | Psig_typesubst -> "OCaml 4.08"
   | Psig_modsubst -> "OCaml 4.08"
+  | Otyp_module -> "OCaml 4.08"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =

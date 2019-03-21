@@ -79,6 +79,9 @@ let copy_mapper = fun
      payload;
      (*$*)
    } as mapper) ->
+  let module Def = Migrate_parsetree_def in
+  let migration_error location feature =
+    raise (Def.Migration_error (feature, location)) in
   let module R = Migrate_parsetree_408_407_migrate in
   {
     To.Ast_mapper.
@@ -127,4 +130,9 @@ let copy_mapper = fun
     with_constraint = (fun _ x -> copy_with_constraint (with_constraint mapper (R.copy_with_constraint x)));
     payload = (fun _ x -> copy_payload (payload mapper (R.copy_payload x)));
     (*$*)
+    (* The following ones were introduced in 4.08. *)
+    binding_op = (fun _ x -> migration_error x.pbop_op.Location.loc Def.Pexp_letop);
+    module_substitution = (fun _ x -> migration_error x.pms_loc Def.Psig_modsubst);
+    open_declaration = (fun _ x -> migration_error x.popen_loc Def.Pexp_open);
+    type_exception = (fun _ x -> migration_error x.ptyexn_loc Def.Psig_typesubst);
   }
