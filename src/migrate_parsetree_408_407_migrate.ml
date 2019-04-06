@@ -504,8 +504,10 @@ and copy_structure_item_desc :
         (copy_type_extension x0)
   | From.Parsetree.Pstr_exception x0 ->
       To.Parsetree.Pstr_exception
-        (copy_extension_constructor
-           x0.From.Parsetree.ptyexn_constructor)
+        (let e = copy_extension_constructor
+                   x0.From.Parsetree.ptyexn_constructor in
+         { e with pext_attributes = e.pext_attributes @ (copy_attributes x0.ptyexn_attributes) }
+        )
   | From.Parsetree.Pstr_module x0 ->
       To.Parsetree.Pstr_module
         (copy_module_binding x0)
@@ -842,8 +844,9 @@ and copy_signature_item_desc :
         (copy_type_extension x0)
   | From.Parsetree.Psig_exception x0 ->
       To.Parsetree.Psig_exception
-        (copy_extension_constructor
-           x0.From.Parsetree.ptyexn_constructor)
+        (let e = copy_extension_constructor
+                   x0.From.Parsetree.ptyexn_constructor in
+         {e with pext_attributes = e.pext_attributes @ (copy_attributes x0.ptyexn_attributes) })
   | From.Parsetree.Psig_module x0 ->
       To.Parsetree.Psig_module
         (copy_module_declaration x0)
