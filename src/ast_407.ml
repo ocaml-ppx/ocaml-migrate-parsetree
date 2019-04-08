@@ -29,6 +29,13 @@
 module Location = Location
 module Longident = Longident
 
+type location_error (*IF_CURRENT = Location.error *) = {
+    loc: Location.t;
+    msg: string;
+    sub: location_error list;
+    if_highlight: string;
+  }
+
 module Asttypes = struct
   (** Auxiliary AST types used by parsetree and typedtree. *)
 
@@ -2191,6 +2198,11 @@ module Ast_mapper : sig
 
   val map_opt: ('a -> 'b) -> 'a option -> 'b option
 
+  val extension_of_error: location_error -> extension
+  (** Encode an error into an 'ocaml.error' extension node which can be
+      inserted in a generated Parsetree.  The compiler will be
+      responsible for reporting the error. *)
+
   val attribute_of_warning: Location.t -> string -> attribute
   (** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
       inserted in a generated Parsetree.  The compiler will be
@@ -2832,6 +2844,12 @@ end = struct
            | PPat (x, g) -> PPat (this.pat this x, map_opt (this.expr this) g)
         );
     }
+
+  let rec extension_of_error ({loc; msg; if_highlight; sub} : location_error) =
+    { loc; txt = "ocaml.error" },
+    PStr ([Str.eval (Exp.constant (Pconst_string (msg, None)));
+           Str.eval (Exp.constant (Pconst_string (if_highlight, None)))] @
+          (List.map (fun ext -> Str.extension (extension_of_error ext)) sub))
 
   let attribute_of_warning loc s =
     { loc; txt = "ocaml.ppwarning" },
