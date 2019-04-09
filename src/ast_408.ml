@@ -55,6 +55,12 @@ end
 module Location = Location
 module Longident = Longident
 
+type old_location_error = {
+    loc: Location.t;
+    msg: string;
+    sub: old_location_error list;
+    if_highlight: string;
+  }
 type location_msg = (Format.formatter -> unit) Location.loc
 type location_report_kind (*IF_CURRENT = Location.report_kind *) =
   | Report_error
@@ -3740,9 +3746,12 @@ end = struct
   let extension_of_error (error : location_error) =
     match report_of_error error with
     | None ->
-      let msg = "unable to create 4.08+ error from previous version" in
-      { loc = Location.none; txt = "ocaml.error" },
-      PStr ([Str.eval (Exp.constant (Pconst_string (msg, None)))])
+      let rec extension_of_old_error ({loc; msg; if_highlight = _; sub} : old_location_error) =
+        { loc; txt = "ocaml.error" },
+        PStr ((Str.eval (Exp.constant (Pconst_string (msg, None)))) ::
+              (List.map (fun ext -> Str.extension (extension_of_old_error ext)) sub)) in
+      let old_error : old_location_error = Obj.magic error in
+      extension_of_old_error old_error
     | Some report ->
       let extension_of_report ({kind; main; sub} : location_report) =
         if kind <> Report_error then
