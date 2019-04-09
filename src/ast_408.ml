@@ -55,7 +55,7 @@ end
 module Location = Location
 module Longident = Longident
 
-type old_location_error = {
+type old_location_error (*IF_NOT_AT_LEAST 408 = Location.error *) = {
     loc: Location.t;
     msg: string;
     sub: old_location_error list;
@@ -73,9 +73,15 @@ type location_report (*IF_CURRENT = Location.report *) = {
   main : location_msg;
   sub : location_msg list;
 }
-type location_error (*IF_CURRENT = Location.error *)
-let report_of_error : location_error -> location_report option = fun _ -> None[@@ocaml.warning "-32"]
-(*IF_CURRENT let report_of_error : location_error -> location_report option = fun x -> Some x *)
+type location_error (*IF_CURRENT = Location.error *) (*IF_NOT_AT_LEAST 408 = old_location_error *)
+
+type error_type = [`Report of location_report | `Old_error of old_location_error]
+let report_of_error : location_error -> error_type = fun x ->
+  (*IF_CURRENT `Report x *)
+  (*IF_NOT_AT_LEAST 408 `Old_error x *)
+let location_error_of_exn : exn -> location_error = fun exn ->
+  (*IF_CURRENT match Location.error_of_exn exn with None | Some `Already_displayed -> raise exn | Some (`Ok e) -> e *)
+  (*IF_NOT_AT_LEAST 408 match Migrate_parsetree_compiler_functions.error_of_exn exn with None -> raise exn | Some e -> e*)
 
 module Load_path : sig
   val add_dir : string -> unit
@@ -3745,14 +3751,13 @@ end = struct
 
   let extension_of_error (error : location_error) =
     match report_of_error error with
-    | None ->
+    | `Old_error old_error ->
       let rec extension_of_old_error ({loc; msg; if_highlight = _; sub} : old_location_error) =
         { loc; txt = "ocaml.error" },
         PStr ((Str.eval (Exp.constant (Pconst_string (msg, None)))) ::
               (List.map (fun ext -> Str.extension (extension_of_old_error ext)) sub)) in
-      let old_error : old_location_error = Obj.magic error in
       extension_of_old_error old_error
-    | Some report ->
+    | `Report report ->
       let extension_of_report ({kind; main; sub} : location_report) =
         if kind <> Report_error then
           raise (Invalid_argument "extension_of_error: expected kind Report_error");
@@ -3944,6 +3949,8 @@ end = struct
 
   let ppx_context = PpxContext.make
 
+  let extension_of_exn exn = extension_of_error (location_error_of_exn exn)
+
   let apply_lazy ~source ~target mapper =
     let implem ast =
       let fields, ast =
@@ -3955,12 +3962,12 @@ end = struct
       in
       PpxContext.restore fields;
       let ast =
-        (*XXXtry*)
+        try
           let mapper = mapper () in
           mapper.structure mapper ast
-        (*with exn ->
+        with exn ->
           [{pstr_desc = Pstr_extension (extension_of_exn exn, []);
-            pstr_loc  = Location.none}]*)
+            pstr_loc  = Location.none}]
       in
       let fields = PpxContext.update_cookies fields in
       Str.attribute (PpxContext.mk fields) :: ast
@@ -3976,12 +3983,12 @@ end = struct
       in
       PpxContext.restore fields;
       let ast =
-        (*XXXtry*)
+        try
           let mapper = mapper () in
           mapper.signature mapper ast
-        (*with exn ->
+        with exn ->
           [{psig_desc = Psig_extension (extension_of_exn exn, []);
-            psig_loc  = Location.none}]*)
+            psig_loc  = Location.none}]
       in
       let fields = PpxContext.update_cookies fields in
       Sig.attribute (PpxContext.mk fields) :: ast
