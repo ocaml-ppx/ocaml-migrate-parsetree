@@ -446,14 +446,6 @@ and copy_attribute :
       From.Parsetree.attr_payload = attr_payload;
       From.Parsetree.attr_loc = _ }
     ->
-      let attr_payload =
-        match attr_name.txt with
-        | "ocaml.error" | "error" ->
-          begin match attr_payload with
-          | PStr (hd :: tl) -> From.Parsetree.PStr (hd :: hd :: tl)
-          | _ -> attr_payload
-          end
-        | _ -> attr_payload in
       ((copy_loc (fun x  -> x) attr_name),
        (copy_payload attr_payload))
 
@@ -999,6 +991,14 @@ and copy_extension :
   From.Parsetree.extension -> To.Parsetree.extension =
   fun x  ->
     let (x0,x1) = x  in
+    let x1 =
+      match x0.txt with
+        | "ocaml.error" | "error" ->
+          begin match x1 with
+          | PStr (hd :: tl) -> From.Parsetree.PStr (hd :: hd :: tl)
+          | _ -> x1
+          end
+        | _ -> x1 in
     ((copy_loc (fun x  -> x) x0),
       (copy_payload x1))
 
