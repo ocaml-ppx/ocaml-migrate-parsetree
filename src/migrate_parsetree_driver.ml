@@ -64,7 +64,7 @@ let initial_state () =
   {
     tool_name = Ast_mapper.tool_name ();
     include_dirs = !Clflags.include_dirs;
-    load_path = Migrate_parsetree_compiler_functions.get_load_path ();
+    load_path = Migrate_parsetree_compiler_functions.get_load_paths ();
     debug = !Clflags.debug;
     for_package = !Clflags.for_package;
     extras = [];

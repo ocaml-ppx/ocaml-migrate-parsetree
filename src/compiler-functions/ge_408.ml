@@ -4,8 +4,11 @@ let error_of_exn exn =
   | Some `Already_displayed -> None
   | None -> None
 
-let get_load_path () =
+let get_load_paths () =
   Load_path.get_paths ()
+
+let load_path_init l =
+  Load_path.init l
 
 let get_unboxed_types () =
   !Clflags.unboxed_types
