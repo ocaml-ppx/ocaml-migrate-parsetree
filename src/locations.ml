@@ -91,6 +91,19 @@ let set_error_message location_error msg =
   (*IF_NOT_AT_LEAST 408 _set_error_message_old location_error msg*)
   (*IF_AT_LEAST 408 _set_error_message_new location_error msg*)
 
+let make_error_of_message_old ~loc msg ~sub =
+  let sub = List.map (fun msg -> { loc; msg; sub = []; if_highlight = msg; }) sub in
+  { loc; msg; sub; if_highlight = msg; }
+
+let make_error_of_message_new ~loc msg ~sub =
+  let mk_txt x ppf = Format.pp_print_string ppf x in
+  let mk x = { Location.loc; txt = mk_txt x; } in
+  { kind = Report_error; main = mk msg; sub = List.map mk sub; }
+
+let make_error_of_message ~loc msg ~sub =
+  (*IF_NOT_AT_LEAST 408 make_error_of_message_old ~loc msg ~sub*)
+  (*IF_AT_LEAST 408 make_error_of_message_new ~loc msg ~sub*)
+
 module type Helpers_intf = sig
   val error_of_exn : exn -> location_error option
   val register_error_of_exn : (exn -> location_error option) -> unit
@@ -99,6 +112,7 @@ module type Helpers_intf = sig
   val raise_errorf : ?loc:Location.t  -> ('a, Format.formatter, unit, 'b) format4 -> 'a
   val get_error_message : location_error -> string
   val set_error_message : location_error -> string -> location_error
+  val make_error_of_message : loc:Location.t -> string -> sub:string list -> location_error
 end
 
 module Helpers_impl = struct
@@ -109,4 +123,5 @@ module Helpers_impl = struct
   let raise_errorf = raise_errorf
   let get_error_message = get_error_message
   let set_error_message = set_error_message
+  let make_error_of_message = make_error_of_message
 end
