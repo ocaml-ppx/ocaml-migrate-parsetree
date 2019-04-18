@@ -106,6 +106,10 @@ let make_error_of_message ~loc msg ~sub =
   (*IF_NOT_AT_LEAST 408 make_error_of_message_old ~loc msg ~sub*)
   (*IF_AT_LEAST 408 make_error_of_message_new ~loc msg ~sub*)
 
+let print_error ppf err =
+  (*IF_NOT_AT_LEAST 408 Location.report_error ppf err*)
+  (*IF_AT_LEAST 408 Location.print_report ppf err*)
+
 module type Helpers_intf = sig
   val error_of_exn : exn -> location_error option
   val register_error_of_exn : (exn -> location_error option) -> unit
@@ -115,6 +119,7 @@ module type Helpers_intf = sig
   val get_error_message : location_error -> string
   val set_error_message : location_error -> string -> location_error
   val make_error_of_message : loc:Location.t -> string -> sub:(Location.t * string) list -> location_error
+  val print_error : Format.formatter -> location_error -> unit
 end
 
 module Helpers_impl = struct
@@ -126,4 +131,5 @@ module Helpers_impl = struct
   let get_error_message = get_error_message
   let set_error_message = set_error_message
   let make_error_of_message = make_error_of_message
+  let print_error = print_error
 end
