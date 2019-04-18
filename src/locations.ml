@@ -92,13 +92,15 @@ let set_error_message location_error msg =
   (*IF_AT_LEAST 408 _set_error_message_new location_error msg*)
 
 let make_error_of_message_old ~loc msg ~sub =
-  let sub = List.map (fun msg -> { loc; msg; sub = []; if_highlight = msg; }) sub in
+  let sub = List.map (fun (loc, msg) -> { loc; msg; sub = []; if_highlight = msg; }) sub in
   { loc; msg; sub; if_highlight = msg; }
 
 let make_error_of_message_new ~loc msg ~sub =
   let mk_txt x ppf = Format.pp_print_string ppf x in
-  let mk x = { Location.loc; txt = mk_txt x; } in
-  { kind = Report_error; main = mk msg; sub = List.map mk sub; }
+  let mk loc x = { Location.loc; txt = mk_txt x; } in
+  { kind = Report_error;
+    main = mk loc msg;
+    sub = List.map (fun (loc, msg) -> mk loc msg) sub; }
 
 let make_error_of_message ~loc msg ~sub =
   (*IF_NOT_AT_LEAST 408 make_error_of_message_old ~loc msg ~sub*)
@@ -112,7 +114,7 @@ module type Helpers_intf = sig
   val raise_errorf : ?loc:Location.t  -> ('a, Format.formatter, unit, 'b) format4 -> 'a
   val get_error_message : location_error -> string
   val set_error_message : location_error -> string -> location_error
-  val make_error_of_message : loc:Location.t -> string -> sub:string list -> location_error
+  val make_error_of_message : loc:Location.t -> string -> sub:(Location.t * string) list -> location_error
 end
 
 module Helpers_impl = struct
