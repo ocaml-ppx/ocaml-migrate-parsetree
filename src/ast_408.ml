@@ -55,34 +55,6 @@ end
 module Location = Location
 module Longident = Longident
 
-type old_location_error (*IF_NOT_AT_LEAST 408 = Location.error *) = {
-    loc: Location.t;
-    msg: string;
-    sub: old_location_error list;
-    if_highlight: string;
-  }
-type location_msg = (Format.formatter -> unit) Location.loc
-type location_report_kind (*IF_CURRENT = Location.report_kind *) =
-  | Report_error
-  | Report_warning of string
-  | Report_warning_as_error of string
-  | Report_alert of string
-  | Report_alert_as_error of string
-type location_report (*IF_CURRENT = Location.report *) = {
-  kind : location_report_kind;
-  main : location_msg;
-  sub : location_msg list;
-}
-type location_error (*IF_CURRENT = Location.error *) (*IF_NOT_AT_LEAST 408 = old_location_error *)
-
-type error_type = [`Report of location_report | `Old_error of old_location_error]
-let report_of_error : location_error -> error_type = fun x ->
-  (*IF_CURRENT `Report x *)
-  (*IF_NOT_AT_LEAST 408 `Old_error x *)
-let location_error_of_exn : exn -> location_error = fun exn ->
-  (*IF_CURRENT match Location.error_of_exn exn with None | Some `Already_displayed -> raise exn | Some (`Ok e) -> e *)
-  (*IF_NOT_AT_LEAST 408 match Migrate_parsetree_compiler_functions.error_of_exn exn with None -> raise exn | Some e -> e*)
-
 module Asttypes = struct
 
   type constant (*IF_CURRENT = Asttypes.constant *) =
@@ -2884,7 +2856,7 @@ module Ast_mapper : sig
 
   val map_opt: ('a -> 'b) -> 'a option -> 'b option
 
-  val extension_of_error: location_error -> extension
+  val extension_of_error: Locations.location_error -> extension
   (** Encode an error into an 'ocaml.error' extension node which can be
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the error. *)
@@ -2893,6 +2865,8 @@ module Ast_mapper : sig
   (** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the warning. *)
+
+  include Locations.Helpers_intf
 
   (** {1 Helper functions to call external mappers} *)
 
@@ -3627,32 +3601,19 @@ end = struct
         );
     }
 
-  let extension_of_error (error : location_error) =
-    match report_of_error error with
-    | `Old_error old_error ->
-      let rec extension_of_old_error ({loc; msg; if_highlight = _; sub} : old_location_error) =
-        { loc; txt = "ocaml.error" },
-        PStr ((Str.eval (Exp.constant (Pconst_string (msg, None)))) ::
-              (List.map (fun ext -> Str.extension (extension_of_old_error ext)) sub)) in
-      extension_of_old_error old_error
-    | `Report report ->
-      let extension_of_report ({kind; main; sub} : location_report) =
-        if kind <> Report_error then
-          raise (Invalid_argument "extension_of_error: expected kind Report_error");
-        let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
-        let extension_of_sub (sub : location_msg) =
-          { loc = sub.loc; txt = "ocaml.error" },
-          PStr ([Str.eval (Exp.constant (Pconst_string (str_of_pp sub.txt, None)))])
-        in
-        { loc = main.loc; txt = "ocaml.error" },
-        PStr (Str.eval (Exp.constant (Pconst_string (str_of_pp main.txt, None))) ::
-              List.map (fun msg -> Str.extension (extension_of_sub msg)) sub) in
-      extension_of_report report
+  let extension_of_error (error : Locations.location_error) : extension =
+    Locations.extension_of_error
+      ~mk_pstr:(fun x -> PStr x)
+      ~mk_extension:(fun x -> Str.extension x)
+      ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, None))))
+      error
 
   let attribute_of_warning loc s =
     Attr.mk
       {loc; txt = "ocaml.ppwarning" }
       (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, None)))]))
+
+  include Locations.Helpers_impl
 
   let cookies = ref String.Map.empty
 
@@ -3827,7 +3788,7 @@ end = struct
 
   let ppx_context = PpxContext.make
 
-  let extension_of_exn exn = extension_of_error (location_error_of_exn exn)
+  let extension_of_exn exn = extension_of_error (Locations.location_error_of_exn exn)
 
   let apply_lazy ~source ~target mapper =
     let implem ast =
