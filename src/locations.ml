@@ -111,6 +111,7 @@ let print_error ppf err =
   (*IF_AT_LEAST 408 Location.print_report ppf err*)
 
 module type Helpers_intf = sig
+  type nonrec location_error = location_error
   val error_of_exn : exn -> location_error option
   val register_error_of_exn : (exn -> location_error option) -> unit
   val report_exception : Format.formatter -> exn -> unit
@@ -123,6 +124,7 @@ module type Helpers_intf = sig
 end
 
 module Helpers_impl = struct
+  type nonrec location_error = location_error
   let error_of_exn = error_of_exn
   let register_error_of_exn = register_error_of_exn
   let report_exception = report_exception
