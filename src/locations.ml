@@ -115,12 +115,11 @@ module type Helpers_intf = sig
   val error_of_exn : exn -> location_error option
   val register_error_of_exn : (exn -> location_error option) -> unit
   val report_exception : Format.formatter -> exn -> unit
-  val errorf : loc:Location.t -> ('a, Format.formatter, unit, location_error) format4 -> 'a
-  val raise_errorf : ?loc:Location.t  -> ('a, Format.formatter, unit, 'b) format4 -> 'a
   val get_error_message : location_error -> string
   val set_error_message : location_error -> string -> location_error
   val make_error_of_message : loc:Location.t -> string -> sub:(Location.t * string) list -> location_error
   val print_error : Format.formatter -> location_error -> unit
+  val raise_error : location_error -> 'a
 end
 
 module Helpers_impl = struct
@@ -128,10 +127,9 @@ module Helpers_impl = struct
   let error_of_exn = error_of_exn
   let register_error_of_exn = register_error_of_exn
   let report_exception = report_exception
-  let errorf = errorf
-  let raise_errorf = raise_errorf
   let get_error_message = get_error_message
   let set_error_message = set_error_message
   let make_error_of_message = make_error_of_message
   let print_error = print_error
+  let raise_error err = raise (Location.Error err)
 end
