@@ -24,16 +24,16 @@ type location_error (*IF_AT_LEAST 408 = Location.error *) (*IF_NOT_AT_LEAST 408 
 
 type error_type = [`Report of location_report | `Old_error of old_location_error]
 
-let report_of_error : location_error -> error_type = fun x ->
+let error_type_of_location_error : location_error -> error_type = fun x ->
   (*IF_AT_LEAST 408 `Report x *)
   (*IF_NOT_AT_LEAST 408 `Old_error x *)
 
-  let location_error_of_exn : exn -> location_error = fun exn ->
+let location_error_of_exn : exn -> location_error = fun exn ->
   (*IF_AT_LEAST 408 match Location.error_of_exn exn with None | Some `Already_displayed -> raise exn | Some (`Ok e) -> e *)
   (*IF_NOT_AT_LEAST 408 match Migrate_parsetree_compiler_functions.error_of_exn exn with None -> raise exn | Some e -> e*)
 
 let extension_of_error ~mk_pstr ~mk_extension ~mk_string_constant (error : location_error) =
-  match report_of_error error with
+  match error_type_of_location_error error with
   | `Old_error old_error ->
     let rec extension_of_old_error ({loc; msg; if_highlight = _; sub} : old_location_error) =
       { Location.loc; txt = "ocaml.error" },
