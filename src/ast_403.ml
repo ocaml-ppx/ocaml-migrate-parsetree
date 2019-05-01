@@ -2075,7 +2075,7 @@ module Ast_mapper : sig
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the error. *)
 
- val attribute_of_warning: Location.t -> string -> attribute
+  val attribute_of_warning: Location.t -> string -> attribute
   (** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the warning. *)
