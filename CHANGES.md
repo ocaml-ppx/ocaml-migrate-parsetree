@@ -1,16 +1,26 @@
-next
-----
-
-- Remove unused ocamlfind dependency in the opam file
-
-- Fix Windows compatibility by setting the output to binary mode when
-  writing a binary ast (#57, @bryphe)
+v1.3.0 2019-05-08 London
+------------------------
 
 - Get rid of the ocamlbuild plugin. Nobody is using it in opam and it
-  is more work to maintain
+  is more work to maintain (#63, @diml)
 
 - Set `Location.input_name` to the original filename when reading a
   binary AST (#66, @diml)
+
+- Add support 4.08 (#70, @xclerc)
+
+v1.2.0 2018-12-19 London
+------------------------
+
+- Remove unused ocamlfind dependency in the opam file (#53, @diml)
+
+- Add `--print-transformations` to list registered transformations
+  (#55, @rgrinberg)
+
+- Fix Windows compatibility by setting the output to binary mode when
+  writing a binary ast (#57, #59, @bryphe and @dra27)
+
+- Switch to dune and opam 2.0 (#58, #60, @diml)
 
 v1.1.0 2018-09-05 London
 ------------------------
