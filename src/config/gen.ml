@@ -16,11 +16,14 @@ let () =
      | (4, 05) -> "405"
      | (4, 06) -> "406"
      | (4, 07) -> "407"
+     | (4, 08) -> "408"
      | _ ->
        Printf.eprintf "Unkown OCaml version %s\n" ocaml_version_str;
        exit 1);
   write "compiler-functions-file"
     (if ocaml_version < (4, 06) then
        "lt_406.ml"
+     else if ocaml_version < (4, 08) then
+       "ge_406_and_lt_408.ml"
      else
-       "ge_406.ml")
+       "ge_408.ml")

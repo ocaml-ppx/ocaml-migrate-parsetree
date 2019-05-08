@@ -2082,7 +2082,7 @@ module Ast_mapper : sig
 
   val map_opt: ('a -> 'b) -> 'a option -> 'b option
 
-  val extension_of_error: Location.error -> extension
+  val extension_of_error: Locations.location_error -> extension
   (** Encode an error into an 'ocaml.error' extension node which can be
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the error. *)
@@ -2091,6 +2091,8 @@ module Ast_mapper : sig
   (** Encode a warning message into an 'ocaml.ppwarning' attribute which can be
       inserted in a generated Parsetree.  The compiler will be
       responsible for reporting the warning. *)
+
+  include Locations.Helpers_intf
 
 end = struct
   (* A generic Parsetree mapping class *)
@@ -2712,15 +2714,18 @@ end = struct
         );
     }
 
-  let rec extension_of_error {loc; msg; if_highlight; sub} =
-    { loc; txt = "ocaml.error" },
-    PStr ([Str.eval (Exp.constant (Pconst_string (msg, None)));
-           Str.eval (Exp.constant (Pconst_string (if_highlight, None)))] @
-          (List.map (fun ext -> Str.extension (extension_of_error ext)) sub))
+  let extension_of_error (error : Locations.location_error) : extension =
+    Locations.extension_of_error
+      ~mk_pstr:(fun x -> PStr x)
+      ~mk_extension:(fun x -> Str.extension x)
+      ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, None))))
+      error
 
   let attribute_of_warning loc s =
     { loc; txt = "ocaml.ppwarning" },
     PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, None)))])
+
+  include Locations.Helpers_impl
 
 end
 
