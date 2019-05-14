@@ -483,10 +483,15 @@ and copy_structure_item_desc :
       To.Parsetree.Pstr_typext
         (copy_type_extension x0)
   | From.Parsetree.Pstr_exception x0 ->
-      To.Parsetree.Pstr_exception
-        { To.Parsetree.ptyexn_constructor = (copy_extension_constructor x0);
-          To.Parsetree.ptyexn_loc = x0.From.Parsetree.pext_loc;
-          To.Parsetree.ptyexn_attributes = []; }
+    let atat, at = List.partition (function
+      | {Location.txt=("ocaml.deprecated"|"deprecated");_},_ -> false
+      | _ -> true) x0.pext_attributes
+    in
+    let x0 = { x0 with pext_attributes = at } in
+    To.Parsetree.Pstr_exception
+      { To.Parsetree.ptyexn_constructor = (copy_extension_constructor x0);
+        To.Parsetree.ptyexn_loc = x0.From.Parsetree.pext_loc;
+        To.Parsetree.ptyexn_attributes = copy_attributes atat }
   | From.Parsetree.Pstr_module x0 ->
       To.Parsetree.Pstr_module
         (copy_module_binding x0)
@@ -602,12 +607,18 @@ and copy_class_structure :
   fun
     { From.Parsetree.pcstr_self = pcstr_self;
       From.Parsetree.pcstr_fields = pcstr_fields }
-     ->
+    ->
+      let fields =
+        List.sort
+          (fun (a : From.Parsetree.class_field) (b : From.Parsetree.class_field) ->
+             compare a.pcf_loc.loc_start.pos_cnum b.pcf_loc.loc_start.pos_cnum)
+          pcstr_fields
+      in
     {
       To.Parsetree.pcstr_self =
         (copy_pattern pcstr_self);
       To.Parsetree.pcstr_fields =
-        (List.map copy_class_field pcstr_fields)
+        (List.map copy_class_field fields)
     }
 
 and copy_class_field :
@@ -820,10 +831,16 @@ and copy_signature_item_desc :
       To.Parsetree.Psig_typext
         (copy_type_extension x0)
   | From.Parsetree.Psig_exception x0 ->
+    let atat, at = List.partition (function
+      | {Location.txt=("ocaml.deprecated"|"deprecated");_},_ -> false
+      | _ -> true) x0.pext_attributes
+    in
+    let x0 = { x0 with pext_attributes = at } in
+
       To.Parsetree.Psig_exception
         { To.Parsetree.ptyexn_constructor = (copy_extension_constructor x0);
           To.Parsetree.ptyexn_loc = x0.From.Parsetree.pext_loc;
-          To.Parsetree.ptyexn_attributes = []; }
+          To.Parsetree.ptyexn_attributes = copy_attributes atat; }
   | From.Parsetree.Psig_module x0 ->
       To.Parsetree.Psig_module
         (copy_module_declaration x0)
@@ -910,12 +927,19 @@ and copy_class_signature :
   fun
     { From.Parsetree.pcsig_self = pcsig_self;
       From.Parsetree.pcsig_fields = pcsig_fields }
-     ->
+    ->
+      let fields =
+        List.sort
+          (fun (a : From.Parsetree.class_type_field) (b : From.Parsetree.class_type_field) ->
+             compare a.pctf_loc.loc_start.pos_cnum b.pctf_loc.loc_start.pos_cnum)
+          pcsig_fields
+      in
+
     {
       To.Parsetree.pcsig_self =
         (copy_core_type pcsig_self);
       To.Parsetree.pcsig_fields =
-        (List.map copy_class_type_field pcsig_fields)
+        (List.map copy_class_type_field fields)
     }
 
 and copy_class_type_field :
