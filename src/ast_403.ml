@@ -2699,7 +2699,9 @@ end = struct
 
   let extension_of_error (error : Locations.location_error) : extension =
     Locations.extension_of_error
-      ~mk_pstr:(fun x -> PStr x)
+      ~mk_pstr:(function
+        | x :: l -> PStr (x :: x :: l)
+        | l -> PStr l)
       ~mk_extension:(fun x -> Str.extension x)
       ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, None))))
       error
