@@ -17,20 +17,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Ast ported on Thu Mar 21 09:50:42 GMT 2019
-   OCaml was:
-   commit 55c9ba466362f303eb4d5ed511f6fda142879137 (HEAD -> 4.08, origin/4.08)
-     Author: Nicolás Ojeda Bär <n.oje.bar@gmail.com>
-     Date:   Tue Mar 19 08:11:02 2019 +0100
-
-         Merge pull request #8521 from nojb/fix_unix_tests_408
-
-         Actually run all lib-unix tests [4.08]
-*)
-
-
-open Ast_408_helper
-
 module Location = Location
 module Longident = Longident
 
