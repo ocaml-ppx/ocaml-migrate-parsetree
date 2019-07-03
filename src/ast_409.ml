@@ -17,6 +17,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Ast_409_helper
+
 module Location = Location
 module Longident = Longident
 
