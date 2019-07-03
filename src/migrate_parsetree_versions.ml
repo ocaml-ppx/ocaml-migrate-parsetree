@@ -77,26 +77,26 @@ end
 
 type 'a _types = 'a constraint 'a
   = <
-  (*$ foreach_type (fun _ s -> printf "%-21s : _;\n" s) *)
-  structure             : _;
-  signature             : _;
-  toplevel_phrase       : _;
-  core_type             : _;
-  expression            : _;
-  pattern               : _;
-  case                  : _;
-  type_declaration      : _;
-  type_extension        : _;
-  extension_constructor : _;
-  out_value             : _;
-  out_type              : _;
-  out_class_type        : _;
-  out_module_type       : _;
-  out_sig_item          : _;
-  out_type_extension    : _;
-  out_phrase            : _;
-  mapper                : _;
-  (*$*)
+    (*$ foreach_type (fun _ s -> printf "%-21s : _;\n" s) *)
+    structure             : _;
+    signature             : _;
+    toplevel_phrase       : _;
+    core_type             : _;
+    expression            : _;
+    pattern               : _;
+    case                  : _;
+    type_declaration      : _;
+    type_extension        : _;
+    extension_constructor : _;
+    out_value             : _;
+    out_type              : _;
+    out_class_type        : _;
+    out_module_type       : _;
+    out_sig_item          : _;
+    out_type_extension    : _;
+    out_phrase            : _;
+    mapper                : _;
+    (*$*)
   >
 ;;
 
@@ -140,7 +140,7 @@ type 'a get_out_phrase =
   'x constraint 'a _types = < out_phrase : 'x; .. >
 type 'a get_mapper =
   'x constraint 'a _types = < mapper : 'x; .. >
-       (*$*)
+(*$*)
 
 module type OCaml_version = sig
   module Ast : Ast
@@ -463,7 +463,7 @@ type 'from immediate_migration =
   | No_migration : 'from immediate_migration
   | Immediate_migration
     :  ('from, 'to_) migration_functions * 'to_ ocaml_version
-    -> 'from immediate_migration
+      -> 'from immediate_migration
 
 let immediate_migration
     (*$ foreach_type (fun _ s -> printf "(type %s)\n" s) *)
@@ -690,6 +690,13 @@ module OCaml_408 = struct
   let string_version = "4.08"
 end
 let ocaml_408 : OCaml_408.types ocaml_version = (module OCaml_408)
+module OCaml_409 = struct
+  module Ast = Ast_409
+  include Make_witness(Ast_409)
+  let version = 409
+  let string_version = "4.09"
+end
+let ocaml_409 : OCaml_409.types ocaml_version = (module OCaml_409)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
@@ -702,6 +709,7 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_406 : OCaml_version);
   (module OCaml_407 : OCaml_version);
   (module OCaml_408 : OCaml_version);
+  (module OCaml_409 : OCaml_version);
   (*$*)
 ]
 
@@ -722,6 +730,8 @@ include Register_migration(OCaml_406)(OCaml_407)
     (Migrate_parsetree_406_407)(Migrate_parsetree_407_406)
 include Register_migration(OCaml_407)(OCaml_408)
     (Migrate_parsetree_407_408)(Migrate_parsetree_408_407)
+include Register_migration(OCaml_408)(OCaml_409)
+    (Migrate_parsetree_408_409)(Migrate_parsetree_409_408)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION

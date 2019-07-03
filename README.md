@@ -3,14 +3,14 @@ Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
 
-Supported versions are 4.02, 4.03, 4.04, 4.05, 4.06, 4.07, and 4.08.
+Supported versions are 4.02, 4.03, 4.04, 4.05, 4.06, 4.07, 4.08 and 4.09.
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
 
 ## Asts
 
 ```ocaml
-module Ast_402, Ast_403, Ast_404, Ast_405, Ast_406, Ast_407, Ast_408 : sig
+module Ast_402, Ast_403, Ast_404, Ast_405, Ast_406, Ast_407, Ast_408, Ast_409 : sig
 
   (* These two modules didn't change between compiler versions.
      Just share the ones from compiler-libs. *)
@@ -78,9 +78,9 @@ Using a single driver for several rewritings has the advantage that it
 is faster. Especially when using many ppx rewriters, it can speed up
 compilation a lot.
 
-If using [Jbuilder](https://github.com/janestreet/jbuilder), you can
-consult the Jbuilder manual to see how to define and use ppx
-rewriters. Jbuilder automatically creates drivers based on
+If using [Dune](https://github.com/ocaml/dune), you can
+consult the dune manual to see how to define and use ppx
+rewriters. Dune automatically creates drivers based on
 ocaml-migrate-parsetree on demand.
 
 The rest of this section describes how to do things manually or with
@@ -121,7 +121,7 @@ We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
 You can install it via opam: `opam install cinaps`.
 
 Add the new version in
-[src/cinaps.ml](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps.ml)
+[src/cinaps_helpers](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps_helpers)
 `supported_versions`.
 
 Snapshot the ast in file "asts/ast\_NEW.ml".
@@ -136,19 +136,19 @@ Snapshot the ast in file "asts/ast\_NEW.ml".
 * Call `tools/add_special_comments.native` on the file
 
 Add migration functions:
-- Manually compile the ast (`ocamlc -c ast_NEW.ml`)
-- Using `gencopy` from [ppx\_tools](https://github.com/ocaml-ppx/ppx_tools), generate copy code to and from previous version (assuming it is 404):
+- Manually compile the asts (`ocamlc -c src/ast_{NEW,OLD}.ml -I +compiler-libs -I _build/default/src/.migrate_parsetree.objs/byte/ -open Migrate_parsetree__`)
+- Using `tools/gencopy.exe` (`dune build tools/gencopy.exe`), generate copy code to and from previous version (assuming it is 408):
 ```
-gencopy -I . -map Ast_404:Ast_NEW Ast_404.Parsetree.expression Ast_404.Parsetree.toplevel_phrase Ast_404.Outcometree.out_phrase > migrate_parsetree_404_NEW_migrate.ml
-gencopy -I . -map Ast_NEW:Ast_404 Ast_NEW.Parsetree.expression Ast_NEW.Parsetree.toplevel_phrase Ast_NEW.Outcometree.out_phrase > migrate_parsetree_NEW_404_migrate.ml
+_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_409:Ast_408 Ast_409.Parsetree.{expression,expr,pattern,pat,core_type,typ,toplevel_phrase} Ast_409.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_409_408_migrate.ml
+_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_408:Ast_409 Ast_408.Parsetree.{expression,expr,pattern,pat,core_type,typ,toplevel_phrase} Ast_408.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_408_409_migrate.ml
 ```
 - Fix the generated code by implementing new cases
-- By default generated code use very long identifiers, simplify unambiguous ones (e.g. `copy_Ast_NEW_Parsetree_structure` -> `copy_structure`). The migration functor expects specific names, look at `Migrate_parsetree_versions` interface.
+- The migration functor expects specific names, look at `Migrate_parsetree_versions` interface.
 
 *TODO*: specialize and improve gencopy for these cases
 
-Add mapper lifting functions in the files `migrate_parsetree_NEW_404.ml` and
-`migrate_parsetree_404_NEW.ml`:
+Add mapper lifting functions in the files `migrate_parsetree_NEW_408.ml` and
+`migrate_parsetree_408_NEW.ml`:
 - include the corresponding `Migrate_parsetree_40x_40y_migrate` module
 - define `copy_mapper` function, look at existing `Migrate_parsetree_40x_40y`
   for guidance.
@@ -156,6 +156,5 @@ Add mapper lifting functions in the files `migrate_parsetree_NEW_404.ml` and
 At any time, you can expand boilerplate code by running `make cinaps`.
 
 Update build system:
-- in [Makefile](Makefile), add "src/ast\_NEW.ml" to `OCAML_ASTS` and migration modules to `OBJECTS`
 - make sure `make cinaps` reaches a fixed point :)
 - `make` should succeed
