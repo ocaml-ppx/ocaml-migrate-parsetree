@@ -1,15 +1,8 @@
-module Int = struct
-  let to_string = string_of_int
-end
 module Misc = struct
-  module Stdlib = struct
-    module String = struct
-      include String
-      module Map = Map.Make (String)
-    end
-  end
+
   let find_in_path = Misc.find_in_path
   let find_in_path_uncap = Misc.find_in_path_uncap
+
   type ref_and_value = R : 'a ref * 'a -> ref_and_value
   let protect_refs =
     let set_refs l = List.iter (fun (R (r, v)) -> r := v) l in
@@ -19,5 +12,13 @@ module Misc = struct
       match f () with
       | x           -> set_refs backup; x
       | exception e -> set_refs backup; raise e
-  let may_map f o = match o with None -> None | Some v -> Some (f v)
+
+  let may_map = Stdlib0.Option.map
+
+  module Stdlib = struct
+    module String = struct
+      include String
+      module Map = Map.Make (String)
+    end
+  end
 end

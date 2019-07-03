@@ -17,6 +17,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Stdlib0
 open Ast_409_helper
 
 module Location = Location
