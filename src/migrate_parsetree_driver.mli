@@ -75,9 +75,9 @@ val reset_args : unit -> unit
 
 val run_as_ast_mapper : string list -> Ast_mapper.mapper
 
-val run_as_ppx_rewriter : unit -> 'a
+val run_as_ppx_rewriter : ?argv:string array -> unit -> 'a
 
-val run_main : unit -> 'a
+val run_main : ?argv:string array -> unit -> 'a
 
 (** {1 Manual mapping} *)
 
