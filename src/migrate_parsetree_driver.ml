@@ -466,7 +466,7 @@ let print_transformations () =
   |> print_group "Registered Derivers"
 
 
-let run_as_standalone_driver () =
+let run_as_standalone_driver argv =
   let request_print_transformations = ref false in
   let output = ref None in
   let output_mode = ref Pretty_print in
@@ -530,7 +530,8 @@ let run_as_standalone_driver () =
   let usage = Printf.sprintf "%s [options] [<files>]" me in
   try
     reset_args ();
-    Arg.parse spec (fun anon -> files := (Kind_unknown, anon) :: !files) usage;
+    Arg.parse_argv argv spec (fun anon ->
+      files := (Kind_unknown, anon) :: !files) usage;
     if !request_print_transformations then begin
       print_transformations ();
       exit 0
@@ -554,8 +555,8 @@ let run_as_standalone_driver () =
     Location.report_exception Format.err_formatter exn;
     exit 1
 
-let run_as_ppx_rewriter () =
-  let a = Sys.argv in
+let run_as_ppx_rewriter ?(argv = Sys.argv) () =
+  let a = argv in
   let n = Array.length a in
   if n <= 2 then begin
     let me = Filename.basename Sys.executable_name in
@@ -575,9 +576,9 @@ let run_as_ppx_rewriter () =
       Location.report_exception Format.err_formatter exn;
       exit 1
 
-let run_main () =
-  if Array.length Sys.argv >= 2 && Sys.argv.(1) = "--as-ppx" then
-    run_as_ppx_rewriter ()
+let run_main ?(argv = Sys.argv) () =
+  if Array.length argv >= 2 && argv.(1) = "--as-ppx" then
+    run_as_ppx_rewriter ~argv ()
   else
-    run_as_standalone_driver ();
+    run_as_standalone_driver argv;
   exit 0
