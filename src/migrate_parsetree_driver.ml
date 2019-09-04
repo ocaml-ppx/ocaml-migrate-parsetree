@@ -303,11 +303,16 @@ type ('a, 'b) intf_or_impl =
   | Intf of 'a
   | Impl of 'b
 
+type file_kind =
+  | Kind_intf
+  | Kind_impl
+  | Kind_unknown
+
 let guess_file_kind fn =
   if Filename.check_suffix fn ".ml" then
-    `Impl
+    Kind_impl
   else if Filename.check_suffix fn ".mli" then
-    `Intf
+    Kind_intf
   else
     Location.raise_errorf ~loc:(Location.in_file fn)
       "I can't decide whether %s is an implementation or interface file"
@@ -315,14 +320,14 @@ let guess_file_kind fn =
 
 let check_kind fn ~expected ~got =
   let describe = function
-    | `Intf -> "interface"
-    | `Impl -> "implementation"
-    | `Unknown -> "unknown file"
+    | Kind_intf -> "interface"
+    | Kind_impl -> "implementation"
+    | Kind_unknown -> "unknown file"
   in
   match expected, got with
-  | `Impl, `Impl
-  | `Intf, `Intf
-  | `Unknown, _ -> ()
+  | Kind_impl, Kind_impl
+  | Kind_intf, Kind_intf
+  | Kind_unknown, _ -> ()
   | _ ->
     Location.raise_errorf ~loc:(Location.in_file fn)
       "Expected an %s got an %s instead"
@@ -333,13 +338,13 @@ let load_file (kind, fn) =
   with_file_in fn ~f:(fun ic ->
     match Ast_io.from_channel ic with
     | Ok (fn, Ast_io.Intf ((module V), sg)) ->
-      check_kind fn ~expected:kind ~got:`Intf;
+      check_kind fn ~expected:kind ~got:Kind_intf;
       Location.input_name := fn;
       (* We need to convert to the current version in order to interpret the cookies using
          [Ast_mapper.drop_ppx_context_*] from the compiler *)
       (fn, Intf ((migrate (module V) (module OCaml_current)).copy_signature sg))
     | Ok (fn, Ast_io.Impl ((module V), st)) ->
-      check_kind fn ~expected:kind ~got:`Impl;
+      check_kind fn ~expected:kind ~got:Kind_impl;
       Location.input_name := fn;
       (fn, Impl ((migrate (module V) (module OCaml_current)).copy_structure st))
     | Error (Ast_io.Unknown_version _) ->
@@ -366,15 +371,17 @@ let load_file (kind, fn) =
       Location.input_name := fn;
       let kind =
         match kind with
-        | `Impl -> `Impl
-        | `Intf -> `Intf
-        | `Unknown -> guess_file_kind fn
+        | Kind_impl -> Kind_impl
+        | Kind_intf -> Kind_intf
+        | Kind_unknown -> guess_file_kind fn
       in
       match kind with
-      | `Impl ->
+      | Kind_impl ->
         (fn, Impl (Parse.implementation lexbuf))
-      | `Intf ->
-        (fn, Intf (Parse.interface lexbuf)))
+      | Kind_intf ->
+        (fn, Intf (Parse.interface lexbuf))
+      | Kind_unknown ->
+        assert false)
 
 let with_output ?bin output ~f =
   match output with
@@ -508,9 +515,9 @@ let run_as_standalone_driver () =
       " Output nothing, just report errors"
     ; "-o", Arg.String set_output,
       "FILE Output to this file instead of the standard output"
-    ; "--intf", Arg.String (fun fn -> files := (`Intf, fn) :: !files),
+    ; "--intf", Arg.String (fun fn -> files := (Kind_intf, fn) :: !files),
       "FILE Treat FILE as a .mli file"
-    ; "--impl", Arg.String (fun fn -> files := (`Impl, fn) :: !files),
+    ; "--impl", Arg.String (fun fn -> files := (Kind_impl, fn) :: !files),
       "FILE Treat FILE as a .ml file"
     ; "--embed-errors", Arg.Unit (fun () -> set_embed_errors "--embed-errors"),
       " Embed error reported by rewriters into the AST"
@@ -523,7 +530,7 @@ let run_as_standalone_driver () =
   let usage = Printf.sprintf "%s [options] [<files>]" me in
   try
     reset_args ();
-    Arg.parse spec (fun anon -> files := (`Unknown, anon) :: !files) usage;
+    Arg.parse spec (fun anon -> files := (Kind_unknown, anon) :: !files) usage;
     if !request_print_transformations then begin
       print_transformations ();
       exit 0
