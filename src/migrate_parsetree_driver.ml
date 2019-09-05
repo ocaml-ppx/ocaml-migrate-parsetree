@@ -314,9 +314,7 @@ let guess_file_kind fn =
   else if Filename.check_suffix fn ".mli" then
     Kind_intf
   else
-    Location.raise_errorf ~loc:(Location.in_file fn)
-      "I can't decide whether %s is an implementation or interface file"
-      fn
+    Kind_unknown
 
 let check_kind fn ~expected ~got =
   let describe = function
@@ -381,7 +379,9 @@ let load_file (kind, fn) =
       | Kind_intf ->
         (fn, Intf (Parse.interface lexbuf))
       | Kind_unknown ->
-        assert false)
+        Location.raise_errorf ~loc:(Location.in_file fn)
+          "I can't decide whether %s is an implementation or interface file"
+          fn)
 
 let with_output ?bin output ~f =
   match output with
