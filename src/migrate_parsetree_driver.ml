@@ -258,7 +258,24 @@ let rewrite_structure config version st =
   apply_cookies cookies;
   st
 
-let run_as_ast_mapper args =
+let exit_or_raise exit_on_error f =
+  if not exit_on_error then
+    f ()
+  else
+    try
+      f ()
+    with
+    | Arg.Help text ->
+      print_string text;
+      exit 0
+    | Arg.Bad text ->
+      prerr_string text;
+      exit 2
+    | exn ->
+      Location.report_exception Format.err_formatter exn;
+      exit 1
+
+let run_as_ast_mapper ?(exit_on_error = true) args =
   let spec = registered_args () in
   let args, usage =
     let me = Filename.basename Sys.executable_name in
@@ -267,15 +284,10 @@ let run_as_ast_mapper args =
      Printf.sprintf "%s [options] <input ast file> <output ast file>" me)
   in
   reset_args ();
-  match
-    Arg.parse_argv args spec
+  exit_or_raise exit_on_error begin fun () ->
+    Arg.parse_argv ~current:(ref 0) args spec
       (fun arg -> raise (Arg.Bad (Printf.sprintf "invalid argument %S" arg)))
-      usage
-  with
-  | exception (Arg.Help msg) ->
-      prerr_endline msg;
-      exit 1
-  | () ->
+      usage;
       OCaml_current.Ast.make_top_mapper
         ~signature:(fun sg ->
             let config = initial_state () in
@@ -287,6 +299,7 @@ let run_as_ast_mapper args =
             rewrite_structure config (module OCaml_current) str
             |> migrate_some_structure (module OCaml_current)
           )
+  end
 
 let protectx x ~finally ~f =
   match f x with
@@ -456,7 +469,7 @@ let print_transformations () =
   |> print_group "Registered Derivers"
 
 
-let run_as_standalone_driver argv =
+let run_as_standalone_driver exit_on_error argv =
   let request_print_transformations = ref false in
   let output = ref None in
   let output_mode = ref Pretty_print in
@@ -518,14 +531,14 @@ let run_as_standalone_driver argv =
   let spec = Arg.align (spec @ registered_args ()) in
   let me = Filename.basename Sys.executable_name in
   let usage = Printf.sprintf "%s [options] [<files>]" me in
-  try
+  exit_or_raise exit_on_error begin fun () ->
     reset_args ();
-    Arg.parse_argv argv spec (fun anon ->
+    Arg.parse_argv ~current:(ref 0) argv spec (fun anon ->
       files := guess_file_kind anon :: !files) usage;
     if !request_print_transformations then begin
       print_transformations ();
-      exit 0
-    end;
+    end
+    else
     let output = !output in
     let output_mode = !output_mode in
     let embed_errors = !embed_errors in
@@ -541,34 +554,24 @@ let run_as_standalone_driver argv =
     in
     List.iter (process_file ~config ~output ~output_mode ~embed_errors)
       (List.rev !files)
-  with exn ->
-    Location.report_exception Format.err_formatter exn;
-    exit 1
+  end
 
-let run_as_ppx_rewriter ?(argv = Sys.argv) () =
+let run_as_ppx_rewriter ?(exit_on_error = true) ?(argv = Sys.argv) () =
   let a = argv in
   let n = Array.length a in
+  exit_or_raise exit_on_error begin fun () ->
   if n <= 2 then begin
     let me = Filename.basename Sys.executable_name in
-    Arg.usage (registered_args ())
+    Arg.usage_string (registered_args ())
       (Printf.sprintf "%s [options] <input ast file> <output ast file>" me);
-    exit 2
+    |> fun s -> raise (Arg.Bad s)
   end;
-  match
     Ast_mapper.apply ~source:a.(n - 2) ~target:a.(n - 1)
       (run_as_ast_mapper (Array.to_list (Array.sub a 1 (n - 3))))
-  with
-  | () -> exit 0
-  | exception (Arg.Bad help) ->
-      prerr_endline help;
-      exit 1
-  | exception exn ->
-      Location.report_exception Format.err_formatter exn;
-      exit 1
+  end
 
-let run_main ?(argv = Sys.argv) () =
+let run_main ?(exit_on_error = true) ?(argv = Sys.argv) () =
   if Array.length argv >= 2 && argv.(1) = "--as-ppx" then
-    run_as_ppx_rewriter ~argv ()
+    run_as_ppx_rewriter ~exit_on_error ~argv ()
   else
-    run_as_standalone_driver argv;
-  exit 0
+    run_as_standalone_driver exit_on_error argv
