@@ -1,7 +1,7 @@
 next
 ----
 
-- Add support for 4.10 (#..., @diml)
+- Add support for 4.10 (#86, @diml)
 
 v1.3.1 2019-05-20 London
 ------------------------
