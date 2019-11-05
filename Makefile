@@ -33,9 +33,8 @@ all-supported-ocaml-versions:
 .PHONY: cinaps
 cinaps:
 	cinaps -styler ocp-indent -i src/migrate_parsetree_versions.ml*
-	cinaps -styler ocp-indent -i src/migrate_parsetree_40?_40?.ml*
+	cinaps -styler ocp-indent -i src/migrate_parsetree_4??_4??.ml*
 	cinaps -styler ocp-indent -i src/migrate_parsetree.ml
-	cinaps -styler ocp-indent -i bin/ocaml_migrate_parsetree.ml
 
 .PHONY: clean
 clean:

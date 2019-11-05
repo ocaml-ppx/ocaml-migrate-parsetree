@@ -107,7 +107,7 @@ module Main : sig end = struct
     else
       let tylid = Longident.parse ty in
       let td =
-        try Env.find_type (Env.lookup_type tylid env) env
+        try snd (Env.lookup_type tylid env ~loc:Location.none)
         with Not_found ->
           Format.eprintf "** Cannot resolve type %s@." ty;
           exit 2
@@ -324,10 +324,10 @@ module Main : sig end = struct
     let s =
       [ Str.module_
           (Mb.mk
-             (mkloc "From" Location.none)
+             (mkloc (Some "From") Location.none)
              (Mod.ident (mkloc (Longident.parse from_) Location.none)));
         Str.module_
-          (Mb.mk (mkloc "To" Location.none)
+          (Mb.mk (mkloc (Some "To") Location.none)
              (Mod.ident (mkloc (Longident.parse to_) Location.none)));
         Str.value Recursive !meths
       ]
@@ -338,5 +338,6 @@ module Main : sig end = struct
   let () =
     try main ()
     with exn ->
-      Printf.eprintf "** fatal error: %s\n%!" (Printexc.to_string exn)
+      Format.eprintf "%a@?" Errors.report_error exn;
+      exit 1
 end
