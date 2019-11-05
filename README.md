@@ -124,16 +124,19 @@ Add the new version in
 [src/cinaps_helpers](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps_helpers)
 `supported_versions`.
 
-Snapshot the ast in file "asts/ast\_NEW.ml".
-* Define the modules `Location` and `Longident` as aliases to corresponding
-  modules from compiler-libs.
-* Copy `Asttypes`, `Parsetree`, `Outcometree`, `Docstrings`, `Ast_helper` and
-  `Ast_mapper` from the upstream files in `parsing/` directory.
-* Global state and definitions referencing external values should be removed
-  from `Docstrings` and `Ast_mapper`. Take a look at existing snapshots.
-* Create a `Config` module containing `ast_impl_magic_number`
-  `ast_impl_magic_number` from upstream `Config`
-* Call `tools/add_special_comments.native` on the file
+Copy the last `src/ast_xxx.ml` file to `src/ast_<new_version>.ml`,
+then go over the file and update each sub-module by replacing its
+signature and implementation with the code from the compiler. For the
+`Config` sub-module, update the two variables with the values in
+`utils/config.mlp` in the compiler source tree.
+
+Once this is done, call `tools/add_special_comments.native` on the
+file.
+
+Then diff the `src/ast_xxx.ml` and `src/ast_<new_version>.ml` and go
+over the diff to make sure the difference are relevant. The `ast_...`
+files require some adjustments which should pop up when you do this
+diff. Port the old adjustments to the new file as required.
 
 Add migration functions:
 - Manually compile the asts (`ocamlc -c src/ast_{NEW,OLD}.ml -I +compiler-libs -I _build/default/src/.migrate_parsetree.objs/byte/ -open Migrate_parsetree__`)
