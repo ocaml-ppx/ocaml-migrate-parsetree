@@ -6,6 +6,11 @@ module Def = Migrate_parsetree_def
 let migration_error location feature =
   raise (Def.Migration_error (feature, location))
 
+let map_option f x =
+  match x with
+  | None -> None
+  | Some x -> Some (f x)
+
 let rec copy_out_type_extension :
   Ast_410.Outcometree.out_type_extension ->
     Ast_409.Outcometree.out_type_extension
@@ -25,7 +30,7 @@ let rec copy_out_type_extension :
            (fun x ->
               let (x0, x1, x2) = x in
               (x0, (List.map copy_out_type x1),
-                (Option.map copy_out_type x2))) otyext_constructors);
+                (map_option copy_out_type x2))) otyext_constructors);
       Ast_409.Outcometree.otyext_private = (copy_private_flag otyext_private)
     }
 and copy_out_phrase :
@@ -38,7 +43,7 @@ and copy_out_phrase :
         (List.map
            (fun x ->
               let (x0, x1) = x in
-              ((copy_out_sig_item x0), (Option.map copy_out_value x1))) x0)
+              ((copy_out_sig_item x0), (map_option copy_out_value x1))) x0)
   | Ast_410.Outcometree.Ophr_exception x0 ->
       Ast_409.Outcometree.Ophr_exception
         (let (x0, x1) = x0 in (x0, (copy_out_value x1)))
@@ -168,7 +173,7 @@ and copy_out_extension_constructor :
         (List.map (fun x -> x) oext_type_params);
       Ast_409.Outcometree.oext_args = (List.map copy_out_type oext_args);
       Ast_409.Outcometree.oext_ret_type =
-        (Option.map copy_out_type oext_ret_type);
+        (map_option copy_out_type oext_ret_type);
       Ast_409.Outcometree.oext_private = (copy_private_flag oext_private)
     }
 and copy_out_rec_status :
@@ -188,7 +193,7 @@ and copy_out_class_type :
         (x0, (copy_out_type x1), (copy_out_class_type x2))
   | Ast_410.Outcometree.Octy_signature (x0, x1) ->
       Ast_409.Outcometree.Octy_signature
-        ((Option.map copy_out_type x0),
+        ((map_option copy_out_type x0),
           (List.map copy_out_class_sig_item x1))
 and copy_out_class_sig_item :
   Ast_410.Outcometree.out_class_sig_item ->
@@ -224,7 +229,7 @@ and copy_out_type :
   | Ast_410.Outcometree.Otyp_object (x0, x1) ->
       Ast_409.Outcometree.Otyp_object
         ((List.map (fun x -> let (x0, x1) = x in (x0, (copy_out_type x1))) x0),
-          (Option.map (fun x -> x) x1))
+          (map_option (fun x -> x) x1))
   | Ast_410.Outcometree.Otyp_record x0 ->
       Ast_409.Outcometree.Otyp_record
         (List.map
@@ -236,7 +241,7 @@ and copy_out_type :
            (fun x ->
               let (x0, x1, x2) = x in
               (x0, (List.map copy_out_type x1),
-                (Option.map copy_out_type x2))) x0)
+                (map_option copy_out_type x2))) x0)
   | Ast_410.Outcometree.Otyp_tuple x0 ->
       Ast_409.Outcometree.Otyp_tuple (List.map copy_out_type x0)
   | Ast_410.Outcometree.Otyp_var (x0, x1) ->
@@ -244,7 +249,7 @@ and copy_out_type :
   | Ast_410.Outcometree.Otyp_variant (x0, x1, x2, x3) ->
       Ast_409.Outcometree.Otyp_variant
         (x0, (copy_out_variant x1), x2,
-          (Option.map (fun x -> List.map (fun x -> x) x) x3))
+          (map_option (fun x -> List.map (fun x -> x) x) x3))
   | Ast_410.Outcometree.Otyp_poly (x0, x1) ->
       Ast_409.Outcometree.Otyp_poly
         ((List.map (fun x -> x) x0), (copy_out_type x1))
@@ -302,7 +307,7 @@ and copy_out_value :
   | Ast_410.Outcometree.Oval_tuple x0 ->
       Ast_409.Outcometree.Oval_tuple (List.map copy_out_value x0)
   | Ast_410.Outcometree.Oval_variant (x0, x1) ->
-      Ast_409.Outcometree.Oval_variant (x0, (Option.map copy_out_value x1))
+      Ast_409.Outcometree.Oval_variant (x0, (map_option copy_out_value x1))
 and copy_out_string :
   Ast_410.Outcometree.out_string -> Ast_409.Outcometree.out_string =
   function
@@ -341,7 +346,7 @@ and copy_toplevel_directive :
     {
       Ast_409.Parsetree.pdir_name = (copy_loc (fun x -> x) pdir_name);
       Ast_409.Parsetree.pdir_arg =
-        (Option.map copy_directive_argument pdir_arg);
+        (map_option copy_directive_argument pdir_arg);
       Ast_409.Parsetree.pdir_loc = (copy_location pdir_loc)
     }
 and copy_directive_argument :
@@ -364,7 +369,7 @@ and copy_directive_argument_desc :
   function
   | Ast_410.Parsetree.Pdir_string x0 -> Ast_409.Parsetree.Pdir_string x0
   | Ast_410.Parsetree.Pdir_int (x0, x1) ->
-      Ast_409.Parsetree.Pdir_int (x0, (Option.map (fun x -> x) x1))
+      Ast_409.Parsetree.Pdir_int (x0, (map_option (fun x -> x) x1))
   | Ast_410.Parsetree.Pdir_ident x0 ->
       Ast_409.Parsetree.Pdir_ident (copy_Longident_t x0)
   | Ast_410.Parsetree.Pdir_bool x0 -> Ast_409.Parsetree.Pdir_bool x0
@@ -397,7 +402,7 @@ and copy_expression_desc :
       Ast_409.Parsetree.Pexp_function (List.map copy_case x0)
   | Ast_410.Parsetree.Pexp_fun (x0, x1, x2, x3) ->
       Ast_409.Parsetree.Pexp_fun
-        ((copy_arg_label x0), (Option.map copy_expression x1),
+        ((copy_arg_label x0), (map_option copy_expression x1),
           (copy_pattern x2), (copy_expression x3))
   | Ast_410.Parsetree.Pexp_apply (x0, x1) ->
       Ast_409.Parsetree.Pexp_apply
@@ -416,17 +421,17 @@ and copy_expression_desc :
       Ast_409.Parsetree.Pexp_tuple (List.map copy_expression x0)
   | Ast_410.Parsetree.Pexp_construct (x0, x1) ->
       Ast_409.Parsetree.Pexp_construct
-        ((copy_loc copy_Longident_t x0), (Option.map copy_expression x1))
+        ((copy_loc copy_Longident_t x0), (map_option copy_expression x1))
   | Ast_410.Parsetree.Pexp_variant (x0, x1) ->
       Ast_409.Parsetree.Pexp_variant
-        ((copy_label x0), (Option.map copy_expression x1))
+        ((copy_label x0), (map_option copy_expression x1))
   | Ast_410.Parsetree.Pexp_record (x0, x1) ->
       Ast_409.Parsetree.Pexp_record
         ((List.map
             (fun x ->
                let (x0, x1) = x in
                ((copy_loc copy_Longident_t x0), (copy_expression x1))) x0),
-          (Option.map copy_expression x1))
+          (map_option copy_expression x1))
   | Ast_410.Parsetree.Pexp_field (x0, x1) ->
       Ast_409.Parsetree.Pexp_field
         ((copy_expression x0), (copy_loc copy_Longident_t x1))
@@ -439,7 +444,7 @@ and copy_expression_desc :
   | Ast_410.Parsetree.Pexp_ifthenelse (x0, x1, x2) ->
       Ast_409.Parsetree.Pexp_ifthenelse
         ((copy_expression x0), (copy_expression x1),
-          (Option.map copy_expression x2))
+          (map_option copy_expression x2))
   | Ast_410.Parsetree.Pexp_sequence (x0, x1) ->
       Ast_409.Parsetree.Pexp_sequence
         ((copy_expression x0), (copy_expression x1))
@@ -455,7 +460,7 @@ and copy_expression_desc :
         ((copy_expression x0), (copy_core_type x1))
   | Ast_410.Parsetree.Pexp_coerce (x0, x1, x2) ->
       Ast_409.Parsetree.Pexp_coerce
-        ((copy_expression x0), (Option.map copy_core_type x1),
+        ((copy_expression x0), (map_option copy_core_type x1),
           (copy_core_type x2))
   | Ast_410.Parsetree.Pexp_send (x0, x1) ->
       Ast_409.Parsetree.Pexp_send
@@ -486,7 +491,7 @@ and copy_expression_desc :
       Ast_409.Parsetree.Pexp_lazy (copy_expression x0)
   | Ast_410.Parsetree.Pexp_poly (x0, x1) ->
       Ast_409.Parsetree.Pexp_poly
-        ((copy_expression x0), (Option.map copy_core_type x1))
+        ((copy_expression x0), (map_option copy_core_type x1))
   | Ast_410.Parsetree.Pexp_object x0 ->
       Ast_409.Parsetree.Pexp_object (copy_class_structure x0)
   | Ast_410.Parsetree.Pexp_newtype (x0, x1) ->
@@ -539,7 +544,7 @@ and copy_case : Ast_410.Parsetree.case -> Ast_409.Parsetree.case =
     ->
     {
       Ast_409.Parsetree.pc_lhs = (copy_pattern pc_lhs);
-      Ast_409.Parsetree.pc_guard = (Option.map copy_expression pc_guard);
+      Ast_409.Parsetree.pc_guard = (map_option copy_expression pc_guard);
       Ast_409.Parsetree.pc_rhs = (copy_expression pc_rhs)
     }
 and copy_cases : Ast_410.Parsetree.case list -> Ast_409.Parsetree.cases
@@ -589,10 +594,10 @@ and copy_pattern_desc :
       Ast_409.Parsetree.Ppat_tuple (List.map copy_pattern x0)
   | Ast_410.Parsetree.Ppat_construct (x0, x1) ->
       Ast_409.Parsetree.Ppat_construct
-        ((copy_loc copy_Longident_t x0), (Option.map copy_pattern x1))
+        ((copy_loc copy_Longident_t x0), (map_option copy_pattern x1))
   | Ast_410.Parsetree.Ppat_variant (x0, x1) ->
       Ast_409.Parsetree.Ppat_variant
-        ((copy_label x0), (Option.map copy_pattern x1))
+        ((copy_label x0), (map_option copy_pattern x1))
   | Ast_410.Parsetree.Ppat_record (x0, x1) ->
       Ast_409.Parsetree.Ppat_record
         ((List.map
@@ -664,7 +669,7 @@ and copy_core_type_desc :
   | Ast_410.Parsetree.Ptyp_variant (x0, x1, x2) ->
       Ast_409.Parsetree.Ptyp_variant
         ((List.map copy_row_field x0), (copy_closed_flag x1),
-          (Option.map (fun x -> List.map copy_label x) x2))
+          (map_option (fun x -> List.map copy_label x) x2))
   | Ast_410.Parsetree.Ptyp_poly (x0, x1) ->
       Ast_409.Parsetree.Ptyp_poly
         ((List.map (fun x -> copy_loc (fun x -> x) x) x0),
@@ -736,7 +741,7 @@ and copy_payload : Ast_410.Parsetree.payload -> Ast_409.Parsetree.payload =
   | Ast_410.Parsetree.PTyp x0 -> Ast_409.Parsetree.PTyp (copy_core_type x0)
   | Ast_410.Parsetree.PPat (x0, x1) ->
       Ast_409.Parsetree.PPat
-        ((copy_pattern x0), (Option.map copy_expression x1))
+        ((copy_pattern x0), (map_option copy_expression x1))
 and copy_structure :
   Ast_410.Parsetree.structure -> Ast_409.Parsetree.structure =
   fun x -> List.map copy_structure_item x
@@ -819,7 +824,7 @@ and copy_class_expr_desc :
       Ast_409.Parsetree.Pcl_structure (copy_class_structure x0)
   | Ast_410.Parsetree.Pcl_fun (x0, x1, x2, x3) ->
       Ast_409.Parsetree.Pcl_fun
-        ((copy_arg_label x0), (Option.map copy_expression x1),
+        ((copy_arg_label x0), (map_option copy_expression x1),
           (copy_pattern x2), (copy_class_expr x3))
   | Ast_410.Parsetree.Pcl_apply (x0, x1) ->
       Ast_409.Parsetree.Pcl_apply
@@ -869,7 +874,7 @@ and copy_class_field_desc :
   | Ast_410.Parsetree.Pcf_inherit (x0, x1, x2) ->
       Ast_409.Parsetree.Pcf_inherit
         ((copy_override_flag x0), (copy_class_expr x1),
-          (Option.map (fun x -> copy_loc (fun x -> x) x) x2))
+          (map_option (fun x -> copy_loc (fun x -> x) x) x2))
   | Ast_410.Parsetree.Pcf_val x0 ->
       Ast_409.Parsetree.Pcf_val
         (let (x0, x1, x2) = x0 in
@@ -1236,7 +1241,7 @@ and copy_module_type_declaration :
     ->
     {
       Ast_409.Parsetree.pmtd_name = (copy_loc (fun x -> x) pmtd_name);
-      Ast_409.Parsetree.pmtd_type = (Option.map copy_module_type pmtd_type);
+      Ast_409.Parsetree.pmtd_type = (map_option copy_module_type pmtd_type);
       Ast_409.Parsetree.pmtd_attributes = (copy_attributes pmtd_attributes);
       Ast_409.Parsetree.pmtd_loc = (copy_location pmtd_loc)
     }
@@ -1338,7 +1343,7 @@ and copy_extension_constructor_kind :
   function
   | Ast_410.Parsetree.Pext_decl (x0, x1) ->
       Ast_409.Parsetree.Pext_decl
-        ((copy_constructor_arguments x0), (Option.map copy_core_type x1))
+        ((copy_constructor_arguments x0), (map_option copy_core_type x1))
   | Ast_410.Parsetree.Pext_rebind x0 ->
       Ast_409.Parsetree.Pext_rebind (copy_loc copy_Longident_t x0)
 and copy_type_declaration :
@@ -1369,7 +1374,7 @@ and copy_type_declaration :
       Ast_409.Parsetree.ptype_kind = (copy_type_kind ptype_kind);
       Ast_409.Parsetree.ptype_private = (copy_private_flag ptype_private);
       Ast_409.Parsetree.ptype_manifest =
-        (Option.map copy_core_type ptype_manifest);
+        (map_option copy_core_type ptype_manifest);
       Ast_409.Parsetree.ptype_attributes = (copy_attributes ptype_attributes);
       Ast_409.Parsetree.ptype_loc = (copy_location ptype_loc)
     }
@@ -1402,7 +1407,7 @@ and copy_constructor_declaration :
     {
       Ast_409.Parsetree.pcd_name = (copy_loc (fun x -> x) pcd_name);
       Ast_409.Parsetree.pcd_args = (copy_constructor_arguments pcd_args);
-      Ast_409.Parsetree.pcd_res = (Option.map copy_core_type pcd_res);
+      Ast_409.Parsetree.pcd_res = (map_option copy_core_type pcd_res);
       Ast_409.Parsetree.pcd_loc = (copy_location pcd_loc);
       Ast_409.Parsetree.pcd_attributes = (copy_attributes pcd_attributes)
     }
@@ -1488,12 +1493,12 @@ and copy_constant : Ast_410.Parsetree.constant -> Ast_409.Parsetree.constant
   =
   function
   | Ast_410.Parsetree.Pconst_integer (x0, x1) ->
-      Ast_409.Parsetree.Pconst_integer (x0, (Option.map (fun x -> x) x1))
+      Ast_409.Parsetree.Pconst_integer (x0, (map_option (fun x -> x) x1))
   | Ast_410.Parsetree.Pconst_char x0 -> Ast_409.Parsetree.Pconst_char x0
   | Ast_410.Parsetree.Pconst_string (x0, x1) ->
-      Ast_409.Parsetree.Pconst_string (x0, (Option.map (fun x -> x) x1))
+      Ast_409.Parsetree.Pconst_string (x0, (map_option (fun x -> x) x1))
   | Ast_410.Parsetree.Pconst_float (x0, x1) ->
-      Ast_409.Parsetree.Pconst_float (x0, (Option.map (fun x -> x) x1))
+      Ast_409.Parsetree.Pconst_float (x0, (map_option (fun x -> x) x1))
 and copy_Longident_t : Ast_410.Longident.t -> Ast_409.Longident.t =
   function
   | Ast_410.Longident.Lident x0 -> Ast_409.Longident.Lident x0
@@ -1522,16 +1527,16 @@ and copy_location : Ast_410.Location.t -> Ast_409.Location.t =
       Ast_409.Location.loc_end = (copy_position loc_end);
       Ast_409.Location.loc_ghost = loc_ghost
     }
-and copy_position : Stdlib.Lexing.position -> Stdlib.Lexing.position =
+and copy_position : Lexing.position -> Lexing.position =
   fun
-    { Stdlib.Lexing.pos_fname = pos_fname; Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol; Stdlib.Lexing.pos_cnum = pos_cnum }
+    { Lexing.pos_fname = pos_fname; Lexing.pos_lnum = pos_lnum;
+      Lexing.pos_bol = pos_bol; Lexing.pos_cnum = pos_cnum }
     ->
     {
-      Stdlib.Lexing.pos_fname = pos_fname;
-      Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol;
-      Stdlib.Lexing.pos_cnum = pos_cnum
+      Lexing.pos_fname = pos_fname;
+      Lexing.pos_lnum = pos_lnum;
+      Lexing.pos_bol = pos_bol;
+      Lexing.pos_cnum = pos_cnum
     }
 let copy_expr = copy_expression
 let copy_pat = copy_pattern
