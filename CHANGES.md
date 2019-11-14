@@ -1,3 +1,8 @@
+v1.4.1 2019-11-14
+-----------------
+
+- Fix compatibility with older compilers
+
 v1.4.0 2019-11-05
 -----------------
 
