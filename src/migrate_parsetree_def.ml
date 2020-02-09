@@ -50,6 +50,16 @@ type missing_feature =
     (** 4.08 -> 4.07: module M := ... *)
   | Otyp_module
     (** 4.08 -> 4.07: M(N) *)
+  | Immediate64
+  (** 4.10 -> 4.09: [@@immediate64] *)
+  | Anonymous_let_module
+  (** 4.10 -> 4.09: let module _ = ... in ... *)
+  | Anonymous_unpack
+  (** 4.10 -> 4.09: (module _) *)
+  | Anonymous_module_binding
+  (** 4.10 -> 4.09: module _ = ... *)
+  | Anonymous_module_declaration
+  (** 4.10 -> 4.09: module _ = struct ... end *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -72,6 +82,11 @@ let missing_feature_description = function
   | Psig_typesubst -> "type substitution in signatures"
   | Psig_modsubst -> "module substitution in signatures"
   | Otyp_module -> "complex outcome module"
+  | Immediate64 -> "[@@immediate64] attribute"
+  | Anonymous_let_module -> "anonymous let module"
+  | Anonymous_unpack -> "anynymous unpack"
+  | Anonymous_module_binding -> "anonymous module binding"
+  | Anonymous_module_declaration -> "anonymous module declaration"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -93,6 +108,11 @@ let missing_feature_minimal_version = function
   | Psig_typesubst -> "OCaml 4.08"
   | Psig_modsubst -> "OCaml 4.08"
   | Otyp_module -> "OCaml 4.08"
+  | Immediate64 -> "OCaml 4.10"
+  | Anonymous_let_module -> "OCaml 4.10"
+  | Anonymous_unpack -> "OCaml 4.10"
+  | Anonymous_module_binding -> "OCaml 4.10"
+  | Anonymous_module_declaration -> "OCaml 4.10"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =

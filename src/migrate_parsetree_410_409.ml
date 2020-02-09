@@ -13,7 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-include Migrate_parsetree_408_407_migrate
+include Migrate_parsetree_410_409_migrate
 
 (*$ open Printf
   let fields = [
@@ -27,7 +27,8 @@ include Migrate_parsetree_408_407_migrate
     "open_description"; "pat"; "signature"; "signature_item"; "structure";
     "structure_item"; "typ"; "type_declaration"; "type_extension";
     "type_kind"; "value_binding"; "value_description";
-    "with_constraint"; "payload"
+    "with_constraint"; "payload";
+    "binding_op"; "module_substitution"; "open_declaration"; "type_exception"
   ]
   let foreach_field f =
     printf "\n";
@@ -77,14 +78,14 @@ let copy_mapper = fun
      value_description;
      with_constraint;
      payload;
+     binding_op;
+     module_substitution;
+     open_declaration;
+     type_exception;
      (*$*)
-     (* The following ones were introduced in 4.08. *)
-     binding_op = _;
-     module_substitution = _;
-     open_declaration = _;
-     type_exception = _;
    } as mapper) ->
-  let module R = Migrate_parsetree_407_408_migrate in
+  let module Def = Migrate_parsetree_def in
+  let module R = Migrate_parsetree_409_410_migrate in
   {
     To.Ast_mapper.
     (*$ foreach_field (fun s ->
@@ -131,5 +132,9 @@ let copy_mapper = fun
     value_description = (fun _ x -> copy_value_description (value_description mapper (R.copy_value_description x)));
     with_constraint = (fun _ x -> copy_with_constraint (with_constraint mapper (R.copy_with_constraint x)));
     payload = (fun _ x -> copy_payload (payload mapper (R.copy_payload x)));
+    binding_op = (fun _ x -> copy_binding_op (binding_op mapper (R.copy_binding_op x)));
+    module_substitution = (fun _ x -> copy_module_substitution (module_substitution mapper (R.copy_module_substitution x)));
+    open_declaration = (fun _ x -> copy_open_declaration (open_declaration mapper (R.copy_open_declaration x)));
+    type_exception = (fun _ x -> copy_type_exception (type_exception mapper (R.copy_type_exception x)));
     (*$*)
   }

@@ -32,6 +32,11 @@ type missing_feature =
   | Psig_typesubst
   | Psig_modsubst
   | Otyp_module
+  | Immediate64
+  | Anonymous_let_module
+  | Anonymous_unpack
+  | Anonymous_module_binding
+  | Anonymous_module_declaration
 
 (** Exception thrown by migration functions when a feature is not supported. *)
 exception Migration_error of missing_feature * Location.t

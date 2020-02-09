@@ -16,20 +16,20 @@
 include Migrate_parsetree_409_408_migrate
 
 (*$ open Printf
-    let fields = [
-      "attribute"; "attributes"; "case"; "cases"; "class_declaration";
-      "class_description"; "class_expr"; "class_field"; "class_signature";
-      "class_structure"; "class_type"; "class_type_declaration";
-      "class_type_field"; "constructor_declaration"; "expr"; "extension";
-      "extension_constructor"; "include_declaration"; "include_description";
-      "label_declaration"; "location"; "module_binding"; "module_declaration";
-      "module_expr"; "module_type"; "module_type_declaration";
-      "open_description"; "pat"; "signature"; "signature_item"; "structure";
-      "structure_item"; "typ"; "type_declaration"; "type_extension";
-      "type_kind"; "value_binding"; "value_description";
-      "with_constraint"; "payload";
-      "binding_op"; "module_substitution"; "open_declaration"; "type_exception"
-    ]
+  let fields = [
+    "attribute"; "attributes"; "case"; "cases"; "class_declaration";
+    "class_description"; "class_expr"; "class_field"; "class_signature";
+    "class_structure"; "class_type"; "class_type_declaration";
+    "class_type_field"; "constructor_declaration"; "expr"; "extension";
+    "extension_constructor"; "include_declaration"; "include_description";
+    "label_declaration"; "location"; "module_binding"; "module_declaration";
+    "module_expr"; "module_type"; "module_type_declaration";
+    "open_description"; "pat"; "signature"; "signature_item"; "structure";
+    "structure_item"; "typ"; "type_declaration"; "type_extension";
+    "type_kind"; "value_binding"; "value_description";
+    "with_constraint"; "payload";
+    "binding_op"; "module_substitution"; "open_declaration"; "type_exception"
+  ]
   let foreach_field f =
     printf "\n";
     List.iter f fields
@@ -89,7 +89,7 @@ let copy_mapper = fun
   {
     To.Ast_mapper.
     (*$ foreach_field (fun s ->
-          printf
+        printf
           "%s = (fun _ x -> copy_%s (%s mapper (R.copy_%s x)));\n" s s s s)
     *)
     attribute = (fun _ x -> copy_attribute (attribute mapper (R.copy_attribute x)));
