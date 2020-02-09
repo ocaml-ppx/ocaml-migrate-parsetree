@@ -15,3 +15,5 @@ let get_unboxed_types () =
 
 let set_unboxed_types b =
   Clflags.unboxed_types := b
+
+let may_map = Option.map

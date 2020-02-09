@@ -11,3 +11,5 @@ let get_unboxed_types () =
 
 let set_unboxed_types _b =
   ()
+
+let may_map = Misc.may_map

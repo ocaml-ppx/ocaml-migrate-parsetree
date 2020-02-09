@@ -30,10 +30,10 @@ type 'a migration_info = {
 (** Abstract view of a version of an OCaml Ast *)
 module type Ast = sig
   (*$ foreach_module (fun m types ->
-        printf "module %s : sig\n" m;
-        List.iter types ~f:(printf "type %s\n");
-        printf "end\n"
-      )
+      printf "module %s : sig\n" m;
+      List.iter types ~f:(printf "type %s\n");
+      printf "end\n"
+    )
   *)
   module Parsetree : sig
     type structure
@@ -101,9 +101,9 @@ type 'a _types = 'a constraint 'a
 ;;
 
 (*$ foreach_type (fun _ s ->
-      printf "type 'a get_%s =\n" s;
-      printf " 'x constraint 'a _types = < %s : 'x; .. >\n" s
-    ) *)
+    printf "type 'a get_%s =\n" s;
+    printf " 'x constraint 'a _types = < %s : 'x; .. >\n" s
+  ) *)
 type 'a get_structure =
   'x constraint 'a _types = < structure : 'x; .. >
 type 'a get_signature =
@@ -204,7 +204,7 @@ end
 type 'types ocaml_version =
   (module OCaml_version
     (*$ let sep = with_then_and () in
-        foreach_type (fun m s ->
+      foreach_type (fun m s ->
           printf "%t type Ast.%s.%s = 'types get_%s\n" sep m s s) *)
     with type Ast.Parsetree.structure = 'types get_structure
      and type Ast.Parsetree.signature = 'types get_signature
@@ -307,7 +307,7 @@ let compare_ocaml_version
 
 type ('from, 'to_) migration_functions = {
   (*$ foreach_type (fun _ s ->
-        printf "copy_%s: 'from get_%s -> 'to_ get_%s;\n" s s s) *)
+      printf "copy_%s: 'from get_%s -> 'to_ get_%s;\n" s s s) *)
   copy_structure: 'from get_structure -> 'to_ get_structure;
   copy_signature: 'from get_signature -> 'to_ get_signature;
   copy_toplevel_phrase: 'from get_toplevel_phrase -> 'to_ get_toplevel_phrase;
@@ -356,7 +356,7 @@ let migration_identity : ('a, 'a) migration_functions = {
 let compose f g x = f (g x)
 let migration_compose (ab : ('a, 'b) migration_functions) (bc : ('b, 'c) migration_functions) : ('a, 'c) migration_functions = {
   (*$ foreach_type (fun _ s ->
-        printf "copy_%-21s = compose bc.copy_%-21s ab.copy_%s;\n" s s s) *)
+      printf "copy_%-21s = compose bc.copy_%-21s ab.copy_%s;\n" s s s) *)
   copy_structure             = compose bc.copy_structure             ab.copy_structure;
   copy_signature             = compose bc.copy_signature             ab.copy_signature;
   copy_toplevel_phrase       = compose bc.copy_toplevel_phrase       ab.copy_toplevel_phrase;
@@ -384,7 +384,7 @@ module type Migrate_module = sig
   module From : Ast
   module To : Ast
   (*$ foreach_type (fun m s ->
-        printf "val copy_%-21s: From.%s.%s -> To.%s.%s\n" s m s m s) *)
+      printf "val copy_%-21s: From.%s.%s -> To.%s.%s\n" s m s m s) *)
   val copy_structure            : From.Parsetree.structure -> To.Parsetree.structure
   val copy_signature            : From.Parsetree.signature -> To.Parsetree.signature
   val copy_toplevel_phrase      : From.Parsetree.toplevel_phrase -> To.Parsetree.toplevel_phrase
@@ -631,15 +631,15 @@ module Convert (A : OCaml_version) (B : OCaml_version) = struct
 end
 
 (*$ foreach_version (fun suffix version ->
-      printf "module OCaml_%s = struct\n" suffix;
-      printf "  module Ast = Ast_%s\n" suffix;
-      printf "  include Make_witness(Ast_%s)\n" suffix;
-      printf "  let version = %s\n" suffix;
-      printf "  let string_version = %S\n" version;
-      printf "end\n";
-      printf "let ocaml_%s : OCaml_%s.types ocaml_version = (module OCaml_%s)\n"
-        suffix suffix suffix;
-    )
+    printf "module OCaml_%s = struct\n" suffix;
+    printf "  module Ast = Ast_%s\n" suffix;
+    printf "  include Make_witness(Ast_%s)\n" suffix;
+    printf "  let version = %s\n" suffix;
+    printf "  let string_version = %S\n" version;
+    printf "end\n";
+    printf "let ocaml_%s : OCaml_%s.types ocaml_version = (module OCaml_%s)\n"
+      suffix suffix suffix;
+  )
 *)
 module OCaml_402 = struct
   module Ast = Ast_402
@@ -697,11 +697,18 @@ module OCaml_409 = struct
   let string_version = "4.09"
 end
 let ocaml_409 : OCaml_409.types ocaml_version = (module OCaml_409)
+module OCaml_410 = struct
+  module Ast = Ast_410
+  include Make_witness(Ast_410)
+  let version = 410
+  let string_version = "4.10"
+end
+let ocaml_410 : OCaml_410.types ocaml_version = (module OCaml_410)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
   (*$foreach_version (fun suffix _ ->
-       printf "(module OCaml_%s : OCaml_version);\n" suffix)*)
+      printf "(module OCaml_%s : OCaml_version);\n" suffix)*)
   (module OCaml_402 : OCaml_version);
   (module OCaml_403 : OCaml_version);
   (module OCaml_404 : OCaml_version);
@@ -710,12 +717,13 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_407 : OCaml_version);
   (module OCaml_408 : OCaml_version);
   (module OCaml_409 : OCaml_version);
+  (module OCaml_410 : OCaml_version);
   (*$*)
 ]
 
 (*$foreach_version_pair (fun a b ->
-   printf "include Register_migration(OCaml_%s)(OCaml_%s)\n" a b;
-   printf "  (Migrate_parsetree_%s_%s)(Migrate_parsetree_%s_%s)\n" a b b a
+    printf "include Register_migration(OCaml_%s)(OCaml_%s)\n" a b;
+    printf "  (Migrate_parsetree_%s_%s)(Migrate_parsetree_%s_%s)\n" a b b a
   )
 *)
 include Register_migration(OCaml_402)(OCaml_403)
@@ -732,6 +740,8 @@ include Register_migration(OCaml_407)(OCaml_408)
     (Migrate_parsetree_407_408)(Migrate_parsetree_408_407)
 include Register_migration(OCaml_408)(OCaml_409)
     (Migrate_parsetree_408_409)(Migrate_parsetree_409_408)
+include Register_migration(OCaml_409)(OCaml_410)
+    (Migrate_parsetree_409_410)(Migrate_parsetree_410_409)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION

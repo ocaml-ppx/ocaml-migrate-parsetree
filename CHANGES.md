@@ -1,3 +1,16 @@
+v1.5.0 2019-11-18
+-----------------
+
+- Add support for 4.10 (#86, @diml)
+
+v1.4.0 2019-07-04 London
+------------------------
+
+- Initial support for 4.09, tested with 4.09+beta1 (#76, @hhugo)
+
+- When encoding errors into the AST, duplicate the error message for
+  "ocaml.error" nodes for OCaml versions < 4.08 (#75, @xclerc)
+
 v1.3.1 2019-05-20 London
 ------------------------
 

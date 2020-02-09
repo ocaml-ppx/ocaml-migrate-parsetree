@@ -14,6 +14,7 @@ let supported_versions = [
   ("407", "4.07");
   ("408", "4.08");
   ("409", "4.09");
+  ("410", "4.10");
 ]
 
 let qualified_types = [

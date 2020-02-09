@@ -5,10 +5,10 @@ let error_of_exn exn =
   | None -> None
 
 let get_load_paths () =
-  !Config.load_path
+  Load_path.get_paths ()
 
 let load_path_init l =
-  Config.load_path := l
+  Load_path.init l
 
 let get_unboxed_types () =
   !Clflags.unboxed_types
