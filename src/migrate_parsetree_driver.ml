@@ -340,11 +340,23 @@ let load_file (kind, fn) =
       Location.input_name := fn;
       (* We need to convert to the current version in order to interpret the cookies using
          [Ast_mapper.drop_ppx_context_*] from the compiler *)
-      (fn, Intf ((migrate (module V) (module OCaml_current)).copy_signature sg))
+      let sg = (migrate (module V) (module OCaml_current)).copy_signature sg in
+      let migrate_back sg =
+        Ast_io.Intf
+          ((module V),
+           (migrate (module OCaml_current) (module V)).copy_signature sg)
+      in
+      (fn, Intf (sg, migrate_back))
     | Ok (fn, Ast_io.Impl ((module V), st)) ->
       check_kind fn ~expected:kind ~got:Kind_impl;
       Location.input_name := fn;
-      (fn, Impl ((migrate (module V) (module OCaml_current)).copy_structure st))
+      let st = (migrate (module V) (module OCaml_current)).copy_structure st in
+      let migrate_back st =
+        Ast_io.Impl
+          ((module V),
+           (migrate (module OCaml_current) (module V)).copy_structure st)
+      in
+      (fn, Impl (st, migrate_back))
     | Error (Ast_io.Unknown_version _) ->
       Location.raise_errorf ~loc:(Location.in_file fn)
         "File is a binary ast for an unknown version of OCaml"
@@ -375,9 +387,11 @@ let load_file (kind, fn) =
       in
       match kind with
       | Kind_impl ->
-        (fn, Impl (Parse.implementation lexbuf))
+        let migrate_back st = Ast_io.Impl ((module OCaml_current), st) in
+        (fn, Impl (Parse.implementation lexbuf, migrate_back))
       | Kind_intf ->
-        (fn, Intf (Parse.interface lexbuf))
+        let migrate_back sg = Ast_io.Intf ((module OCaml_current), sg) in
+        (fn, Intf (Parse.interface lexbuf, migrate_back))
       | Kind_unknown ->
         Location.raise_errorf ~loc:(Location.in_file fn)
           "I can't decide whether %s is an implementation or interface file"
@@ -400,9 +414,9 @@ type output_mode =
 
 let process_file ~config ~output ~output_mode ~embed_errors file =
   let fn, ast = load_file file in
-  let ast =
+  let ast, binary_ast =
     match ast with
-    | Intf sg ->
+    | Intf (sg, migrate_back) ->
       let sg = Ast_mapper.drop_ppx_context_sig ~restore:true sg in
       let sg =
         try
@@ -415,8 +429,10 @@ let process_file ~config ~output ~output_mode ~embed_errors file =
           [ Ast_helper.Sig.extension ~loc:Location.none
               (Ast_mapper.extension_of_error error) ]
       in
-      Intf (sg, Ast_mapper.add_ppx_context_sig ~tool_name:config.tool_name sg)
-    | Impl st ->
+      let binary_sg =
+        Ast_mapper.add_ppx_context_sig ~tool_name:config.tool_name sg in
+      (Intf sg, migrate_back binary_sg)
+    | Impl (st, migrate_back) ->
       let st = Ast_mapper.drop_ppx_context_str ~restore:true st in
       let st =
         try
@@ -429,23 +445,20 @@ let process_file ~config ~output ~output_mode ~embed_errors file =
           [ Ast_helper.Str.extension ~loc:Location.none
               (Ast_mapper.extension_of_error error) ]
       in
-      Impl (st, Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st)
+      let binary_st =
+        Ast_mapper.add_ppx_context_str ~tool_name:config.tool_name st in
+      (Impl st, migrate_back binary_st)
   in
   match output_mode with
   | Dump_ast ->
     with_output ~bin:true output ~f:(fun oc ->
-      let ast =
-        match ast with
-        | Intf (_, sg) -> Ast_io.Intf ((module OCaml_current), sg)
-        | Impl (_, st) -> Ast_io.Impl ((module OCaml_current), st)
-      in
-      Ast_io.to_channel oc fn ast)
+      Ast_io.to_channel oc fn binary_ast)
   | Pretty_print ->
     with_output output ~f:(fun oc ->
       let ppf = Format.formatter_of_out_channel oc in
       (match ast with
-       | Intf (sg, _) -> Pprintast.signature ppf sg
-       | Impl (st, _) -> Pprintast.structure ppf st);
+       | Intf sg -> Pprintast.signature ppf sg
+       | Impl st -> Pprintast.structure ppf st);
       Format.pp_print_newline ppf ())
   | Null ->
     ()
