@@ -1,7 +1,20 @@
+v1.6.0 2020-02-10 Moscow
+------------------------
+
+- Preserve compiler version of binary ASTs across transformation (#79,
+  @aantron)
+
+- Allow not exiting on error (#83, @aantron)
+
 v1.5.0 2019-11-18
 -----------------
 
 - Add support for 4.10 (#86, @diml)
+
+- Infer file kind (interface or implementation) for binary ASTs that
+  have no extension (#80, @aantron)
+
+- Add ?argv argument to Driver.run_main (#82, @aantron)
 
 v1.4.0 2019-07-04 London
 ------------------------
@@ -119,18 +132,18 @@ Driver: add --as-pp and --embed-errors flags.
 
     --embed-errors causes the driver to embed exceptions raised by
     rewriters as extension points in the Ast
-    
+
     --as-pp is a shorthand for: --dump-ast --embed-errors
 
 Expose more primitives for embedding the driver.
 
 Fix bug where `reset_args` functions where not being called.
-Fix "OCaml OCaml" in error messages (contributed by Adrien Guatto). 
+Fix "OCaml OCaml" in error messages (contributed by Adrien Guatto).
 
 v0.7 2017-03-21 Mâcon
 ---------------------
 
-Fix findlib predicates: 
+Fix findlib predicates:
 - replace `omp_driver` by `ppx_driver`
 - replace `-custom_ppx` by `-custom_ppx,-ppx_driver`
 
@@ -162,4 +175,4 @@ Install CMXS too (contributed @vbmithr).
 v0.1 2017-02-02 London
 ----------------------
 
-First release. 
+First release.
