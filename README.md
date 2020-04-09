@@ -130,8 +130,9 @@ signature and implementation with the code from the compiler. For the
 `Config` sub-module, update the two variables with the values in
 `utils/config.mlp` in the compiler source tree.
 
-Once this is done, call `tools/add_special_comments.native` on the
-file.
+Once this is done, call:
+
+    $ dune exec tools/add_special_comments.exe src/ast_<new_version>.ml
 
 Then diff the `src/ast_xxx.ml` and `src/ast_<new_version>.ml` and go
 over the diff to make sure the difference are relevant. The `ast_...`
