@@ -1508,14 +1508,14 @@ and copy_location : Ast_410.Location.t -> Ast_411.Location.t =
       Ast_411.Location.loc_end = (copy_position loc_end);
       Ast_411.Location.loc_ghost = loc_ghost
     }
-and copy_position : Stdlib.Lexing.position -> Stdlib.Lexing.position =
+and copy_position : Lexing.position -> Lexing.position =
   fun
-    { Stdlib.Lexing.pos_fname = pos_fname; Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol; Stdlib.Lexing.pos_cnum = pos_cnum }
+    { Lexing.pos_fname = pos_fname; Lexing.pos_lnum = pos_lnum;
+      Lexing.pos_bol = pos_bol; Lexing.pos_cnum = pos_cnum }
     ->
     {
-      Stdlib.Lexing.pos_fname = pos_fname;
-      Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol;
-      Stdlib.Lexing.pos_cnum = pos_cnum
+      Lexing.pos_fname = pos_fname;
+      Lexing.pos_lnum = pos_lnum;
+      Lexing.pos_bol = pos_bol;
+      Lexing.pos_cnum = pos_cnum
     }
