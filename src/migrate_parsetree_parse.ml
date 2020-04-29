@@ -22,7 +22,7 @@
    These parsing functions can raise Migration_errors.
 *)
 
-open Migrate_parsetree_versions
+open Versions
 
 let implementation version =
   let { copy_structure; _ } = migrate ocaml_current version in

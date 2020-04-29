@@ -17,9 +17,9 @@ open Result[@@ocaml.warning "-33"]
 (** A marshalled ast packs the ast with the corresponding version of the
     frontend *)
 type ast =
-  | Impl : (module Migrate_parsetree_versions.OCaml_version with
+  | Impl : (module Versions.OCaml_version with
              type Ast.Parsetree.structure = 'concrete) * 'concrete -> ast
-  | Intf : (module Migrate_parsetree_versions.OCaml_version with
+  | Intf : (module Versions.OCaml_version with
              type Ast.Parsetree.signature = 'concrete) * 'concrete -> ast
 
 (** A simple alias used for the filename of the source that produced an AST *)

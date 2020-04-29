@@ -15,9 +15,9 @@
 open Result
 
 type ast =
-  | Impl : (module Migrate_parsetree_versions.OCaml_version with
+  | Impl : (module Versions.OCaml_version with
              type Ast.Parsetree.structure = 'concrete) * 'concrete -> ast
-  | Intf : (module Migrate_parsetree_versions.OCaml_version with
+  | Intf : (module Versions.OCaml_version with
              type Ast.Parsetree.signature = 'concrete) * 'concrete -> ast
 
 type filename = string
@@ -46,7 +46,7 @@ let find_magic magic =
           Error (Unknown_version magic)
         else
           Error (Not_a_binary_ast magic)
-    | (module Frontend : Migrate_parsetree_versions.OCaml_version) :: tail ->
+    | (module Frontend : Versions.OCaml_version) :: tail ->
         if Frontend.Ast.Config.ast_impl_magic_number = magic then
           Ok (fun x -> Impl ((module Frontend), Obj.obj x))
         else if Frontend.Ast.Config.ast_intf_magic_number = magic then
@@ -54,7 +54,7 @@ let find_magic magic =
         else
           loop tail
   in
-  loop Migrate_parsetree_versions.all_versions
+  loop Versions.all_versions
 
 let from_channel ic =
   match read_magic ic with

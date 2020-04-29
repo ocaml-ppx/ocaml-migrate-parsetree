@@ -65,7 +65,7 @@ module Migrate_411_410 = Migrate_parsetree_411_410
 (*$*)
 
 (* An abstraction of OCaml compiler versions *)
-module Versions = Migrate_parsetree_versions
+module Versions = Versions
 
 (* All versions are compatible with this signature *)
 module type OCaml_version = Versions.OCaml_version

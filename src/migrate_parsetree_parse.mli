@@ -21,7 +21,7 @@
    These parsing functions can raise Migration_errors.
 *)
 
-open Migrate_parsetree_versions
+open Versions
 
 val implementation  : 'types ocaml_version -> Lexing.lexbuf -> 'types get_structure
 val interface       : 'types ocaml_version -> Lexing.lexbuf -> 'types get_signature

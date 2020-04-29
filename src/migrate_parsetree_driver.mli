@@ -1,4 +1,4 @@
-open Migrate_parsetree_versions
+open Versions
 
 (** {1 State a rewriter can access} *)
 
@@ -83,11 +83,11 @@ val run_main : ?exit_on_error:bool -> ?argv:string array -> unit -> unit
 (** {1 Manual mapping} *)
 
 type some_signature =
-  | Sig : (module Migrate_parsetree_versions.OCaml_version with
+  | Sig : (module Versions.OCaml_version with
             type Ast.Parsetree.signature = 'concrete) * 'concrete -> some_signature
 
 type some_structure =
-  | Str : (module Migrate_parsetree_versions.OCaml_version with
+  | Str : (module Versions.OCaml_version with
             type Ast.Parsetree.structure = 'concrete) * 'concrete -> some_structure
 
 val migrate_some_signature

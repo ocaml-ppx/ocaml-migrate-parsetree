@@ -1,4 +1,4 @@
-open Migrate_parsetree_versions
+open Versions
 module Ast_io = Migrate_parsetree_ast_io
 
 (** {1 State a rewriter can access} *)
@@ -181,11 +181,11 @@ type ('types, 'version, 'tree) is_structure =
     Structure : ('types, 'types ocaml_version, 'types get_structure) is_structure
 
 type some_structure =
-  | Str : (module Migrate_parsetree_versions.OCaml_version with
+  | Str : (module Versions.OCaml_version with
             type Ast.Parsetree.structure = 'concrete) * 'concrete -> some_structure
 
 type some_signature =
-  | Sig : (module Migrate_parsetree_versions.OCaml_version with
+  | Sig : (module Versions.OCaml_version with
             type Ast.Parsetree.signature = 'concrete) * 'concrete -> some_signature
 
 let migrate_some_structure dst (Str ((module Version), st)) =
