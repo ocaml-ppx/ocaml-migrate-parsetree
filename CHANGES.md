@@ -1,3 +1,8 @@
+2.0.0 (unreleased)
+------------------
+
+- No longer expose the unwrapped modules
+
 v1.7.2 2020-04-20 Canterbury
 ----------------------------
 

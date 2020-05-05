@@ -1,8 +1,6 @@
 (library
  (name migrate_parsetree)
  (public_name ocaml-migrate-parsetree)
- (wrapped
-  (transition "Access modules via the Migrate_parsetree toplevel module"))
  (libraries compiler-libs.common result ppx_derivers)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess (action (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
