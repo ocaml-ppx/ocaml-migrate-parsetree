@@ -3,6 +3,11 @@
 
 - No longer expose the unwrapped modules
 
+v1.7.3 2020-05-07 Canterbury
+----------------------------
+
+- Fix magic numbers for the 4.11 ast (#96, @hhugo)
+
 v1.7.2 2020-04-20 Canterbury
 ----------------------------
 
