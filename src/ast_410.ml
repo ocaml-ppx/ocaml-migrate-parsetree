@@ -2884,6 +2884,16 @@ module Ast_mapper : sig
 
   val set_cookie: string -> Parsetree.expression -> unit
   val get_cookie: string -> Parsetree.expression option
+
+  (** Reference to a converter from OCaml 4.10's mapper to mapper
+      for OCaml's current version.
+      This reference is filled in Migrate_parsetree once converters
+      are available.
+      This reference is used to implement {!val:register} such that
+      serialized AST are read and write with the OCaml's current types, to fix
+      {{:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/97}}
+   *)
+  val to_current : (mapper -> Ast_mapper.mapper) ref
 end = struct
   open Parsetree
   open Ast_helper
@@ -3780,6 +3790,9 @@ end = struct
 
   let extension_of_exn exn = extension_of_error (Locations.location_error_of_exn exn)
 
+  let to_current : (mapper -> Ast_mapper.mapper) ref = ref (fun _ ->
+    failwith "Mapper converter not yet available")
+
   let apply_lazy ~source ~target mapper =
     let implem ast =
       let fields, ast =
@@ -3843,6 +3856,8 @@ end = struct
       failwith "Ast_mapper: OCaml version mismatch or malformed input";
     in
 
+    (* The following mapper fixes
+       {{:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/97}*)
     if magic = Config.ast_impl_magic_number then
       rewrite (implem : structure -> structure)
     else if magic = Config.ast_intf_magic_number then

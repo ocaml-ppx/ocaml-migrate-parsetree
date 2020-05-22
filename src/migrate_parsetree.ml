@@ -90,6 +90,29 @@ module OCaml_current = Versions.OCaml_current
    migrating from one to the other. *)
 module Convert = Versions.Convert
 
+module Ast_408_to_current = Convert (OCaml_408) (OCaml_current)
+
+(* Access to the convertion logic is given to version-specific Ast_mapper
+   to fix
+   {{:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/97}}. *)
+let () =
+  Ast_408.Ast_mapper.to_current := Ast_408_to_current.copy_mapper
+
+module Ast_409_to_current = Convert (OCaml_409) (OCaml_current)
+
+let () =
+  Ast_409.Ast_mapper.to_current := Ast_409_to_current.copy_mapper
+
+module Ast_410_to_current = Convert (OCaml_410) (OCaml_current)
+
+let () =
+  Ast_410.Ast_mapper.to_current := Ast_410_to_current.copy_mapper
+
+module Ast_411_to_current = Convert (OCaml_411) (OCaml_current)
+
+let () =
+  Ast_411.Ast_mapper.to_current := Ast_411_to_current.copy_mapper
+
 (* A [Parse] module that migrate ASTs to the desired version of an AST *)
 module Parse = Migrate_parsetree_parse
 
