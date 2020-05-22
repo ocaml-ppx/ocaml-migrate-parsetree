@@ -2727,6 +2727,17 @@ end = struct
   end
 end
 
+module Config = struct
+  (** [in_ast_410] allows {!val:Ast_mapper.register} to compile correctly only
+      if this [Config] module has been overriden with the version-specific
+      magic numbers.
+      See {{:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/issues/97} *)
+  let in_ast_410 = ()
+
+  let ast_impl_magic_number = "Caml1999M027"
+  let ast_intf_magic_number = "Caml1999N027"
+end
+
 module Ast_mapper : sig
   open Parsetree
 
@@ -3824,6 +3835,7 @@ end = struct
     in
 
     let ic = open_in_bin source in
+    let () = Config.in_ast_410 in
     let magic =
       really_input_string ic (String.length Config.ast_impl_magic_number)
     in
@@ -4048,11 +4060,6 @@ module Outcometree = struct
     | Ophr_eval of out_value * out_type
     | Ophr_signature of (out_sig_item * out_value option) list
     | Ophr_exception of (exn * out_value)
-end
-
-module Config = struct
-  let ast_impl_magic_number = "Caml1999M027"
-  let ast_intf_magic_number = "Caml1999N027"
 end
 
 let map_signature mapper = mapper.Ast_mapper.signature mapper

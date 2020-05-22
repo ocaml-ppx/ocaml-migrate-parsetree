@@ -3,6 +3,9 @@
 
 - No longer expose the unwrapped modules
 
+- Fix version-specific magic numbers check in `Ast_4NN.register`
+  (#97, @gasche, @kit-ty-kate, @thierry-martinez)
+
 v1.7.3 2020-05-07 Canterbury
 ----------------------------
 
