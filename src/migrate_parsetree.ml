@@ -36,9 +36,6 @@ module Ast_410 = Ast_410
 module Ast_411 = Ast_411
 (*$*)
 
-(* A module for marshalling/unmarshalling arbitrary versions of Asts *)
-module Ast_io = Migrate_parsetree_ast_io
-
 (* Manual migration between versions *)
 (*$foreach_version_pair (fun x y ->
     printf "module Migrate_%s_%s = Migrate_parsetree_%s_%s\n" x y x y;
@@ -92,9 +89,6 @@ module Convert = Versions.Convert
 
 (* A [Parse] module that migrate ASTs to the desired version of an AST *)
 module Parse = Migrate_parsetree_parse
-
-(* Entrypoints for registering rewriters and making a ppx binary *)
-module Driver = Migrate_parsetree_driver
 
 (* Aliases for compiler-libs modules that might be shadowed *)
 module Compiler_libs = struct
