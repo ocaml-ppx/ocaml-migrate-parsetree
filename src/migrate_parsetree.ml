@@ -61,35 +61,6 @@ module Migrate_410_411 = Migrate_parsetree_410_411
 module Migrate_411_410 = Migrate_parsetree_411_410
 (*$*)
 
-(* An abstraction of OCaml compiler versions *)
-module Versions = Versions
-
-(* All versions are compatible with this signature *)
-module type OCaml_version = Versions.OCaml_version
-
-(*$foreach_version (fun suffix _ ->
-    printf "module OCaml_%s = Versions.OCaml_%s\n" suffix suffix
-  )*)
-module OCaml_402 = Versions.OCaml_402
-module OCaml_403 = Versions.OCaml_403
-module OCaml_404 = Versions.OCaml_404
-module OCaml_405 = Versions.OCaml_405
-module OCaml_406 = Versions.OCaml_406
-module OCaml_407 = Versions.OCaml_407
-module OCaml_408 = Versions.OCaml_408
-module OCaml_409 = Versions.OCaml_409
-module OCaml_410 = Versions.OCaml_410
-module OCaml_411 = Versions.OCaml_411
-(*$*)
-module OCaml_current = Versions.OCaml_current
-
-(* A Functor taking two OCaml versions and producing a module of functions
-   migrating from one to the other. *)
-module Convert = Versions.Convert
-
-(* A [Parse] module that migrate ASTs to the desired version of an AST *)
-module Parse = Migrate_parsetree_parse
-
 (* Aliases for compiler-libs modules that might be shadowed *)
 module Compiler_libs = struct
   module Location = Location
