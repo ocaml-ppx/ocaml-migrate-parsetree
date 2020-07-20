@@ -14,7 +14,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "dune" {>= "2.0.0"}
+  "dune" {>= "1.11"}
   "ocaml" {>= "4.02.3"}
 ]
 synopsis: "Convert OCaml parsetrees between different versions"
