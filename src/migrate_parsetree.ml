@@ -14,7 +14,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(*$ #use "src/cinaps_helpers" $*)
+(*$ open Cinaps_helpers
+    open Printf
+$*)
 
 (* Shared definitions.
    Mostly errors about features missing in older versions. *)
@@ -38,27 +40,27 @@ module Ast_411 = Ast_411
 
 (* Manual migration between versions *)
 (*$foreach_version_pair (fun x y ->
-    printf "module Migrate_%s_%s = Migrate_parsetree_%s_%s_migrate\n" x y x y;
-    printf "module Migrate_%s_%s = Migrate_parsetree_%s_%s_migrate\n" y x y x;
+    printf "module Migrate_%s_%s = Migrate_%s_%s\n" x y x y;
+    printf "module Migrate_%s_%s = Migrate_%s_%s\n" y x y x;
   )*)
-module Migrate_402_403 = Migrate_parsetree_402_403_migrate
-module Migrate_403_402 = Migrate_parsetree_403_402_migrate
-module Migrate_403_404 = Migrate_parsetree_403_404_migrate
-module Migrate_404_403 = Migrate_parsetree_404_403_migrate
-module Migrate_404_405 = Migrate_parsetree_404_405_migrate
-module Migrate_405_404 = Migrate_parsetree_405_404_migrate
-module Migrate_405_406 = Migrate_parsetree_405_406_migrate
-module Migrate_406_405 = Migrate_parsetree_406_405_migrate
-module Migrate_406_407 = Migrate_parsetree_406_407_migrate
-module Migrate_407_406 = Migrate_parsetree_407_406_migrate
-module Migrate_407_408 = Migrate_parsetree_407_408_migrate
-module Migrate_408_407 = Migrate_parsetree_408_407_migrate
-module Migrate_408_409 = Migrate_parsetree_408_409_migrate
-module Migrate_409_408 = Migrate_parsetree_409_408_migrate
-module Migrate_409_410 = Migrate_parsetree_409_410_migrate
-module Migrate_410_409 = Migrate_parsetree_410_409_migrate
-module Migrate_410_411 = Migrate_parsetree_410_411_migrate
-module Migrate_411_410 = Migrate_parsetree_411_410_migrate
+module Migrate_402_403 = Migrate_402_403
+module Migrate_403_402 = Migrate_403_402
+module Migrate_403_404 = Migrate_403_404
+module Migrate_404_403 = Migrate_404_403
+module Migrate_404_405 = Migrate_404_405
+module Migrate_405_404 = Migrate_405_404
+module Migrate_405_406 = Migrate_405_406
+module Migrate_406_405 = Migrate_406_405
+module Migrate_406_407 = Migrate_406_407
+module Migrate_407_406 = Migrate_407_406
+module Migrate_407_408 = Migrate_407_408
+module Migrate_408_407 = Migrate_408_407
+module Migrate_408_409 = Migrate_408_409
+module Migrate_409_408 = Migrate_409_408
+module Migrate_409_410 = Migrate_409_410
+module Migrate_410_409 = Migrate_410_409
+module Migrate_410_411 = Migrate_410_411
+module Migrate_411_410 = Migrate_411_410
 (*$*)
 
 (* Aliases for compiler-libs modules that might be shadowed *)

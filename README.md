@@ -12,25 +12,9 @@ and conversion functions to the next and/or previous version.
 ```ocaml
 module Ast_{402,403,404,405,406,407,408,409,410,411} : sig
 
-  (* These two modules didn't change between compiler versions.
-     Just share the ones from compiler-libs. *)
-  module Location = Location
-  module Longident = Longident
-
   (* Version specific copy of AST *)
   module Asttypes
   module Parsetree
-  module Outcometree
-
-  (* Other modules that are useful for implementing PPX.
-
-     Docstrings and Ast_mapper only contain general definitions
-     In particular, the internal state used by compiler-libs has been
-     removed.
-     Also equalities are lost for abstract types (Docstring.docstring).  *)
-  module Docstrings
-  module Ast_helper
-  module Ast_mapper
 
   (* Magic numbers used for marshalling *)
   module Config : sig
@@ -42,28 +26,30 @@ end
 
 These embed copies of AST definitions for each supported OCaml major version.
 
-The AST matching the version of the OCaml toolchain will contain equalities
-relating the copy of types to the definitions from compiler-libs.  For
-instance, when installed with OCaml 4.04.x, `Ast_404.Parsetree` looks
-like.
+The AST matching the version of the OCaml toolchain will contain
+equalities relating the copy of types to the definitions from
+compiler-libs.  For instance, when installed with OCaml 4.04.x the
+type `Ast_404.Parsetree.expression` is equal to the type
+`Parsetree.expression` from the compiler libraries.
 
 ## Migration modules
 
 For each pair of versions `$(n)` and `$(n+1)`, the two modules
-`Migrate_parsetree_$(n)_$(n+1)` and `Migrate_parsetree_$(n+1)_$(n)` convert the AST forward and backward.
+`Migrate_parsetree_$(n)_$(n+1)` and `Migrate_parsetree_$(n+1)_$(n)`
+convert the AST forward and backward.
 
-The forward conversion is total while the backward conversion is partial: when
-a feature is not available in a previous version of the parsetree, a
-`Migrate_parsetree_def.Migration_error` exception is raised detailing the
-failure case.
+The forward conversion is total while the backward conversion is
+partial: when a feature is not available in a previous version of the
+parsetree, a `Migrate_parsetree_def.Migration_error` exception is
+raised detailing the failure case.
 
 ## Adding a new OCaml version
 
-We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
-You can install it via opam: `opam install cinaps`.
+We use [Cinaps](https://github.com/janestreet/cinaps) to generate
+boilerplate.  You can install it via opam: `opam install cinaps`.
 
 Add the new version in
-[src/cinaps_helpers](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps_helpers)
+[src/cinaps_helpers/cinaps_helpers.ml](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps_helpers/cinaps_helpers.ml)
 `supported_versions`.
 
 Copy the last `src/ast_xxx.ml` file to `src/ast_<new_version>.ml`,

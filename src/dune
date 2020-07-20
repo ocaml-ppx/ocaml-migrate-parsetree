@@ -11,3 +11,7 @@
 (rule
  (targets ast-version)
  (action  (run %{ocaml} %{dep:config/gen.ml} %{ocaml_version})))
+
+(cinaps
+ (files *.ml *.mli)
+ (libraries cinaps_helpers))
