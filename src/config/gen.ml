@@ -22,11 +22,4 @@ let () =
      | (4, 11) -> "411"
      | _ ->
        Printf.eprintf "Unkown OCaml version %s\n" ocaml_version_str;
-       exit 1);
-  write "compiler-functions-file"
-    (if ocaml_version < (4, 06) then
-       "lt_406.ml"
-     else if ocaml_version < (4, 10) then
-       "ge_406_and_lt_410.ml"
-     else
-       "ge_410.ml")
+       exit 1)

@@ -9,10 +9,5 @@
   (lint_flags --null)))
 
 (rule
- (copy#
-  compiler-functions/%{read:compiler-functions-file}
-  migrate_parsetree_compiler_functions.ml))
-
-(rule
- (targets ast-version compiler-functions-file)
+ (targets ast-version)
  (action  (run %{ocaml} %{dep:config/gen.ml} %{ocaml_version})))
