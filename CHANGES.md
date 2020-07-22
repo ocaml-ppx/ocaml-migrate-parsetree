@@ -2,6 +2,7 @@
 ------------------
 
 - No longer expose the unwrapped modules
+- Remove everything but Ast versions and upgrade/downgrade conversions.
 
 v1.7.3 2020-05-07 Canterbury
 ----------------------------
