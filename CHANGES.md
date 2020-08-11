@@ -1,8 +1,10 @@
-2.0.0 (unreleased)
-------------------
+v2.0.0 2020-08-11 Canterbury
+----------------------------
 
-- No longer expose the unwrapped modules
-- Remove everything but Ast versions and upgrade/downgrade conversions.
+- No longer expose the unwrapped modules (#94, @jonludlam)
+
+- Remove everything but Ast versions and upgrade/downgrade
+  conversions (#103, @ceastlund)
 
 v1.7.3 2020-05-07 Canterbury
 ----------------------------
