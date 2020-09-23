@@ -54,11 +54,14 @@ module Asttypes = struct
     loc : Location.t;
   }
 
-
   type variance (*IF_CURRENT = Asttypes.variance *) =
     | Covariant
     | Contravariant
-    | Invariant
+    | NoVariance
+
+  type injectivity (*IF_CURRENT = Asttypes.injectivity *) =
+    | Injective
+    | NoInjectivity
 end
 
 module Parsetree = struct
@@ -471,7 +474,7 @@ module Parsetree = struct
   and type_declaration (*IF_CURRENT = Parsetree.type_declaration *) =
     {
       ptype_name: string loc;
-      ptype_params: (core_type * variance) list;
+      ptype_params: (core_type * (variance * injectivity)) list;
       (* ('a1,...'an) t; None represents  _*)
       ptype_cstrs: (core_type * core_type * Location.t) list;
       (* ... constraint T1=T1'  ... constraint Tn=Tn' *)
@@ -539,7 +542,7 @@ module Parsetree = struct
   and type_extension (*IF_CURRENT = Parsetree.type_extension *) =
     {
       ptyext_path: Longident.t loc;
-      ptyext_params: (core_type * variance) list;
+      ptyext_params: (core_type * (variance * injectivity)) list;
       ptyext_constructors: extension_constructor list;
       ptyext_private: private_flag;
       ptyext_loc: Location.t;
@@ -640,7 +643,7 @@ module Parsetree = struct
   and 'a class_infos (*IF_CURRENT = 'a Parsetree.class_infos *) =
     {
       pci_virt: virtual_flag;
-      pci_params: (core_type * variance) list;
+      pci_params: (core_type * (variance * injectivity)) list;
       pci_name: string loc;
       pci_expr: 'a;
       pci_loc: Location.t;
