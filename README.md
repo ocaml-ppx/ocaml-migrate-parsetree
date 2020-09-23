@@ -72,8 +72,8 @@ appropriate version numbers, e.g. 408 and 409:
 - Manually compile the asts (`ocamlc -c src/ast_{$NEW,$OLD}.ml -I +compiler-libs -I _build/default/src/.migrate_parsetree.objs/byte/`)
 - Using `tools/gencopy.exe` (`dune build tools/gencopy.exe`), generate copy code to and from previous version (assuming it is 408):
 ```
-_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_$NEW:Ast_$OLD Ast_$NEW.Parsetree.{expression,expr,pattern,pat,core_type,typ,toplevel_phrase} Ast_$NEW.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_$NEW_$OLD_migrate.ml
-_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_$OLD:Ast_$NEW Ast_$OLD.Parsetree.{expression,expr,pattern,pat,core_type,typ,toplevel_phrase} Ast_$OLD.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_$OLD_$NEW_migrate.ml
+_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_$NEW:Ast_$OLD Ast_$NEW.Parsetree.{expression,pattern,core_type,toplevel_phrase} > src/migrate_${NEW}_${OLD}.ml
+_build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_$OLD:Ast_$NEW Ast_$OLD.Parsetree.{expression,pattern,core_type,toplevel_phrase} > src/migrate_${OLD}_${NEW}.ml
 ```
 - Fix the generated code by implementing new cases
 
