@@ -832,8 +832,8 @@ and copy_class_infos :
              (fun x ->
                 let (x0, x1) = x in
                 ((copy_core_type x0),
-                  (let (x0, x1) = x1 in
-                   ((copy_variance x0), (copy_injectivity x1))))) pci_params);
+                  (let (x0, _) = x1 in
+                   (copy_variance x0)))) pci_params);
         Ast_411.Parsetree.pci_name = (copy_loc (fun x -> x) pci_name);
         Ast_411.Parsetree.pci_expr = (f0 pci_expr);
         Ast_411.Parsetree.pci_loc = (copy_location pci_loc);
@@ -975,8 +975,8 @@ and copy_type_extension :
            (fun x ->
               let (x0, x1) = x in
               ((copy_core_type x0),
-                (let (x0, x1) = x1 in
-                 ((copy_variance x0), (copy_injectivity x1))))) ptyext_params);
+                (let (x0, _) = x1 in
+                 (copy_variance x0)))) ptyext_params);
       Ast_411.Parsetree.ptyext_constructors =
         (List.map copy_extension_constructor ptyext_constructors);
       Ast_411.Parsetree.ptyext_private = (copy_private_flag ptyext_private);
@@ -1030,8 +1030,8 @@ and copy_type_declaration :
            (fun x ->
               let (x0, x1) = x in
               ((copy_core_type x0),
-                (let (x0, x1) = x1 in
-                 ((copy_variance x0), (copy_injectivity x1))))) ptype_params);
+                (let (x0, _) = x1 in
+                 (copy_variance x0)))) ptype_params);
       Ast_411.Parsetree.ptype_cstrs =
         (List.map
            (fun x ->
@@ -1109,16 +1109,11 @@ and copy_mutable_flag :
   function
   | Ast_412.Asttypes.Immutable -> Ast_411.Asttypes.Immutable
   | Ast_412.Asttypes.Mutable -> Ast_411.Asttypes.Mutable
-and copy_injectivity :
-  Ast_412.Asttypes.injectivity -> Ast_411.Asttypes.injectivity =
-  function
-  | Ast_412.Asttypes.Injective -> Ast_411.Asttypes.Injective
-  | Ast_412.Asttypes.NoInjectivity -> Ast_411.Asttypes.NoInjectivity
 and copy_variance : Ast_412.Asttypes.variance -> Ast_411.Asttypes.variance =
   function
   | Ast_412.Asttypes.Covariant -> Ast_411.Asttypes.Covariant
   | Ast_412.Asttypes.Contravariant -> Ast_411.Asttypes.Contravariant
-  | Ast_412.Asttypes.NoVariance -> Ast_411.Asttypes.NoVariance
+  | Ast_412.Asttypes.NoVariance -> Ast_411.Asttypes.Invariant
 and copy_value_description :
   Ast_412.Parsetree.value_description -> Ast_411.Parsetree.value_description
   =

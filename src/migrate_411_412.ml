@@ -830,7 +830,8 @@ and copy_class_infos :
         Ast_412.Parsetree.pci_params =
           (List.map
              (fun x ->
-                let (x0, x1) = x in ((copy_core_type x0), (copy_variance x1)))
+                let (x0, x1) = x in
+                ((copy_core_type x0), (copy_variance x1, Ast_412.Asttypes.NoInjectivity)))
              pci_params);
         Ast_412.Parsetree.pci_name = (copy_loc (fun x -> x) pci_name);
         Ast_412.Parsetree.pci_expr = (f0 pci_expr);
@@ -971,7 +972,8 @@ and copy_type_extension :
       Ast_412.Parsetree.ptyext_params =
         (List.map
            (fun x ->
-              let (x0, x1) = x in ((copy_core_type x0), (copy_variance x1)))
+              let (x0, x1) = x in
+              ((copy_core_type x0), (copy_variance x1, Ast_412.Asttypes.NoInjectivity)))
            ptyext_params);
       Ast_412.Parsetree.ptyext_constructors =
         (List.map copy_extension_constructor ptyext_constructors);
@@ -1024,7 +1026,8 @@ and copy_type_declaration :
       Ast_412.Parsetree.ptype_params =
         (List.map
            (fun x ->
-              let (x0, x1) = x in ((copy_core_type x0), (copy_variance x1)))
+              let (x0, x1) = x in
+              ((copy_core_type x0), (copy_variance x1, Ast_412.Asttypes.NoInjectivity)))
            ptype_params);
       Ast_412.Parsetree.ptype_cstrs =
         (List.map
@@ -1107,7 +1110,7 @@ and copy_variance : Ast_411.Asttypes.variance -> Ast_412.Asttypes.variance =
   function
   | Ast_411.Asttypes.Covariant -> Ast_412.Asttypes.Covariant
   | Ast_411.Asttypes.Contravariant -> Ast_412.Asttypes.Contravariant
-  | Ast_411.Asttypes.Invariant -> Ast_412.Asttypes.Invariant
+  | Ast_411.Asttypes.Invariant -> Ast_412.Asttypes.NoVariance
 and copy_value_description :
   Ast_411.Parsetree.value_description -> Ast_412.Parsetree.value_description
   =
