@@ -1,5 +1,7 @@
+open Stdlib0
 module From = Ast_412
 module To = Ast_411
+
 let rec copy_out_type_extension :
   Ast_412.Outcometree.out_type_extension ->
     Ast_411.Outcometree.out_type_extension
@@ -38,7 +40,20 @@ and copy_out_phrase :
         (let (x0, x1) = x0 in (x0, (copy_out_value x1)))
 
 and copy_out_type_param : Ast_412.Outcometree.out_type_param -> string * (bool * bool) =
-  function (str, (_,_)) -> str, (true,true)
+  function (str, (v,inj)) ->
+    (match inj with
+     | Ast_412.Asttypes.NoInjectivity -> ()
+     | Ast_412.Asttypes.Injective ->
+       (* ignoring [Injective] is not quite correct *)
+       ()
+    );
+    let co, cn =
+      match v with
+      | Ast_412.Asttypes.Covariant -> (true, false)
+      | Ast_412.Asttypes.Contravariant -> (false, true)
+      | Ast_412.Asttypes.NoVariance -> (false, false)
+    in
+    str, (co, cn)
 and copy_out_sig_item :
   Ast_412.Outcometree.out_sig_item -> Ast_411.Outcometree.out_sig_item =
   function

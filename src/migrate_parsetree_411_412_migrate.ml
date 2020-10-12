@@ -1,3 +1,4 @@
+open Stdlib0
 module From = Ast_411
 module To = Ast_412
 let rec copy_out_type_extension :
@@ -37,7 +38,15 @@ and copy_out_phrase :
       Ast_412.Outcometree.Ophr_exception
         (let (x0, x1) = x0 in (x0, (copy_out_value x1)))
 and copy_out_type_param : string * (bool * bool) -> Ast_412.Outcometree.out_type_param  =
-  function (str, (_,_)) -> str, (Covariant,Injective)
+  function (str, v) ->
+    let v =
+      match v with
+      | (true, false) -> Ast_412.Asttypes.Covariant
+      | (false, true) -> Ast_412.Asttypes.Contravariant
+      | (false, false) -> Ast_412.Asttypes.NoVariance
+      | _ -> assert false
+    in
+    str, (v, Ast_412.Asttypes.NoInjectivity)
 
 and copy_out_sig_item :
   Ast_411.Outcometree.out_sig_item -> Ast_412.Outcometree.out_sig_item =
