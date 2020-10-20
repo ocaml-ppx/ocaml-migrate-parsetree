@@ -1179,5 +1179,3 @@ and copy_loc :
       }
 and copy_location : Location.t -> Location.t =
   fun x -> x
-and copy_position : Stdlib.Lexing.position -> Stdlib.Lexing.position =
-  fun x -> x
