@@ -1,5 +1,11 @@
 module From = Ast_413
 module To = Ast_412
+
+module Def = Migrate_parsetree_def
+
+let migration_error location feature =
+  raise (Def.Migration_error (feature, location))
+
 let rec copy_toplevel_phrase :
   Ast_413.Parsetree.toplevel_phrase -> Ast_412.Parsetree.toplevel_phrase =
   function
@@ -267,8 +273,13 @@ and copy_pattern_desc :
           (Option.map
              (fun x ->
                 let (x0, x1) = x in
-                ((List.map (fun x -> copy_loc (fun x -> x) x) x0),
-                  (copy_pattern x1))) x1))
+                begin match x0 with
+                | [] -> ()
+                | ty::_ ->
+                    migration_error ty.Ast_413.Asttypes.loc
+                      ExistentialsInPatternMatching
+                end;
+                copy_pattern x1) x1))
   | Ast_413.Parsetree.Ppat_variant (x0, x1) ->
       Ast_412.Parsetree.Ppat_variant
         ((copy_label x0), (Option.map copy_pattern x1))
@@ -673,12 +684,10 @@ and copy_with_constraint :
   | Ast_413.Parsetree.Pwith_module (x0, x1) ->
       Ast_412.Parsetree.Pwith_module
         ((copy_loc copy_Longident_t x0), (copy_loc copy_Longident_t x1))
-  | Ast_413.Parsetree.Pwith_modtype (x0, x1) ->
-      Ast_412.Parsetree.Pwith_modtype
-        ((copy_loc copy_Longident_t x0), (copy_module_type x1))
-  | Ast_413.Parsetree.Pwith_modtypesubst (x0, x1) ->
-      Ast_412.Parsetree.Pwith_modtypesubst
-        ((copy_loc copy_Longident_t x0), (copy_module_type x1))
+  | Ast_413.Parsetree.Pwith_modtype (_x0, x1) ->
+      migration_error x1.Ast_413.Parsetree.pmty_loc With_modtype
+  | Ast_413.Parsetree.Pwith_modtypesubst (_x0, x1) ->
+      migration_error x1.Ast_413.Parsetree.pmty_loc With_modtypesubst
   | Ast_413.Parsetree.Pwith_typesubst (x0, x1) ->
       Ast_412.Parsetree.Pwith_typesubst
         ((copy_loc copy_Longident_t x0), (copy_type_declaration x1))
@@ -723,7 +732,7 @@ and copy_signature_item_desc :
   | Ast_413.Parsetree.Psig_modtype x0 ->
       Ast_412.Parsetree.Psig_modtype (copy_module_type_declaration x0)
   | Ast_413.Parsetree.Psig_modtypesubst x0 ->
-      Ast_412.Parsetree.Psig_modtypesubst (copy_module_type_declaration x0)
+      migration_error x0.Ast_413.Parsetree.pmtd_loc Psig_modtypesubst
   | Ast_413.Parsetree.Psig_open x0 ->
       Ast_412.Parsetree.Psig_open (copy_open_description x0)
   | Ast_413.Parsetree.Psig_include x0 ->

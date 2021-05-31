@@ -263,7 +263,7 @@ and copy_pattern_desc :
       Ast_413.Parsetree.Ppat_tuple (List.map copy_pattern x0)
   | Ast_412.Parsetree.Ppat_construct (x0, x1) ->
       Ast_413.Parsetree.Ppat_construct
-        ((copy_loc copy_Longident_t x0), (Option.map copy_pattern x1))
+        ((copy_loc copy_Longident_t x0), (Option.map (fun x -> ([], copy_pattern x)) x1))
   | Ast_412.Parsetree.Ppat_variant (x0, x1) ->
       Ast_413.Parsetree.Ppat_variant
         ((copy_label x0), (Option.map copy_pattern x1))
