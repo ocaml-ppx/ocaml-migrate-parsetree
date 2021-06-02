@@ -8,6 +8,7 @@ env:
   global:
     - PACKAGE="ocaml-migrate-parsetree"
     - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
+    - TESTS=false
   matrix:
     - DISTRO=alpine OCAML_VERSION=4.02.3
     - DISTRO=alpine OCAML_VERSION=4.03.0
