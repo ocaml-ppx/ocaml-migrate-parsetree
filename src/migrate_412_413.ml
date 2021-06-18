@@ -312,7 +312,7 @@ and copy_core_type :
     }
 and copy_location_stack :
   Ast_412.Parsetree.location_stack -> Ast_413.Parsetree.location_stack =
-  fun x -> List.map copy_location x
+  fun x -> x
 and copy_core_type_desc :
   Ast_412.Parsetree.core_type_desc -> Ast_413.Parsetree.core_type_desc =
   function
