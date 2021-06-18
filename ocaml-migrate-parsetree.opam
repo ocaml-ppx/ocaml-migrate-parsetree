@@ -14,7 +14,7 @@ build: ["dune" "build" "-p" name "-j" jobs]
 run-test: ["dune" "runtest" "-p" name "-j" jobs]
 depends: [
   "dune" {>= "2.3"}
-  "ocaml" {>= "4.02.3" & < "4.13"}
+  "ocaml" {>= "4.02.3" & < "4.14"}
   "cinaps" {with-test & >= "v0.13.0"}
 ]
 synopsis: "Convert OCaml parsetrees between different versions"
