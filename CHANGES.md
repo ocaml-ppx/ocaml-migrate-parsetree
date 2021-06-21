@@ -1,4 +1,4 @@
-unreleased
+v2.2.0 2021-06-21 Paris
 --------------------------
 
 - Add support for 4.13 (#114, @kit-ty-kate)
