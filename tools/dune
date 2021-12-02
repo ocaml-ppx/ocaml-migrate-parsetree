@@ -5,7 +5,7 @@
 
 (executable
  (name gencopy)
- (enabled_if (>= %{ocaml_version} 4.10))
+ (enabled_if (>= %{ocaml_version} 4.13))
  (modules gencopy)
  (libraries compiler-libs.common compiler-libs.bytecomp)
  (flags :standard -w -3))

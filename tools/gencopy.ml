@@ -76,7 +76,7 @@ module Main : sig end = struct
   let pvar ?(loc = !default_loc) ?attrs s = Pat.var ~loc ?attrs (mkloc s loc)
 
   let pconstr ?loc ?attrs s args =
-    Pat.construct ?loc ?attrs (lid ?loc s) (may_tuple ?loc Pat.tuple args)
+    Pat.construct ?loc ?attrs (lid ?loc s) (Option.map (fun x -> ([], x)) (may_tuple ?loc Pat.tuple args))
 
   let selfcall m args = app (evar m) args
 
@@ -187,7 +187,7 @@ module Main : sig end = struct
             (lam
                (Pat.record (List.map fst l) Closed)
                (Exp.record (List.map snd l) None))
-      | Type_variant l, _ ->
+      | Type_variant (l, _), _ ->
           let case cd =
             let c = Ident.name cd.cd_id in
             match cd.cd_args with
