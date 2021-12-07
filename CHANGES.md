@@ -1,4 +1,4 @@
-unreleased
+v2.3.0 2021-12-07 Valencia
 --------------------------
 
 - Add support for 4.14 (#119, @kit-ty-kate)
