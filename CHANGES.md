@@ -1,4 +1,4 @@
-unreleased
+2.4.0 2022-06-17 Valencia
 --------------------------
 
 - Add support for 5.0 (#122, @pitag-ha)
