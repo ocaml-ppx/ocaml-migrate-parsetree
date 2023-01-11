@@ -1208,23 +1208,4 @@ and copy_loc :
         Ast_500.Asttypes.loc = (copy_location loc)
       }
 and copy_location : Location.t -> Location.t =
-  fun
-    { Location.loc_start = loc_start; Location.loc_end = loc_end;
-      Location.loc_ghost = loc_ghost }
-    ->
-    {
-      Location.loc_start = (copy_position loc_start);
-      Location.loc_end = (copy_position loc_end);
-      Location.loc_ghost = loc_ghost
-    }
-and copy_position : Stdlib.Lexing.position -> Stdlib.Lexing.position =
-  fun
-    { Stdlib.Lexing.pos_fname = pos_fname; Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol; Stdlib.Lexing.pos_cnum = pos_cnum }
-    ->
-    {
-      Stdlib.Lexing.pos_fname = pos_fname;
-      Stdlib.Lexing.pos_lnum = pos_lnum;
-      Stdlib.Lexing.pos_bol = pos_bol;
-      Stdlib.Lexing.pos_cnum = pos_cnum
-    }
+  fun x -> x
