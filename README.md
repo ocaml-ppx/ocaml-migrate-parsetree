@@ -1,5 +1,6 @@
 # OCaml-migrate-parsetree
-[Deprecated] This package is deprecated. Please, use
+
+**DEPRECATED** This package is deprecated. Please, use
 [ppxlib](https://github.com/ocaml-ppx/ppxlib) instead.
 
 Convert OCaml parsetrees between different major versions
