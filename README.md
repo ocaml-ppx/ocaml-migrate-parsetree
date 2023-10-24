@@ -2,6 +2,7 @@
 
 **DEPRECATED** This package is deprecated. Please, use
 [ppxlib](https://github.com/ocaml-ppx/ppxlib) instead.
+See https://ocaml.org/changelog/2023-10-23-omp-deprecation.
 
 Convert OCaml parsetrees between different major versions
 
