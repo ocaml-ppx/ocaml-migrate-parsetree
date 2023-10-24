@@ -1,3 +1,9 @@
+unreleased
+------------------------
+
+- Deprecate the project in favor of ppxlib (#126, @pitag-ha)
+
+
 2.4.0 2022-06-17 Valencia
 --------------------------
 
